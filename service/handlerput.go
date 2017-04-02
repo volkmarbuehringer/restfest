@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"net/http"
+	"restfest/db"
 	"restfest/gener"
 	"strconv"
 
@@ -26,7 +27,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := sqlUpd[tab]; !ok {
 
-		if sqlUpd[tab], err = prepare(tab, sqlUpdate, gener.GenUpdate); err != nil {
+		if sqlUpd[tab], err = prepare(tab, sqlUpdate, db.GenUpdate); err != nil {
 			senderErr(w, err)
 			return
 		}

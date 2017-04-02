@@ -48,13 +48,13 @@ in ('integer',
  'bigint',
  'smallint')  then
 case when is_nullable = 'YES' then
-'JSONNullInt64'
+'db.JSONNullInt64'
 else
 'int64'
 end
 when data_type in ('double precision','real')  then
 case when is_nullable = 'YES' then
-'JSONNullFloat64'
+'db.JSONNullFloat64'
 else
 'float64'
 end
@@ -62,23 +62,23 @@ when data_type in ('character varying',
 'text',
 'character') then
 case when is_nullable = 'YES' then
-'JSONNullString'
+'db.JSONNullString'
 else
 'string'
 end
 when data_type = 'numeric'  then
 case
-  when numeric_scale > 0 and is_nullable = 'YES' then 'JSONNullFloat64'
+  when numeric_scale > 0 and is_nullable = 'YES' then 'db.JSONNullFloat64'
   when numeric_scale > 0 and is_nullable = 'NO' then 'float64'
   when numeric_scale = 0 and is_nullable = 'NO' then 'int64'
 else
-'JSONNullInt64'
+'db.JSONNullInt64'
   end
 when data_type in ('timestamp without time zone',
 'date') then
-case when is_nullable = 'YES' then 'JSONNullString'
+case when is_nullable = 'YES' then 'db.JSONNullString'
 else
-  'time.Time'
+  'db.JSONTime'
   end
 	else 'gaga'
 end as coltrans

@@ -14,7 +14,7 @@ import (
 	"restfest/db"
 )
 
-func prepare(tab string, sqlSt string, flag gener.SQLOper) (stmt *sql.Stmt, err error) {
+func prepare(tab string, sqlSt string, flag db.SQLOper) (stmt *sql.Stmt, err error) {
 	if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return

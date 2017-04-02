@@ -1,8 +1,9 @@
-package gener
+package db
 
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 )
 
 type SQLOper int
@@ -13,12 +14,15 @@ const (
 	GenUpdate
 )
 
-type mapperFun func(rows *sql.Rows, len int) (stru []interface{}, err error)
-type mapperFun1 func(interface{}) []interface{}
-type mapperFun2 func(*sql.Stmt, interface{}, int) (*sql.Rows, error)
+type MapperFun func(rows *sql.Rows, len int) (stru []interface{}, err error)
+type MapperFun1 func(interface{}) []interface{}
 
 type JSONNullInt64 struct {
 	sql.NullInt64
+}
+
+type JSONTime struct {
+	time.Time
 }
 
 func (v JSONNullInt64) MarshalJSON() ([]byte, error) {

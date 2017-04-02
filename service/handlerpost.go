@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"net/http"
+	"restfest/db"
 	"restfest/gener"
 
 	"github.com/gorilla/mux"
@@ -24,7 +25,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := sqlIns[tab]; !ok {
 
-		if sqlIns[tab], err = prepare(tab, sqlInsert, gener.GenInsert); err != nil {
+		if sqlIns[tab], err = prepare(tab, sqlInsert, db.GenInsert); err != nil {
 			senderErr(w, err)
 			return
 		}

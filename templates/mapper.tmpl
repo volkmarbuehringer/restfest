@@ -6,7 +6,12 @@
 package gener
 
 
-var SQLFunMap =  map[string]func (string,SQLOper)[]interface{} {
+import (
+	"restfest/db"
+)
+
+
+var SQLFunMap =  map[string]func (string,db.SQLOper)[]interface{} {
     {{- range .Table  }}
 {{printf "%q" .}}: SQL{{title .}},
       {{- end }}
@@ -14,7 +19,7 @@ var SQLFunMap =  map[string]func (string,SQLOper)[]interface{} {
 
 
 
-var ROWInsertFunMap =  map[string]mapperFun1{
+var ROWInsertFunMap =  map[string]db.MapperFun1{
     {{- range .Table  }}
 {{printf "%q" .}}: ROWInsert{{title .}},
       {{- end }}
@@ -25,7 +30,7 @@ var EmptyFunMap =  map[string]func ()interface{}{
 {{printf "%q" .}}: Empty{{title .}},
       {{- end }}
 }
-var ROWSFunMap =  map[string]mapperFun{
+var ROWSFunMap =  map[string]db.MapperFun{
     {{- range .Table  }}
 {{printf "%q" .}}: ROWS{{title .}},
       {{- end }}

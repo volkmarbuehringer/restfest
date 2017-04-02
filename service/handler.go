@@ -30,7 +30,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := sqlAll[tab]; !ok {
 		var err error
-		if sqlAll[tab], err = prepare(tab, selectAll, gener.GenSelect); err != nil {
+		if sqlAll[tab], err = prepare(tab, selectAll, db.GenSelect); err != nil {
 			senderErr(w, err)
 			return
 		}
@@ -61,7 +61,7 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := sqlID[tab]; !ok {
 		var err error
-		if sqlID[tab], err = prepare(tab, selectID, gener.GenSelect); err != nil {
+		if sqlID[tab], err = prepare(tab, selectID, db.GenSelect); err != nil {
 			senderErr(w, err)
 			return
 		}
