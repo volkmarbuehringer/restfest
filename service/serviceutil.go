@@ -1,13 +1,31 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"restfest/gener"
 	"strconv"
 	"strings"
+
+	"restfest/db"
 )
+
+func prepare(tab string, sqlSt string, flag gener.SQLOper) (stmt *sql.Stmt, err error) {
+	if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		return
+	} else {
+		sqls := fmt.Sprintf(sqlSt, sqlFun(tab, flag)...)
+		fmt.Println("prep", sqls)
+		stmt, err = db.DB.Prepare(sqls)
+
+	}
+	return
+}
 
 func formReader(r *http.Request, name string, defaulter int) int {
 	zu := r.FormValue(name)

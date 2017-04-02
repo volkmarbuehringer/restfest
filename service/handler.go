@@ -2,10 +2,8 @@ package service
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -18,6 +16,9 @@ const dbschema = "public"
 var sqlAll = map[string]*sql.Stmt{}
 var sqlID = map[string]*sql.Stmt{}
 
+const selectAll = "select %s from " + dbschema + ".%s order by %s limit $1 offset $2"
+const selectID = "select %s from " + dbschema + ".%s where %s=$1"
+
 func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
@@ -28,20 +29,12 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 	ga.Where = formReaderS(r, "where", "")
 
 	if _, ok := sqlAll[tab]; !ok {
-		if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
-			senderErr(w, fmt.Errorf("Tabelle nicht gefunden: %s", tab))
+		var err error
+		if sqlAll[tab], err = prepare(tab, selectAll, gener.GenSelect); err != nil {
+			senderErr(w, err)
 			return
-		} else {
-			sql, sql1 := sqlFun()
-			sqls := fmt.Sprintf("select %s from "+dbschema+".%s order by %s limit $1 offset $2", strings.Join(sql, ","), tab, sql1)
-			var err error
-			fmt.Println("prep", sqls)
-			if sqlAll[tab], err = db.DB.Prepare(sqls); err != nil {
-				senderErr(w, err)
-				return
-			}
-
 		}
+
 	}
 	rows, err := sqlAll[tab].Query(ga.Length, ga.Offset)
 	if err != nil {
@@ -67,19 +60,10 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(vars["id"])
 
 	if _, ok := sqlID[tab]; !ok {
-		if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
-			senderErr(w, fmt.Errorf("Tabelle nicht gefunden: %s", tab))
+		var err error
+		if sqlID[tab], err = prepare(tab, selectID, gener.GenSelect); err != nil {
+			senderErr(w, err)
 			return
-		} else {
-			sql, sql1 := sqlFun()
-			sqls := fmt.Sprintf("select %s from "+dbschema+".%s where %s=$1", strings.Join(sql, ","), tab, sql1)
-
-			fmt.Println("prep", sqls)
-			var err error
-			if sqlID[tab], err = db.DB.Prepare(sqls); err != nil {
-				senderErr(w, err)
-				return
-			}
 		}
 	}
 	rows, err := sqlID[tab].Query(id)

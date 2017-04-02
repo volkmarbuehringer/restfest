@@ -2,7 +2,7 @@ package generator
 
 const BindVar string = "$"
 const EqBindVar string = "=$"
-const dbTimestamp string = "now()"
+const dbTimestamp string = "current_timestamp"
 const dbschema = "public"
 
 func dbSequenzer(tab string) string {

@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"restfest/db"
 	"restfest/gener"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -31,25 +29,14 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 		if _, ok := sqlIns[tab]; !ok {
 
-			if sqlFun, ok := gener.SQLInsertFunMap[tab]; !ok {
-				senderErr(w, fmt.Errorf("Tabelle nicht gefunden: %s", tab))
-			} else {
-
-				sql1, sql2, sql3 := sqlFun()
-				sqls := fmt.Sprintf(sqlInsert, tab, strings.Join(sql1, ","), strings.Join(sql2, ","),
-					strings.Join(sql3, ","))
-
-				//rows, err := m.RowInsert(&json, tab)
-				fmt.Println(tab, sqls)
-
-				if sqlIns[tab], err = db.DB.Prepare(sqls); err != nil {
-					senderErr(w, err)
-					return
-				}
+			if sqlIns[tab], err = prepare(tab, sqlInsert, gener.GenInsert); err != nil {
+				senderErr(w, err)
+				return
 			}
-		}
-		rows, err := gener.ROWInsertFunMap[tab](sqlIns[tab], json)
 
+		}
+		x := gener.ROWInsertFunMap[tab](json)
+		rows, err := sqlIns[tab].Query(x...)
 		if err != nil {
 			senderErr(w, err)
 			return

@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"restfest/db"
 	"restfest/gener"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -34,26 +32,15 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 		if _, ok := sqlUpd[tab]; !ok {
 
-			if sqlFun, ok := gener.SQLUpdateFunMap[tab]; !ok {
-				senderErr(w, fmt.Errorf("Tabelle nicht gefunden: %s", tab))
+			if sqlUpd[tab], err = prepare(tab, sqlUpdate, gener.GenUpdate); err != nil {
+				senderErr(w, err)
 				return
-			} else {
-
-				sql1, sql2, sql3 := sqlFun()
-				sqls := fmt.Sprintf(sqlUpdate, tab, strings.Join(sql1, ","), sql2,
-					strings.Join(sql3, ","))
-
-				//rows, err := m.RowInsert(&json, tab)
-				fmt.Println(tab, sqls)
-
-				if sqlUpd[tab], err = db.DB.Prepare(sqls); err != nil {
-					senderErr(w, err)
-					return
-				}
 			}
-		}
 
-		rows, err := gener.ROWUpdateFunMap[tab](sqlUpd[tab], json, id)
+		}
+		x := gener.ROWInsertFunMap[tab](json)
+		x = append(x, id)
+		rows, err := sqlUpd[tab].Query(x...)
 
 		if err != nil {
 			senderErr(w, err)

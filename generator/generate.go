@@ -54,6 +54,7 @@ func generateStru(t *template.Template, f io.Writer) []string {
 			BindsInsert := []string{}
 			BindsVarInsert := []string{}
 			BindsUpdate := []string{}
+			Columns := []string{}
 			var pkBind string
 			for inser, upder := 0, 0; rows.Next(); {
 
@@ -62,6 +63,7 @@ func generateStru(t *template.Template, f io.Writer) []string {
 					log.Fatal(err)
 				}
 				profA = append(profA, prof)
+				Columns = append(Columns, prof.Column)
 				switch {
 				case prof.Column == pk:
 					if g := dbSequenzer(table); len(g) > 0 {
@@ -97,6 +99,7 @@ func generateStru(t *template.Template, f io.Writer) []string {
 					PK             string
 					PKBind         string
 					Cols           []Prof
+					Columns        []string
 					ColumnsInsert  []string
 					BindsVarInsert []string
 					ColumnsUpdate  []string
@@ -107,6 +110,7 @@ func generateStru(t *template.Template, f io.Writer) []string {
 					pk,
 					pkBind,
 					profA,
+					Columns,
 					ColumnsInsert,
 					BindsVarInsert,
 					ColumnsUpdate,
@@ -125,7 +129,8 @@ func Generator() {
 
 	funcMap := template.FuncMap{
 		// The name "title" is what the function will be called in the template text.
-		"title": strings.Title,
+		"title":  strings.Title,
+		"joiner": func(x []string) string { return strings.Join(x, ",") },
 	}
 	// Create a new template and parse the letter into it.
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("templates/*")

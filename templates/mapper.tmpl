@@ -6,29 +6,14 @@
 package gener
 
 
-var SQLFunMap =  map[string]func ()([]string,string) {
+var SQLFunMap =  map[string]func (string,SQLOper)[]interface{} {
     {{- range .Table  }}
 {{printf "%q" .}}: SQL{{title .}},
       {{- end }}
 }
 
-var SQLInsertFunMap =  map[string]func ()([]string,[]string,[]string) {
-    {{- range .Table  }}
-{{printf "%q" .}}: SQLInsert{{title .}},
-      {{- end }}
-}
 
-var SQLUpdateFunMap =  map[string]func ()([]string, string,[]string){
-    {{- range .Table  }}
-{{printf "%q" .}}: SQLUpdate{{title .}},
-      {{- end }}
-}
 
-var ROWUpdateFunMap =  map[string]mapperFun2{
-    {{- range .Table  }}
-{{printf "%q" .}}: ROWUpdate{{title .}},
-      {{- end }}
-}
 var ROWInsertFunMap =  map[string]mapperFun1{
     {{- range .Table  }}
 {{printf "%q" .}}: ROWInsert{{title .}},

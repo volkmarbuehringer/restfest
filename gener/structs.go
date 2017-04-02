@@ -5,8 +5,16 @@ import (
 	"encoding/json"
 )
 
+type SQLOper int
+
+const (
+	GenSelect SQLOper = iota
+	GenInsert
+	GenUpdate
+)
+
 type mapperFun func(rows *sql.Rows, len int) (stru []interface{}, err error)
-type mapperFun1 func(*sql.Stmt, interface{}) (*sql.Rows, error)
+type mapperFun1 func(interface{}) []interface{}
 type mapperFun2 func(*sql.Stmt, interface{}, int) (*sql.Rows, error)
 
 type JSONNullInt64 struct {

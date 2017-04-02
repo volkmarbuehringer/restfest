@@ -7,712 +7,662 @@
 package gener
 
 import (
-		"database/sql"
-		"time"
-	)
-		
+	"database/sql"
+	"time"
+)
 
 //code for table webgaga
 
 type Webgaga struct {
-    Id int64  `json:"id"`
-    Url JSONNullString  `json:"url"`
-    Zusatz JSONNullInt64  `json:"zusatz"`
-    Created time.Time  `json:"created"`
-    Summer JSONNullFloat64  `json:"summer"`
-    Brummer JSONNullFloat64  `json:"brummer"`
+	Id      int64           `json:"id"`
+	Url     JSONNullString  `json:"url"`
+	Zusatz  JSONNullInt64   `json:"zusatz"`
+	Created time.Time       `json:"created"`
+	Summer  JSONNullFloat64 `json:"summer"`
+	Brummer JSONNullFloat64 `json:"brummer"`
 }
 
-func sqlWebgaga()([]string){
-  return []string{ "id", "url", "zusatz", "created", "summer", "brummer",  }
+func SQLWebgaga(tab string, flag SQLOper) []interface{} {
+	x := "id,url,zusatz,created,summer,brummer"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"url,zusatz,created,summer,brummer",
+			"$1,$2,$3,$4,$5",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"url=$1,zusatz=$2,created=$3,summer=$4,brummer=$5",
+			"id=$6",
+			x,
+		}
+
+	}
+
 }
 
-func SQLWebgaga()([]string,string){
-  return sqlWebgaga(),
-  "id"
+func EmptyWebgaga() []interface{} {
+	return []interface{}{new(Webgaga)}
 }
 
-func SQLInsertWebgaga()([]string, []string,[]string){
-  return []string{ "url", "zusatz", "created", "summer", "brummer",  },
-  []string{ "$1", "$2", "$3", "$4", "$5",  },
-  sqlWebgaga()
+func ROWInsertWebgaga(inter interface{}) []interface{} {
+	rt := inter.(*Webgaga)
+	return []interface{}{&rt.Url, &rt.Zusatz, &rt.Created, &rt.Summer, &rt.Brummer}
+
 }
 
-func SQLUpdateWebgaga()([]string, string,[]string){
-  return  []string{ "url=$1", "zusatz=$2", "created=$3", "summer=$4", "brummer=$5",  },
-  "id=$6",
-    sqlWebgaga()
+func ROWSWebgaga(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Webgaga, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Webgaga)
+		if err = rows.Scan(&rts.Id, &rts.Url, &rts.Zusatz, &rts.Created, &rts.Summer, &rts.Brummer); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyWebgaga() []interface{}{
-    return []interface{}{ new(Webgaga) }
-}
-
-func ROWInsertWebgaga(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Webgaga )
-
- rows,err= query.Query( 	&rt.Url, 	&rt.Zusatz, 	&rt.Created, 	&rt.Summer, 	&rt.Brummer, )
-
-  return
-}
-
-func ROWUpdateWebgaga(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Webgaga )
-
-  rows,err= query.Query( &rt.Url, &rt.Zusatz, &rt.Created, &rt.Summer, &rt.Brummer,&id )
-
-  return
-}
-
-func ROWSWebgaga(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Webgaga,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Webgaga)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Url, 	&rts.Zusatz, 	&rts.Created, 	&rts.Summer, 	&rts.Brummer,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table t_random
 
 type T_random struct {
-    Id int64  `json:"id"`
-    Md5 JSONNullString  `json:"md5"`
-    Gaga JSONNullString  `json:"gaga"`
-    Fk JSONNullInt64  `json:"fk"`
+	Id   int64          `json:"id"`
+	Md5  JSONNullString `json:"md5"`
+	Gaga JSONNullString `json:"gaga"`
+	Fk   JSONNullInt64  `json:"fk"`
 }
 
-func sqlT_random()([]string){
-  return []string{ "id", "md5", "gaga", "fk",  }
+func SQLT_random(tab string, flag SQLOper) []interface{} {
+	x := "id,md5,gaga,fk"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"md5,gaga,fk",
+			"$1,$2,$3",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"md5=$1,gaga=$2,fk=$3",
+			"id=$4",
+			x,
+		}
+
+	}
+
 }
 
-func SQLT_random()([]string,string){
-  return sqlT_random(),
-  "id"
+func EmptyT_random() []interface{} {
+	return []interface{}{new(T_random)}
 }
 
-func SQLInsertT_random()([]string, []string,[]string){
-  return []string{ "md5", "gaga", "fk",  },
-  []string{ "$1", "$2", "$3",  },
-  sqlT_random()
+func ROWInsertT_random(inter interface{}) []interface{} {
+	rt := inter.(*T_random)
+	return []interface{}{&rt.Md5, &rt.Gaga, &rt.Fk}
+
 }
 
-func SQLUpdateT_random()([]string, string,[]string){
-  return  []string{ "md5=$1", "gaga=$2", "fk=$3",  },
-  "id=$4",
-    sqlT_random()
+func ROWST_random(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*T_random, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(T_random)
+		if err = rows.Scan(&rts.Id, &rts.Md5, &rts.Gaga, &rts.Fk); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyT_random() []interface{}{
-    return []interface{}{ new(T_random) }
-}
-
-func ROWInsertT_random(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *T_random )
-
- rows,err= query.Query( 	&rt.Md5, 	&rt.Gaga, 	&rt.Fk, )
-
-  return
-}
-
-func ROWUpdateT_random(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *T_random )
-
-  rows,err= query.Query( &rt.Md5, &rt.Gaga, &rt.Fk,&id )
-
-  return
-}
-
-func ROWST_random(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*T_random,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(T_random)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Md5, 	&rts.Gaga, 	&rts.Fk,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table t_master
 
 type T_master struct {
-    Id int64  `json:"id"`
-    Lulu JSONNullString  `json:"lulu"`
-    Lulu1 JSONNullString  `json:"lulu1"`
+	Id    int64          `json:"id"`
+	Lulu  JSONNullString `json:"lulu"`
+	Lulu1 JSONNullString `json:"lulu1"`
 }
 
-func sqlT_master()([]string){
-  return []string{ "id", "lulu", "lulu1",  }
+func SQLT_master(tab string, flag SQLOper) []interface{} {
+	x := "id,lulu,lulu1"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"lulu,lulu1",
+			"$1,$2",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"lulu=$1,lulu1=$2",
+			"id=$3",
+			x,
+		}
+
+	}
+
 }
 
-func SQLT_master()([]string,string){
-  return sqlT_master(),
-  "id"
+func EmptyT_master() []interface{} {
+	return []interface{}{new(T_master)}
 }
 
-func SQLInsertT_master()([]string, []string,[]string){
-  return []string{ "lulu", "lulu1",  },
-  []string{ "$1", "$2",  },
-  sqlT_master()
+func ROWInsertT_master(inter interface{}) []interface{} {
+	rt := inter.(*T_master)
+	return []interface{}{&rt.Lulu, &rt.Lulu1}
+
 }
 
-func SQLUpdateT_master()([]string, string,[]string){
-  return  []string{ "lulu=$1", "lulu1=$2",  },
-  "id=$3",
-    sqlT_master()
+func ROWST_master(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*T_master, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(T_master)
+		if err = rows.Scan(&rts.Id, &rts.Lulu, &rts.Lulu1); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyT_master() []interface{}{
-    return []interface{}{ new(T_master) }
-}
-
-func ROWInsertT_master(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *T_master )
-
- rows,err= query.Query( 	&rt.Lulu, 	&rt.Lulu1, )
-
-  return
-}
-
-func ROWUpdateT_master(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *T_master )
-
-  rows,err= query.Query( &rt.Lulu, &rt.Lulu1,&id )
-
-  return
-}
-
-func ROWST_master(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*T_master,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(T_master)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Lulu, 	&rts.Lulu1,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table tester
 
 type Tester struct {
-    Name JSONNullString  `json:"name"`
-    Vorname JSONNullString  `json:"vorname"`
-    Id int64  `json:"id"`
-    Code JSONNullString  `json:"code"`
-    Lala JSONNullInt64  `json:"lala"`
+	Name    JSONNullString `json:"name"`
+	Vorname JSONNullString `json:"vorname"`
+	Id      int64          `json:"id"`
+	Code    JSONNullString `json:"code"`
+	Lala    JSONNullInt64  `json:"lala"`
 }
 
-func sqlTester()([]string){
-  return []string{ "name", "vorname", "id", "code", "lala",  }
+func SQLTester(tab string, flag SQLOper) []interface{} {
+	x := "name,vorname,id,code,lala"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"name,vorname,code,lala",
+			"$1,$2,$3,$4",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"name=$1,vorname=$2,code=$3,lala=$4",
+			"id=$5",
+			x,
+		}
+
+	}
+
 }
 
-func SQLTester()([]string,string){
-  return sqlTester(),
-  "id"
+func EmptyTester() []interface{} {
+	return []interface{}{new(Tester)}
 }
 
-func SQLInsertTester()([]string, []string,[]string){
-  return []string{ "name", "vorname", "code", "lala",  },
-  []string{ "$1", "$2", "$3", "$4",  },
-  sqlTester()
+func ROWInsertTester(inter interface{}) []interface{} {
+	rt := inter.(*Tester)
+	return []interface{}{&rt.Name, &rt.Vorname, &rt.Code, &rt.Lala}
+
 }
 
-func SQLUpdateTester()([]string, string,[]string){
-  return  []string{ "name=$1", "vorname=$2", "code=$3", "lala=$4",  },
-  "id=$5",
-    sqlTester()
+func ROWSTester(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Tester, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Tester)
+		if err = rows.Scan(&rts.Name, &rts.Vorname, &rts.Id, &rts.Code, &rts.Lala); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyTester() []interface{}{
-    return []interface{}{ new(Tester) }
-}
-
-func ROWInsertTester(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Tester )
-
- rows,err= query.Query( 	&rt.Name, 	&rt.Vorname, 	&rt.Code, 	&rt.Lala, )
-
-  return
-}
-
-func ROWUpdateTester(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Tester )
-
-  rows,err= query.Query( &rt.Name, &rt.Vorname, &rt.Code, &rt.Lala,&id )
-
-  return
-}
-
-func ROWSTester(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Tester,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Tester)
-        if err = rows.Scan( 	&rts.Name, 	&rts.Vorname, 	&rts.Id, 	&rts.Code, 	&rts.Lala,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table weburl
 
 type Weburl struct {
-    Id int64  `json:"id"`
-    Url JSONNullString  `json:"url"`
-    Zusatz JSONNullInt64  `json:"zusatz"`
-    Created JSONNullString  `json:"created"`
-    W_cr_date JSONNullString  `json:"w_cr_date"`
-    W_upd_date JSONNullString  `json:"w_upd_date"`
-    W_upd_uid JSONNullString  `json:"w_upd_uid"`
-    W_cr_uid JSONNullString  `json:"w_cr_uid"`
+	Id         int64          `json:"id"`
+	Url        JSONNullString `json:"url"`
+	Zusatz     JSONNullInt64  `json:"zusatz"`
+	Created    JSONNullString `json:"created"`
+	W_cr_date  JSONNullString `json:"w_cr_date"`
+	W_upd_date JSONNullString `json:"w_upd_date"`
+	W_upd_uid  JSONNullString `json:"w_upd_uid"`
+	W_cr_uid   JSONNullString `json:"w_cr_uid"`
 }
 
-func sqlWeburl()([]string){
-  return []string{ "id", "url", "zusatz", "created", "w_cr_date", "w_upd_date", "w_upd_uid", "w_cr_uid",  }
+func SQLWeburl(tab string, flag SQLOper) []interface{} {
+	x := "id,url,zusatz,created,w_cr_date,w_upd_date,w_upd_uid,w_cr_uid"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"url,zusatz,created,w_cr_date,w_cr_uid",
+			"$1,$2,$3,current_timestamp,'webSrv'",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"url=$1,zusatz=$2,created=$3,w_upd_date=current_timestamp,w_upd_uid='webSrv'",
+			"id=$4",
+			x,
+		}
+
+	}
+
 }
 
-func SQLWeburl()([]string,string){
-  return sqlWeburl(),
-  "id"
+func EmptyWeburl() []interface{} {
+	return []interface{}{new(Weburl)}
 }
 
-func SQLInsertWeburl()([]string, []string,[]string){
-  return []string{ "url", "zusatz", "created", "w_cr_date", "w_cr_uid",  },
-  []string{ "$1", "$2", "$3", "now()", "'webSrv'",  },
-  sqlWeburl()
+func ROWInsertWeburl(inter interface{}) []interface{} {
+	rt := inter.(*Weburl)
+	return []interface{}{&rt.Url, &rt.Zusatz, &rt.Created}
+
 }
 
-func SQLUpdateWeburl()([]string, string,[]string){
-  return  []string{ "url=$1", "zusatz=$2", "created=$3", "w_upd_date=now()", "w_upd_uid='webSrv'",  },
-  "id=$4",
-    sqlWeburl()
+func ROWSWeburl(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Weburl, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Weburl)
+		if err = rows.Scan(&rts.Id, &rts.Url, &rts.Zusatz, &rts.Created, &rts.W_cr_date, &rts.W_upd_date, &rts.W_upd_uid, &rts.W_cr_uid); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyWeburl() []interface{}{
-    return []interface{}{ new(Weburl) }
-}
-
-func ROWInsertWeburl(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Weburl )
-
- rows,err= query.Query( 	&rt.Url, 	&rt.Zusatz, 	&rt.Created, )
-
-  return
-}
-
-func ROWUpdateWeburl(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Weburl )
-
-  rows,err= query.Query( &rt.Url, &rt.Zusatz, &rt.Created,&id )
-
-  return
-}
-
-func ROWSWeburl(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Weburl,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Weburl)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Url, 	&rts.Zusatz, 	&rts.Created, 	&rts.W_cr_date, 	&rts.W_upd_date, 	&rts.W_upd_uid, 	&rts.W_cr_uid,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table latest
 
 type Latest struct {
-    T int64  `json:"t"`
-    Zuck JSONNullString  `json:"zuck"`
+	T    int64          `json:"t"`
+	Zuck JSONNullString `json:"zuck"`
 }
 
-func sqlLatest()([]string){
-  return []string{ "t", "zuck",  }
+func SQLLatest(tab string, flag SQLOper) []interface{} {
+	x := "t,zuck"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"t",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"zuck",
+			"$1",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"zuck=$1",
+			"t=$2",
+			x,
+		}
+
+	}
+
 }
 
-func SQLLatest()([]string,string){
-  return sqlLatest(),
-  "t"
+func EmptyLatest() []interface{} {
+	return []interface{}{new(Latest)}
 }
 
-func SQLInsertLatest()([]string, []string,[]string){
-  return []string{ "zuck",  },
-  []string{ "$1",  },
-  sqlLatest()
+func ROWInsertLatest(inter interface{}) []interface{} {
+	rt := inter.(*Latest)
+	return []interface{}{&rt.Zuck}
+
 }
 
-func SQLUpdateLatest()([]string, string,[]string){
-  return  []string{ "zuck=$1",  },
-  "t=$2",
-    sqlLatest()
+func ROWSLatest(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Latest, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Latest)
+		if err = rows.Scan(&rts.T, &rts.Zuck); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyLatest() []interface{}{
-    return []interface{}{ new(Latest) }
-}
-
-func ROWInsertLatest(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Latest )
-
- rows,err= query.Query( 	&rt.Zuck, )
-
-  return
-}
-
-func ROWUpdateLatest(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Latest )
-
-  rows,err= query.Query( &rt.Zuck,&id )
-
-  return
-}
-
-func ROWSLatest(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Latest,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Latest)
-        if err = rows.Scan( 	&rts.T, 	&rts.Zuck,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table testa1
 
 type Testa1 struct {
-    Id JSONNullInt64  `json:"id"`
-    Lulu JSONNullString  `json:"lulu"`
-    Lulu1 JSONNullString  `json:"lulu1"`
-    Ider JSONNullInt64  `json:"ider"`
-    Md5 JSONNullString  `json:"md5"`
-    Gaga JSONNullString  `json:"gaga"`
-    Fk1 JSONNullInt64  `json:"fk1"`
-    Ider1 JSONNullInt64  `json:"ider1"`
-    Lalu JSONNullString  `json:"lalu"`
-    Zacka JSONNullString  `json:"zacka"`
-    Fk2 JSONNullInt64  `json:"fk2"`
-    Name JSONNullString  `json:"name"`
-    Vorname JSONNullString  `json:"vorname"`
+	Id      JSONNullInt64  `json:"id"`
+	Lulu    JSONNullString `json:"lulu"`
+	Lulu1   JSONNullString `json:"lulu1"`
+	Ider    JSONNullInt64  `json:"ider"`
+	Md5     JSONNullString `json:"md5"`
+	Gaga    JSONNullString `json:"gaga"`
+	Fk1     JSONNullInt64  `json:"fk1"`
+	Ider1   JSONNullInt64  `json:"ider1"`
+	Lalu    JSONNullString `json:"lalu"`
+	Zacka   JSONNullString `json:"zacka"`
+	Fk2     JSONNullInt64  `json:"fk2"`
+	Name    JSONNullString `json:"name"`
+	Vorname JSONNullString `json:"vorname"`
 }
 
-func sqlTesta1()([]string){
-  return []string{ "id", "lulu", "lulu1", "ider", "md5", "gaga", "fk1", "ider1", "lalu", "zacka", "fk2", "name", "vorname",  }
+func SQLTesta1(tab string, flag SQLOper) []interface{} {
+	x := "id,lulu,lulu1,ider,md5,gaga,fk1,ider1,lalu,zacka,fk2,name,vorname"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"lulu,lulu1,ider,md5,gaga,fk1,ider1,lalu,zacka,fk2,name,vorname",
+			"$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"lulu=$1,lulu1=$2,ider=$3,md5=$4,gaga=$5,fk1=$6,ider1=$7,lalu=$8,zacka=$9,fk2=$10,name=$11,vorname=$12",
+			"id=$13",
+			x,
+		}
+
+	}
+
 }
 
-func SQLTesta1()([]string,string){
-  return sqlTesta1(),
-  "id"
+func EmptyTesta1() []interface{} {
+	return []interface{}{new(Testa1)}
 }
 
-func SQLInsertTesta1()([]string, []string,[]string){
-  return []string{ "lulu", "lulu1", "ider", "md5", "gaga", "fk1", "ider1", "lalu", "zacka", "fk2", "name", "vorname",  },
-  []string{ "$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9", "$10", "$11", "$12",  },
-  sqlTesta1()
+func ROWInsertTesta1(inter interface{}) []interface{} {
+	rt := inter.(*Testa1)
+	return []interface{}{&rt.Lulu, &rt.Lulu1, &rt.Ider, &rt.Md5, &rt.Gaga, &rt.Fk1, &rt.Ider1, &rt.Lalu, &rt.Zacka, &rt.Fk2, &rt.Name, &rt.Vorname}
+
 }
 
-func SQLUpdateTesta1()([]string, string,[]string){
-  return  []string{ "lulu=$1", "lulu1=$2", "ider=$3", "md5=$4", "gaga=$5", "fk1=$6", "ider1=$7", "lalu=$8", "zacka=$9", "fk2=$10", "name=$11", "vorname=$12",  },
-  "id=$13",
-    sqlTesta1()
+func ROWSTesta1(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Testa1, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Testa1)
+		if err = rows.Scan(&rts.Id, &rts.Lulu, &rts.Lulu1, &rts.Ider, &rts.Md5, &rts.Gaga, &rts.Fk1, &rts.Ider1, &rts.Lalu, &rts.Zacka, &rts.Fk2, &rts.Name, &rts.Vorname); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyTesta1() []interface{}{
-    return []interface{}{ new(Testa1) }
-}
-
-func ROWInsertTesta1(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Testa1 )
-
- rows,err= query.Query( 	&rt.Lulu, 	&rt.Lulu1, 	&rt.Ider, 	&rt.Md5, 	&rt.Gaga, 	&rt.Fk1, 	&rt.Ider1, 	&rt.Lalu, 	&rt.Zacka, 	&rt.Fk2, 	&rt.Name, 	&rt.Vorname, )
-
-  return
-}
-
-func ROWUpdateTesta1(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Testa1 )
-
-  rows,err= query.Query( &rt.Lulu, &rt.Lulu1, &rt.Ider, &rt.Md5, &rt.Gaga, &rt.Fk1, &rt.Ider1, &rt.Lalu, &rt.Zacka, &rt.Fk2, &rt.Name, &rt.Vorname,&id )
-
-  return
-}
-
-func ROWSTesta1(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Testa1,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Testa1)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Lulu, 	&rts.Lulu1, 	&rts.Ider, 	&rts.Md5, 	&rts.Gaga, 	&rts.Fk1, 	&rts.Ider1, 	&rts.Lalu, 	&rts.Zacka, 	&rts.Fk2, 	&rts.Name, 	&rts.Vorname,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table pk_select
 
 type Pk_select struct {
-    Table_name JSONNullString  `json:"table_name"`
-    Column_name JSONNullString  `json:"column_name"`
+	Table_name  JSONNullString `json:"table_name"`
+	Column_name JSONNullString `json:"column_name"`
 }
 
-func sqlPk_select()([]string){
-  return []string{ "table_name", "column_name",  }
+func SQLPk_select(tab string, flag SQLOper) []interface{} {
+	x := "table_name,column_name"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"table_name",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"column_name",
+			"$1",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"column_name=$1",
+			"table_name=$2",
+			x,
+		}
+
+	}
+
 }
 
-func SQLPk_select()([]string,string){
-  return sqlPk_select(),
-  "table_name"
+func EmptyPk_select() []interface{} {
+	return []interface{}{new(Pk_select)}
 }
 
-func SQLInsertPk_select()([]string, []string,[]string){
-  return []string{ "column_name",  },
-  []string{ "$1",  },
-  sqlPk_select()
+func ROWInsertPk_select(inter interface{}) []interface{} {
+	rt := inter.(*Pk_select)
+	return []interface{}{&rt.Column_name}
+
 }
 
-func SQLUpdatePk_select()([]string, string,[]string){
-  return  []string{ "column_name=$1",  },
-  "table_name=$2",
-    sqlPk_select()
+func ROWSPk_select(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Pk_select, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Pk_select)
+		if err = rows.Scan(&rts.Table_name, &rts.Column_name); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyPk_select() []interface{}{
-    return []interface{}{ new(Pk_select) }
-}
-
-func ROWInsertPk_select(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Pk_select )
-
- rows,err= query.Query( 	&rt.Column_name, )
-
-  return
-}
-
-func ROWUpdatePk_select(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Pk_select )
-
-  rows,err= query.Query( &rt.Column_name,&id )
-
-  return
-}
-
-func ROWSPk_select(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Pk_select,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Pk_select)
-        if err = rows.Scan( 	&rts.Table_name, 	&rts.Column_name,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table vtester
 
 type Vtester struct {
-    Name JSONNullString  `json:"name"`
-    Vorname JSONNullString  `json:"vorname"`
-    Id JSONNullInt64  `json:"id"`
-    Code JSONNullString  `json:"code"`
-    Lala JSONNullInt64  `json:"lala"`
+	Name    JSONNullString `json:"name"`
+	Vorname JSONNullString `json:"vorname"`
+	Id      JSONNullInt64  `json:"id"`
+	Code    JSONNullString `json:"code"`
+	Lala    JSONNullInt64  `json:"lala"`
 }
 
-func sqlVtester()([]string){
-  return []string{ "name", "vorname", "id", "code", "lala",  }
+func SQLVtester(tab string, flag SQLOper) []interface{} {
+	x := "name,vorname,id,code,lala"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"name",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"vorname,id,code,lala",
+			"$1,$2,$3,$4",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"vorname=$1,id=$2,code=$3,lala=$4",
+			"name=$5",
+			x,
+		}
+
+	}
+
 }
 
-func SQLVtester()([]string,string){
-  return sqlVtester(),
-  "name"
+func EmptyVtester() []interface{} {
+	return []interface{}{new(Vtester)}
 }
 
-func SQLInsertVtester()([]string, []string,[]string){
-  return []string{ "vorname", "id", "code", "lala",  },
-  []string{ "$1", "$2", "$3", "$4",  },
-  sqlVtester()
+func ROWInsertVtester(inter interface{}) []interface{} {
+	rt := inter.(*Vtester)
+	return []interface{}{&rt.Vorname, &rt.Id, &rt.Code, &rt.Lala}
+
 }
 
-func SQLUpdateVtester()([]string, string,[]string){
-  return  []string{ "vorname=$1", "id=$2", "code=$3", "lala=$4",  },
-  "name=$5",
-    sqlVtester()
+func ROWSVtester(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Vtester, 0)
+
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Vtester)
+		if err = rows.Scan(&rts.Name, &rts.Vorname, &rts.Id, &rts.Code, &rts.Lala); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }
-
-func EmptyVtester() []interface{}{
-    return []interface{}{ new(Vtester) }
-}
-
-func ROWInsertVtester(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Vtester )
-
- rows,err= query.Query( 	&rt.Vorname, 	&rt.Id, 	&rt.Code, 	&rt.Lala, )
-
-  return
-}
-
-func ROWUpdateVtester(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Vtester )
-
-  rows,err= query.Query( &rt.Vorname, &rt.Id, &rt.Code, &rt.Lala,&id )
-
-  return
-}
-
-func ROWSVtester(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Vtester,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Vtester)
-        if err = rows.Scan( 	&rts.Name, 	&rts.Vorname, 	&rts.Id, 	&rts.Code, 	&rts.Lala,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
-}
-
 
 //code for table vweburl
 
 type Vweburl struct {
-    Id JSONNullInt64  `json:"id"`
-    Url JSONNullString  `json:"url"`
-    Zusatz JSONNullInt64  `json:"zusatz"`
-    Created JSONNullString  `json:"created"`
-    W_cr_date JSONNullString  `json:"w_cr_date"`
-    W_upd_date JSONNullString  `json:"w_upd_date"`
-    W_upd_uid JSONNullString  `json:"w_upd_uid"`
-    W_cr_uid JSONNullString  `json:"w_cr_uid"`
+	Id         JSONNullInt64  `json:"id"`
+	Url        JSONNullString `json:"url"`
+	Zusatz     JSONNullInt64  `json:"zusatz"`
+	Created    JSONNullString `json:"created"`
+	W_cr_date  JSONNullString `json:"w_cr_date"`
+	W_upd_date JSONNullString `json:"w_upd_date"`
+	W_upd_uid  JSONNullString `json:"w_upd_uid"`
+	W_cr_uid   JSONNullString `json:"w_cr_uid"`
 }
 
-func sqlVweburl()([]string){
-  return []string{ "id", "url", "zusatz", "created", "w_cr_date", "w_upd_date", "w_upd_uid", "w_cr_uid",  }
+func SQLVweburl(tab string, flag SQLOper) []interface{} {
+	x := "id,url,zusatz,created,w_cr_date,w_upd_date,w_upd_uid,w_cr_uid"
+
+	switch flag {
+	case GenSelect:
+		return []interface{}{
+			x,
+			tab,
+			"id",
+		}
+	case GenInsert:
+		return []interface{}{tab,
+			"url,zusatz,created,w_cr_date,w_cr_uid",
+			"$1,$2,$3,current_timestamp,'webSrv'",
+			x,
+		}
+	default:
+		return []interface{}{tab,
+			"url=$1,zusatz=$2,created=$3,w_upd_date=current_timestamp,w_upd_uid='webSrv'",
+			"id=$4",
+			x,
+		}
+
+	}
+
 }
 
-func SQLVweburl()([]string,string){
-  return sqlVweburl(),
-  "id"
+func EmptyVweburl() []interface{} {
+	return []interface{}{new(Vweburl)}
 }
 
-func SQLInsertVweburl()([]string, []string,[]string){
-  return []string{ "url", "zusatz", "created", "w_cr_date", "w_cr_uid",  },
-  []string{ "$1", "$2", "$3", "now()", "'webSrv'",  },
-  sqlVweburl()
+func ROWInsertVweburl(inter interface{}) []interface{} {
+	rt := inter.(*Vweburl)
+	return []interface{}{&rt.Url, &rt.Zusatz, &rt.Created}
+
 }
 
-func SQLUpdateVweburl()([]string, string,[]string){
-  return  []string{ "url=$1", "zusatz=$2", "created=$3", "w_upd_date=now()", "w_upd_uid='webSrv'",  },
-  "id=$4",
-    sqlVweburl()
-}
+func ROWSVweburl(rows *sql.Rows, len int) (stru []interface{}, err error) {
+	rt := make([]*Vweburl, 0)
 
-func EmptyVweburl() []interface{}{
-    return []interface{}{ new(Vweburl) }
-}
-
-func ROWInsertVweburl(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
-  rt := inter.( *Vweburl )
-
- rows,err= query.Query( 	&rt.Url, 	&rt.Zusatz, 	&rt.Created, )
-
-  return
-}
-
-func ROWUpdateVweburl(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *Vweburl )
-
-  rows,err= query.Query( &rt.Url, &rt.Zusatz, &rt.Created,&id )
-
-  return
-}
-
-func ROWSVweburl(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*Vweburl,0)
-
-      for anz:=0;rows.Next();anz++ {
-        rts := new(Vweburl)
-        if err = rows.Scan( 	&rts.Id, 	&rts.Url, 	&rts.Zusatz, 	&rts.Created, 	&rts.W_cr_date, 	&rts.W_upd_date, 	&rts.W_upd_uid, 	&rts.W_cr_uid,); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{rts}
-            return
-        }
-        rt = append(rt,rts)
-      }
-      stru = []interface{}{&rt}
-      return
+	for anz := 0; rows.Next(); anz++ {
+		rts := new(Vweburl)
+		if err = rows.Scan(&rts.Id, &rts.Url, &rts.Zusatz, &rts.Created, &rts.W_cr_date, &rts.W_upd_date, &rts.W_upd_uid, &rts.W_cr_uid); err != nil {
+			return
+		}
+		if len == 1 {
+			stru = []interface{}{rts}
+			return
+		}
+		rt = append(rt, rts)
+	}
+	stru = []interface{}{&rt}
+	return
 }

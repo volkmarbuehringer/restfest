@@ -8,46 +8,49 @@ type {{title .Table}} struct {
     {{- end }}
 }
 
-func sql{{title .Table}}()([]string){
-  return []string{ {{- range .Cols  }} {{printf "%q" .Column}},		{{- end }}  }
+
+
+func SQL{{title .Table}}(tab string,flag SQLOper)[]interface{}{
+  x :=   {{printf "%q" (joiner .Columns)}}
+
+  switch flag{
+    case GenSelect:
+    return []interface{}{
+    x,
+      tab,
+      {{printf "%q" .PK}},
+    }
+    case GenInsert:
+    return    []interface{}{ tab,
+       {{printf "%q" (joiner .ColumnsInsert)  }}  ,
+       {{printf "%q" (joiner .BindsInsert)  }} ,
+        x,
+      }
+    default:
+      return    []interface{}{ tab,
+        {{printf "%q" (joiner .BindsUpdate)}}  ,
+        {{printf "%q" .PKBind}},
+      x,
+        }
+
+  }
+
 }
 
-func SQL{{title .Table}}()([]string,string){
-  return sql{{title .Table}}(),
-  {{printf "%q" .PK}}
-}
-
-func SQLInsert{{title .Table}}()([]string, []string,[]string){
-  return []string{ {{- range .ColumnsInsert  }} {{printf "%q" .}},		{{- end }}  },
-  []string{ {{- range .BindsInsert  }} {{printf "%q" .}},		{{- end }}  },
-  sql{{title .Table}}()
-}
-
-func SQLUpdate{{title .Table}}()([]string, string,[]string){
-  return  []string{ {{- range .BindsUpdate  }} {{printf "%q" .}},		{{- end }}  },
-  {{printf "%q" .PKBind}},
-    sql{{title .Table}}()
-}
 
 func Empty{{title .Table}}() []interface{}{
     return []interface{}{ new({{title .Table}}) }
 }
 
-func ROWInsert{{title .Table}}(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
+func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}} )
+  return []interface{}{
+	{{- range .BindsVarInsert  }} 	&rt.{{title .}},		{{- end }}
 
- rows,err= query.Query(	{{- range .BindsVarInsert  }} 	&rt.{{title .}},		{{- end }} )
+  }
 
-  return
 }
 
-func ROWUpdate{{title .Table}}(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
-  rt := inter.( *{{title .Table}} )
-
-  rows,err= query.Query(	{{- range .BindsVarInsert  }} &rt.{{title .}},		{{- end }}&id )
-
-  return
-}
 
 func ROWS{{title .Table}}(rows *sql.Rows,len int)( stru []interface{},err error){
       rt := make( []*{{title .Table}},0)
