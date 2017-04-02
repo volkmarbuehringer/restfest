@@ -56,27 +56,29 @@ func Empty{{title .Table}}() interface{}{
 func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}} )
   return []interface{}{
-	{{- range .BindsVarInsert  }} 	&rt.{{title .}},		{{- end }}
-
-  }
+	{{- range .BindsVarInsert  }}
+	&rt.{{title .}},
+	{{- end }}  }
 
 }
 
 
 func ROWS{{title .Table}}(rows *sql.Rows,len int)( stru []interface{},err error){
-      rt := make( []*{{title .Table}},0)
+      t := make( []*{{title .Table}},0)
 
       for anz:=0;rows.Next();anz++ {
-        rts := new({{title .Table}})
-        if err = rows.Scan(	{{- range .Cols  }} 	&rts.{{title .Column}},		{{- end }}); err != nil {
+        ts := new({{title .Table}})
+        if err = rows.Scan(	{{- range .Cols  }}
+				&ts.{{title .Column}},
+				{{- end }}); err != nil {
             return
         }
         if len == 1{
-            stru = []interface{}{rts}
+            stru = []interface{}{ts}
             return
         }
-        rt = append(rt,rts)
+        t = append(t,ts)
       }
-      stru = []interface{}{&rt}
+      stru = []interface{}{&t}
       return
 }
