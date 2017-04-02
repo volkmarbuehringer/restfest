@@ -38,8 +38,8 @@ func SQL{{title .Table}}(tab string,flag SQLOper)[]interface{}{
 }
 
 
-func Empty{{title .Table}}() []interface{}{
-    return []interface{}{ new({{title .Table}}) }
+func Empty{{title .Table}}() interface{}{
+    return new({{title .Table}})
 }
 
 func ROWInsert{{title .Table}}(inter interface{})[]interface{}{

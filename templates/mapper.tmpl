@@ -20,7 +20,7 @@ var ROWInsertFunMap =  map[string]mapperFun1{
       {{- end }}
 }
 
-var EmptyFunMap =  map[string]func ()[]interface{}{
+var EmptyFunMap =  map[string]func ()interface{}{
     {{- range .Table  }}
 {{printf "%q" .}}: Empty{{title .}},
       {{- end }}

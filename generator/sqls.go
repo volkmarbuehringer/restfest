@@ -42,48 +42,31 @@ inner join information_schema.columns c on v.table_name = c.table_name and ordin
 where v.table_schema ='` + dbschema + `' and c.table_schema = '` + dbschema + `'
 `
 
-const sqlallcols string = `select column_name,case when data_type = 'numeric' then
-case when numeric_scale > 0 then column_name||'::varchar' else
-column_name||'::bigint' end else column_name end as column_type,
-case data_type
-when 'integer' then
+const sqlallcols string = `select column_name,
+case when data_type
+in ('integer',
+ 'bigint',
+ 'smallint')  then
 case when is_nullable = 'YES' then
 'JSONNullInt64'
 else
 'int64'
 end
-when 'bigint' then
-case when is_nullable = 'YES' then
-'JSONNullInt64'
-else
-'int64'
-end
-when 'double precision' then
+when data_type in ('double precision','real')  then
 case when is_nullable = 'YES' then
 'JSONNullFloat64'
 else
 'float64'
 end
-when 'character varying' then
+when data_type in ('character varying',
+'text',
+'character') then
 case when is_nullable = 'YES' then
 'JSONNullString'
 else
 'string'
 end
-when 'character' then
-case when is_nullable = 'YES' then
-'JSONNullString'
-else
-'string'
-end
-when 'text' then
-case when is_nullable = 'YES' then
-'JSONNullString'
-else
-'string'
-end
-
-when 'numeric'  then
+when data_type = 'numeric'  then
 case
   when numeric_scale > 0 and is_nullable = 'YES' then 'JSONNullFloat64'
   when numeric_scale > 0 and is_nullable = 'NO' then 'float64'
@@ -91,16 +74,12 @@ case
 else
 'JSONNullInt64'
   end
-when 'timestamp without time zone' then
+when data_type in ('timestamp without time zone',
+'date') then
 case when is_nullable = 'YES' then 'JSONNullString'
 else
   'time.Time'
   end
-when 'date' then
-  case when is_nullable = 'YES' then 'JSONNullString'
-  else
-    'time.Time'
-    end
 	else 'gaga'
 end as coltrans
 from information_schema.columns

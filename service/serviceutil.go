@@ -96,6 +96,16 @@ func sender(w http.ResponseWriter, todos interface{}) {
 
 }
 
+func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
+	if fun1, ok := gener.EmptyFunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		return
+	} else {
+		json, err = leser1(w, r, fun1())
+	}
+	return
+}
+
 func senderErr(w http.ResponseWriter, err error) {
 	type JSONErr struct {
 		Error string

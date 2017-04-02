@@ -45,7 +45,6 @@ func generateStru(t *template.Template, f io.Writer) []string {
 			defer rows.Close()
 			type Prof struct {
 				Column      string
-				ColumnType  string
 				ColumnTrans string
 			}
 			profA := []Prof{}
@@ -59,7 +58,7 @@ func generateStru(t *template.Template, f io.Writer) []string {
 			for inser, upder := 0, 0; rows.Next(); {
 
 				prof := Prof{}
-				if err := rows.Scan(&prof.Column, &prof.ColumnType, &prof.ColumnTrans); err != nil {
+				if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
 					log.Fatal(err)
 				}
 				profA = append(profA, prof)
