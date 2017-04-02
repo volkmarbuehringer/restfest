@@ -1,0 +1,68 @@
+
+
+//code for table {{.Table}}
+
+type {{title .Table}} struct {
+  {{- range .Cols  }}
+    {{title .Column}} {{.ColumnTrans}}  `json:{{printf "%q" .Column}}`
+    {{- end }}
+}
+
+func sql{{title .Table}}()([]string){
+  return []string{ {{- range .Cols  }} {{printf "%q" .Column}},		{{- end }}  }
+}
+
+func SQL{{title .Table}}()([]string,string){
+  return sql{{title .Table}}(),
+  {{printf "%q" .PK}}
+}
+
+func SQLInsert{{title .Table}}()([]string, []string,[]string){
+  return []string{ {{- range .ColumnsInsert  }} {{printf "%q" .}},		{{- end }}  },
+  []string{ {{- range .BindsInsert  }} {{printf "%q" .}},		{{- end }}  },
+  sql{{title .Table}}()
+}
+
+func SQLUpdate{{title .Table}}()([]string, string,[]string){
+  return  []string{ {{- range .BindsUpdate  }} {{printf "%q" .}},		{{- end }}  },
+  {{printf "%q" .PKBind}},
+    sql{{title .Table}}()
+}
+
+func Empty{{title .Table}}() []interface{}{
+    return []interface{}{ new({{title .Table}}) }
+}
+
+func ROWInsert{{title .Table}}(query *sql.Stmt,inter interface{})(rows *sql.Rows, err error) {
+  rt := inter.( *{{title .Table}} )
+
+ rows,err= query.Query(	{{- range .BindsVarInsert  }} 	&rt.{{title .}},		{{- end }} )
+
+  return
+}
+
+func ROWUpdate{{title .Table}}(query *sql.Stmt,inter interface{},id int)(rows *sql.Rows, err error) {
+  rt := inter.( *{{title .Table}} )
+
+  rows,err= query.Query(	{{- range .BindsVarInsert  }} &rt.{{title .}},		{{- end }}&id )
+
+  return
+}
+
+func ROWS{{title .Table}}(rows *sql.Rows,len int)( stru []interface{},err error){
+      rt := make( []*{{title .Table}},0)
+
+      for anz:=0;rows.Next();anz++ {
+        rts := new({{title .Table}})
+        if err = rows.Scan(	{{- range .Cols  }} 	&rts.{{title .Column}},		{{- end }}); err != nil {
+            return
+        }
+        if len == 1{
+            stru = []interface{}{rts}
+            return
+        }
+        rt = append(rt,rts)
+      }
+      stru = []interface{}{&rt}
+      return
+}
