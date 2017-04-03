@@ -30,7 +30,17 @@ scanning with individual generated structs:
 	}
 	
 	
-generic scanning with interface wrapped structs:
+generic scanning with interface wrapped structs and generated SQL:
+
+	if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		return
+	} else {
+		sqls := fmt.Sprintf(sqlSt, sqlFun(tab, flag)...)
+		fmt.Println("prep", sqls)
+		stmt, err = db.DB.Prepare(sqls)
+
+	}
 
 func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err error) {
 	t := make([]interface{}, 0)
