@@ -9,9 +9,8 @@ import (
 
 func main() {
 
-	//	var cursor gener.Gutschein
-
-	rows, err := db.DB.Query("select * from gutschein")
+	sql := gener.SQLGutschein("gutschein", db.GenSelect)
+	rows, err := db.DB.Query("select " + sql[0] + " from gutschein")
 	if err != nil {
 		return
 	}
