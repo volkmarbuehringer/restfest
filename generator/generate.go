@@ -132,7 +132,7 @@ func Generator() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("tabelle")
+
 	defer rows.Close()
 	arr := []string{}
 	for rows.Next() {
