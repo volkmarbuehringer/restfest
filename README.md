@@ -9,12 +9,13 @@ Typesafe database-Code with generated structues,sql and scanners:
 
 scanning with individual generated structs:
 
+<!--  -->
 	rows, err := db.DB.Query("select * from gutschein")
 	if err != nil {
 		senderErr(w, err)
 		return
 	}
-	
+
 	defer rows.Close()
 	for anz := 0; rows.Next(); anz++ {
 		arr, ts := gener.ScannerTGutschein()
@@ -28,10 +29,11 @@ scanning with individual generated structs:
 		}
 		//fmt.Printf("%v %T \n", ts, ts)
 	}
-	
-	
+<!--  -->
+
 generic scanning with interface wrapped structs and generated SQL:
 
+<!--  -->
      func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err error) {
 	t := make([]interface{}, 0)
 	fun := gener.ScannerFunMap[tab]
@@ -50,15 +52,13 @@ generic scanning with interface wrapped structs and generated SQL:
 	stru = []interface{}{&t}
 	return
     }
-
-
-
+<!--  -->
 
 
 The resulting code is type-safe:
 - go generate
 - go run main/*
 
-A build mismatch againt a master-database produces errors at compile-time not only runtime !
+A build mismatch against a master-database produces errors at compile-time not only at runtime !
 
 Generic code adapts to the new schema after every go generate, individual code is checked at compile time
