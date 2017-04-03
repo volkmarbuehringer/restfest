@@ -9,12 +9,12 @@ Typesafe database-Code with generated structues,sql and scanners:
 
 scanning with individual generated structs:
 
-rows, err := db.DB.Query("select * from gutschein")
+	rows, err := db.DB.Query("select * from gutschein")
 	if err != nil {
 		senderErr(w, err)
 		return
 	}
-
+	
 	defer rows.Close()
 	for anz := 0; rows.Next(); anz++ {
 		arr, ts := gener.ScannerTGutschein()
