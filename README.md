@@ -9,7 +9,14 @@ Typesafe database-Code with generated structues,sql and scanners:
 
 scanning with individual generated structs:
 
-for anz := 0; rows.Next(); anz++ {
+rows, err := db.DB.Query("select * from gutschein")
+	if err != nil {
+		senderErr(w, err)
+		return
+	}
+
+	defer rows.Close()
+	for anz := 0; rows.Next(); anz++ {
 		arr, ts := gener.ScannerTGutschein()
 		if err = rows.Scan(arr...); err != nil {
 			return
@@ -21,7 +28,8 @@ for anz := 0; rows.Next(); anz++ {
 		}
 		//fmt.Printf("%v %T \n", ts, ts)
 	}
-
+	
+	
 generic scanning with interface wrapped structs:
 
 func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err error) {
