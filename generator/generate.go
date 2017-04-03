@@ -147,7 +147,7 @@ func Generator() {
 		die(err1)
 	}
 
-	f1, err1 := os.Create("gener/mapper.go")
+	f1, err1 := os.Create("mapper.go")
 	die(err1)
 	defer f1.Close()
 

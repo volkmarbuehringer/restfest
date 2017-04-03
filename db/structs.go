@@ -101,3 +101,11 @@ func (v *JSONNullString) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+
+var SQLFunMap = map[string]func(string, SQLOper) []interface{}{}
+
+var ROWInsertFunMap = map[string]MapperFun1{}
+
+var EmptyFunMap = map[string]func() interface{}{}
+
+var ScannerFunMap = map[string]func() ([]interface{}, interface{}){}

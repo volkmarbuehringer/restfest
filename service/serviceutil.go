@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"restfest/gener"
 	"strconv"
 	"strings"
 
@@ -16,7 +15,7 @@ import (
 
 func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err error) {
 	t := make([]interface{}, 0)
-	fun := gener.ScannerFunMap[tab]
+	fun := db.ScannerFunMap[tab]
 
 	for anz := 0; rows.Next(); anz++ {
 		arr, ts := fun()
@@ -34,7 +33,8 @@ func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err er
 }
 
 func prepare(tab string, sqlSt string, flag db.SQLOper) (stmt *sql.Stmt, err error) {
-	if sqlFun, ok := gener.SQLFunMap[tab]; !ok {
+
+	if sqlFun, ok := db.SQLFunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {
@@ -116,7 +116,7 @@ func sender(w http.ResponseWriter, todos interface{}) {
 }
 
 func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
-	if fun1, ok := gener.EmptyFunMap[tab]; !ok {
+	if fun1, ok := db.EmptyFunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"net/http"
 	"restfest/db"
-	"restfest/gener"
 
 	"github.com/gorilla/mux"
 )
@@ -32,7 +31,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	rows, err := sqlIns[tab].Query(gener.ROWInsertFunMap[tab](json)...)
+	rows, err := sqlIns[tab].Query(db.ROWInsertFunMap[tab](json)...)
 	if err != nil {
 		senderErr(w, err)
 		return

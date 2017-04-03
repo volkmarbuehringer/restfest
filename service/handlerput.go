@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"net/http"
 	"restfest/db"
-	"restfest/gener"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -34,7 +33,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	x := gener.ROWInsertFunMap[tab](json)
+	x := db.ROWInsertFunMap[tab](json)
 	x = append(x, id)
 	rows, err := sqlUpd[tab].Query(x...)
 
