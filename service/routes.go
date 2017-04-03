@@ -12,6 +12,12 @@ type Route struct {
 type Routes []Route
 
 var routes = Routes{
+	Route{
+		"read all",
+		"GET",
+		"/test/service/tester",
+		testHandler,
+	},
 
 	Route{
 		"read id",

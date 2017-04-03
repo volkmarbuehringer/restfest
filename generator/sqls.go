@@ -78,7 +78,7 @@ when data_type in ('timestamp without time zone',
 'date') then
 case when is_nullable = 'YES' then 'db.JSONNullString'
 else
-  'db.JSONTime'
+  'string'
   end
 	else 'gaga'
 end as coltrans

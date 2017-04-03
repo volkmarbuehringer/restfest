@@ -9,7 +9,6 @@ package gener
 
 
 import (
-	"database/sql"
 	"restfest/db"
 )
 
@@ -53,6 +52,29 @@ func Empty{{title .Table}}() interface{}{
     return new({{title .Table}})
 }
 
+
+func Scanner{{title .Table}}()( []interface{}, interface{}){
+	struT := new({{title .Table}})
+
+return  []interface{}{				{{- range .Cols  }}
+				&struT.{{title .Column}},
+				{{- end }}
+			}, struT
+
+}
+
+
+func ScannerT{{title .Table}}()( []interface{},*{{title .Table}}){
+	struT := new({{title .Table}})
+
+return  []interface{}{				{{- range .Cols  }}
+				&struT.{{title .Column}},
+				{{- end }}
+			}, struT
+
+}
+
+
 func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}} )
   return []interface{}{
@@ -60,25 +82,4 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 	&rt.{{title .}},
 	{{- end }}  }
 
-}
-
-
-func ROWS{{title .Table}}(rows *sql.Rows,len int)( stru []interface{},err error){
-      t := make( []*{{title .Table}},0)
-
-      for anz:=0;rows.Next();anz++ {
-        ts := new({{title .Table}})
-        if err = rows.Scan(	{{- range .Cols  }}
-				&ts.{{title .Column}},
-				{{- end }}); err != nil {
-            return
-        }
-        if len == 1{
-            stru = []interface{}{ts}
-            return
-        }
-        t = append(t,ts)
-      }
-      stru = []interface{}{&t}
-      return
 }

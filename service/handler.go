@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"restfest/db"
-	"restfest/gener"
 )
 
 const dbschema = "public"
@@ -43,7 +42,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	inter, err := gener.ROWSFunMap[tab](rows, 0)
+	inter, err := rowScanner(tab, rows, 0)
 	if err != nil {
 		senderErr(w, err)
 		return
@@ -73,7 +72,7 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	if inter, err := gener.ROWSFunMap[tab](rows, 1); err != nil {
+	if inter, err := rowScanner(tab, rows, 1); err != nil {
 		senderErr(w, err)
 		return
 	} else {

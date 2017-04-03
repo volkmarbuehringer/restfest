@@ -30,8 +30,9 @@ var EmptyFunMap =  map[string]func ()interface{}{
 {{printf "%q" .}}: Empty{{title .}},
       {{- end }}
 }
-var ROWSFunMap =  map[string]db.MapperFun{
-    {{- range .Table  }}
-{{printf "%q" .}}: ROWS{{title .}},
-      {{- end }}
+
+var ScannerFunMap = map[string]func ()( []interface{}, interface{}){
+	{{- range .Table  }}
+{{printf "%q" .}}:Scanner{{title .}},
+		{{- end }}
 }

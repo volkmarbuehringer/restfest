@@ -43,7 +43,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	inter, err := gener.ROWSFunMap[tab](rows, 1)
+	inter, err := rowScanner(tab, rows, 1)
 	if err != nil {
 		senderErr(w, err)
 		return
