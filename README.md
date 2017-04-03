@@ -56,8 +56,8 @@ generic scanning with interface wrapped structs and generated SQL:
 
 
 The resulting code is type-safe:
-go generate
-go run/main*
+- go generate
+- go run main/*
 
 A build mismatch againt a master-database produces errors at compile-time not only runtime !
 
