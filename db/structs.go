@@ -8,17 +8,6 @@ import (
 	"time"
 )
 
-type SQLOper int
-
-const (
-	GenSelect SQLOper = iota
-	GenInsert
-	GenUpdate
-)
-
-type MapperFun func(rows *sql.Rows, len int) (stru []interface{}, err error)
-type MapperFun1 func(interface{}) []interface{}
-
 type String string
 
 type NullTime struct {
@@ -220,11 +209,3 @@ func (v *JSONNullString) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
-
-var SQLFunMap = map[string]func(string, SQLOper) []interface{}{}
-
-var ROWInsertFunMap = map[string]MapperFun1{}
-
-var EmptyFunMap = map[string]func() interface{}{}
-
-var ScannerFunMap = map[string]func() ([]interface{}, interface{}){}
