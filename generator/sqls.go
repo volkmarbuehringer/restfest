@@ -62,7 +62,9 @@ when data_type in ('character varying',
 'text',
 'character') then
 case when is_nullable = 'YES' then
-'db.JSONNullString'
+--'db.JSONNullString'
+--'string'
+'db.JSONString'
 else
 'string'
 end
@@ -81,6 +83,21 @@ else
   'string'
   end
 	else 'gaga'
-end as coltrans
+end as coltrans,
+/*
+case
+when data_type in ('character varying',
+'text',
+'character') then
+case when is_nullable = 'YES' then
+'coalesce('||column_name||','''')as '||column_name
+else
+column_name
+end
+else
+column_name
+end
+*/
+column_name
 from information_schema.columns
 where table_name =$1 and table_schema = '` + dbschema + `' and column_name not like '$%' order by  ordinal_position `

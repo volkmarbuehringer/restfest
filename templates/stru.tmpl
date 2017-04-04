@@ -21,7 +21,7 @@ type {{title .Table}} struct {
 
 
 func SQL{{title .Table}}(tab string,flag db.SQLOper)[]interface{}{
-  x :=   {{printf "%q" (joiner .Columns)}}
+  x :=   {{printf "%q" (joiner .ColumnsT)}}
 
   switch flag{
     case db.GenSelect:

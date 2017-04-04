@@ -36,6 +36,7 @@ func generateStru(t *template.Template, table string, pk string) {
 		type Prof struct {
 			Column      string
 			ColumnTrans string
+			ColumnT     string
 		}
 		profA := []Prof{}
 		ColumnsInsert := []string{}
@@ -44,15 +45,17 @@ func generateStru(t *template.Template, table string, pk string) {
 		BindsVarInsert := []string{}
 		BindsUpdate := []string{}
 		Columns := []string{}
+		ColumnsT := []string{}
 		var pkBind string
 		for inser, upder := 0, 0; rows.Next(); {
 
 			prof := Prof{}
-			if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
+			if err := rows.Scan(&prof.Column, &prof.ColumnTrans, &prof.ColumnT); err != nil {
 				log.Fatal(err)
 			}
 			profA = append(profA, prof)
 			Columns = append(Columns, prof.Column)
+			ColumnsT = append(ColumnsT, prof.ColumnT)
 			switch {
 			case prof.Column == pk:
 				if g := dbSequenzer(table); len(g) > 0 {
@@ -90,6 +93,7 @@ func generateStru(t *template.Template, table string, pk string) {
 				PKBind         string
 				Cols           []Prof
 				Columns        []string
+				ColumnsT       []string
 				ColumnsInsert  []string
 				BindsVarInsert []string
 				ColumnsUpdate  []string
@@ -102,6 +106,7 @@ func generateStru(t *template.Template, table string, pk string) {
 				pkBind,
 				profA,
 				Columns,
+				ColumnsT,
 				ColumnsInsert,
 				BindsVarInsert,
 				ColumnsUpdate,
