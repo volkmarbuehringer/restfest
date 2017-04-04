@@ -52,6 +52,12 @@ case when is_nullable = 'YES' then
 else
 'int64'
 end
+when data_type in ( 'boolean') then
+case when is_nullable = 'YES' then
+'db.JSONNullBool'
+else
+'bool'
+end
 when data_type in ('double precision','real')  then
 case when is_nullable = 'YES' then
 'db.JSONNullFloat64'
@@ -77,6 +83,7 @@ else
 'db.JSONNullInt64'
   end
 when data_type in ('timestamp without time zone',
+	'timestamp with time zone',
 'date') then
 case when is_nullable = 'YES' then 'db.NullTime'
 else

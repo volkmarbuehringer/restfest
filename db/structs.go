@@ -67,6 +67,10 @@ type JSONNullInt64 struct {
 	sql.NullInt64
 }
 
+type JSONNullBool struct {
+	sql.NullBool
+}
+
 type JSONTime struct {
 	time.Time
 }
@@ -134,6 +138,29 @@ func (v *JSONNullInt64) UnmarshalJSON(data []byte) error {
 	if x != nil {
 		v.Valid = true
 		v.Int64 = *x
+	} else {
+		v.Valid = false
+	}
+	return nil
+}
+
+func (v JSONNullBool) MarshalJSON() ([]byte, error) {
+	if v.Valid {
+		return json.Marshal(v.Bool)
+	}
+	return json.Marshal(nil)
+
+}
+
+func (v *JSONNullBool) UnmarshalJSON(data []byte) error {
+	// Unmarshalling into a pointer will let us detect null
+	var x *bool
+	if err := json.Unmarshal(data, &x); err != nil {
+		return err
+	}
+	if x != nil {
+		v.Valid = true
+		v.Bool = *x
 	} else {
 		v.Valid = false
 	}
