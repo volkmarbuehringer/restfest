@@ -71,3 +71,8 @@ _upd_uid,
 _cr_uid,
 
 The generation is done with templates in the generator file.
+
+It contains also the most extensive set of scanners, valuers, marshallers and unmarshallers for postgresql.
+
+The null-handling of strings can be changed between sql.Nullstring and converting null to empty string.
+
