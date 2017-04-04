@@ -100,11 +100,14 @@ func leser(w http.ResponseWriter, r *http.Request) (todo map[string]interface{},
 		return
 	}
 	if err = json.Unmarshal(body, &todo); err != nil {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(422) // unprocessable entity
-		if err = json.NewEncoder(w).Encode(err); err != nil {
-			return
-		}
+		/*
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.WriteHeader(422) // unprocessable entity
+			if err = json.NewEncoder(w).Encode(err); err != nil {
+				return
+			}
+		*/
+		return nil, err
 	}
 	return
 }
