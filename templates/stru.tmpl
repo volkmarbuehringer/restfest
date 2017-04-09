@@ -13,8 +13,9 @@ import (
 )
 
 type {{title .Table}}Params struct {
-	Length int
-	Offset int
+	  {{- range .Parameters  }}
+    {{title .Column}} {{.ColumnTrans}}
+	    {{- end }}
 }
 
 
@@ -97,12 +98,12 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 
 func ROWQuery{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}}Params )
-		if rt.Length == 0 {
-			rt.Length = 100
-		}
+
 
   return []interface{}{
-&rt.Length,
-&rt.Offset  }
+		{{- range .Parameters }}
+		&rt.{{title .Column}},
+		{{- end }}
+}
 
 }

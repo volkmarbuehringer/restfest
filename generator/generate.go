@@ -23,9 +23,23 @@ func generateMap(t *template.Template, f io.Writer, arr []string) {
 
 }
 
-func generateStru(t *template.Template, table string, pk string) {
+func generateStru(t *template.Template, table string, pk string, parameter string) {
 
-	f, err := os.Create("gener/" + table + ".go")
+	namer := table
+	type Prof struct {
+		Column      string
+		ColumnTrans string
+		ColumnT     string
+	}
+	profA := []Prof{}
+	profB := []Prof{}
+	if len(parameter) > 0 {
+		namer = parameter
+
+	} else {
+		profB = []Prof{Prof{"Length", "db.JSONNullInt64", ""}, Prof{"Offset", "db.JSONNullInt64", ""}}
+	}
+	f, err := os.Create("gener/" + namer + ".go")
 	die(err)
 	defer f.Close()
 
@@ -33,12 +47,7 @@ func generateStru(t *template.Template, table string, pk string) {
 		log.Fatal(err)
 	} else {
 		defer rows.Close()
-		type Prof struct {
-			Column      string
-			ColumnTrans string
-			ColumnT     string
-		}
-		profA := []Prof{}
+
 		ColumnsInsert := []string{}
 		ColumnsUpdate := []string{}
 		BindsInsert := []string{}
@@ -46,6 +55,7 @@ func generateStru(t *template.Template, table string, pk string) {
 		BindsUpdate := []string{}
 		Columns := []string{}
 		ColumnsT := []string{}
+
 		var pkBind string
 		for inser, upder := 0, 0; rows.Next(); {
 
@@ -85,6 +95,24 @@ func generateStru(t *template.Template, table string, pk string) {
 				pkBind = pk + EqBindVar + strconv.Itoa(upder+1)
 			}
 		}
+		{
+
+			if rows, err := db.DB.Query(sqlfunctionparams, parameter); err != nil {
+				log.Fatal(err)
+			} else {
+				defer rows.Close()
+
+				for rows.Next() {
+					prof := Prof{}
+					if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
+						log.Fatal(err)
+					}
+					profB = append(profB, prof)
+
+				}
+			}
+
+		}
 		if len(profA) > 0 {
 			err := t.ExecuteTemplate(f, "stru.tmpl", struct {
 				Table          string
@@ -99,8 +127,9 @@ func generateStru(t *template.Template, table string, pk string) {
 				ColumnsUpdate  []string
 				BindsInsert    []string
 				BindsUpdate    []string
+				Parameters     []Prof
 			}{
-				table,
+				namer,
 				pk,
 				time.Now(),
 				pkBind,
@@ -112,6 +141,7 @@ func generateStru(t *template.Template, table string, pk string) {
 				ColumnsUpdate,
 				BindsInsert,
 				BindsUpdate,
+				profB,
 			})
 			die(err)
 		}
@@ -147,9 +177,14 @@ func Generator() {
 		if err := rows.Scan(&table, &pk, &parameter); err != nil {
 			log.Fatal(err)
 		}
-		arr = append(arr, table)
+		if len(parameter) > 0 {
+			arr = append(arr, parameter)
+		} else {
+			arr = append(arr, table)
+		}
+
 		fmt.Println("tabelle", table)
-		generateStru(t, table, pk)
+		generateStru(t, table, pk, parameter)
 		die(err1)
 	}
 

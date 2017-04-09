@@ -9,12 +9,37 @@ func dbSequenzer(tab string) string {
 	return ""
 }
 
-const sqlfunctionparams string = `sELECT parameter_name
- parameters.data_type, parameters.ordinal_position
-FROM information_schema.routines
-    JOIN information_schema.parameters where parameters.specific_name =$1
+const sqlfunctionparams string = `sELECT parameter_name,
+case when data_type
+in ('integer',
+ 'bigint',
+ 'smallint')  then
+'db.JSONNullInt64'
+when data_type in ( 'boolean') then
+'db.JSONNullBool'
+when data_type in ('double precision','real')  then
+'db.JSONNullFloat64'
+when data_type in ('character varying',
+'text',
+'character') then
+--'db.JSONNullString'
+--'string'
+'db.JSONString'
+when data_type = 'numeric'  then
+case
+  when numeric_scale > 0 then 'db.JSONNullFloat64'
+else
+'db.JSONNullInt64'
+  end
+when data_type in ('timestamp without time zone',
+	'timestamp with time zone',
+'date') then
+'db.NullTime'
+	else 'gaga'
+end as coltrans
+FROM  information_schema.parameters where parameters.specific_name =$1
 and parameters.specific_schema='` + dbschema + `'
-and parameters_type = 'IN' and parameter_name is not null
+and parameter_mode = 'IN' and parameter_name is not null
 ORDER BY  parameters.ordinal_position`
 
 const sqlalltabs string = `
