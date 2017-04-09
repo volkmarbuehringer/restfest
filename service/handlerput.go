@@ -47,6 +47,6 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		senderErr(w, err)
 		return
 	}
-	sender(w, inter[0])
+	sender(w, inter)
 
 }

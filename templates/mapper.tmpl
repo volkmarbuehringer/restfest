@@ -15,7 +15,9 @@ func init(){
 	{{- range .Table  }}
 db.SQLFunMap[{{printf "%q" .}}]= gener.SQL{{title .}}
 db.ROWInsertFunMap[{{printf "%q" .}}]= gener.ROWInsert{{title .}}
+db.ROWQueryFunMap[{{printf "%q" .}}]= gener.ROWQuery{{title .}}
 db.EmptyFunMap[{{printf "%q" .}}]=gener.Empty{{title .}}
+db.ParamFunMap[{{printf "%q" .}}]=gener.EmptyParam{{title .}}
 db.ScannerFunMap[{{printf "%q" .}}]=gener.Scanner{{title .}}
 		{{- end }}
 

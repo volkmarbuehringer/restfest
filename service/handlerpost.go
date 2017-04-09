@@ -43,6 +43,6 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sender(w, inter[0])
+	sender(w, inter)
 
 }

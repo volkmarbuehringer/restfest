@@ -22,10 +22,12 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	tab := vars["tab"]
-	ga := db.Pager{}
-	ga.Length = formReader(r, "length", 100)
-	ga.Offset = formReader(r, "offset", 0)
-	ga.Where = formReaderS(r, "where", "")
+
+	ga, err := prepParam(tab, w, r)
+	if err != nil {
+		senderErr(w, err)
+		return
+	}
 
 	if _, ok := sqlAll[tab]; !ok {
 		var err error
@@ -35,7 +37,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-	rows, err := sqlAll[tab].Query(ga.Length, ga.Offset)
+	rows, err := sqlAll[tab].Query(db.ROWQueryFunMap[tab](ga)...)
 	if err != nil {
 		senderErr(w, err)
 		return
@@ -48,7 +50,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sender(w, inter[0])
+	sender(w, inter)
 
 }
 
@@ -76,7 +78,7 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 		senderErr(w, err)
 		return
 	} else {
-		sender(w, inter[0])
+		sender(w, inter)
 	}
 
 }

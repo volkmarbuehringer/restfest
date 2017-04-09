@@ -12,13 +12,6 @@ import (
 
 var DB *sql.DB
 
-type Pager struct {
-	Length int
-	Offset int
-	ID     int
-	Where  string
-}
-
 func init() {
 	var err error
 	dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable application_name=gogogo connect_timeout=3",

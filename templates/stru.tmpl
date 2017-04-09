@@ -12,6 +12,12 @@ import (
 	"restfest/db"
 )
 
+type {{title .Table}}Params struct {
+	Length int
+	Offset int
+}
+
+
 type {{title .Table}} struct {
   {{- range .Cols  }}
     {{title .Column}} {{.ColumnTrans}}  `json:{{printf "%q" .Column}}`
@@ -53,6 +59,10 @@ func Empty{{title .Table}}() interface{}{
 }
 
 
+func EmptyParam{{title .Table}}() interface{}{
+    return new({{title .Table}}Params)
+}
+
 func Scanner{{title .Table}}()( []interface{}, interface{}){
 	struT := new({{title .Table}})
 
@@ -81,5 +91,18 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 	{{- range .BindsVarInsert  }}
 	&rt.{{title .}},
 	{{- end }}  }
+
+}
+
+
+func ROWQuery{{title .Table}}(inter interface{})[]interface{}{
+  rt := inter.( *{{title .Table}}Params )
+		if rt.Length == 0 {
+			rt.Length = 100
+		}
+
+  return []interface{}{
+&rt.Length,
+&rt.Offset  }
 
 }

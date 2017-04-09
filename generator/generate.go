@@ -143,7 +143,8 @@ func Generator() {
 	for rows.Next() {
 		var table string
 		var pk string
-		if err := rows.Scan(&table, &pk); err != nil {
+		var parameter string
+		if err := rows.Scan(&table, &pk, &parameter); err != nil {
 			log.Fatal(err)
 		}
 		arr = append(arr, table)

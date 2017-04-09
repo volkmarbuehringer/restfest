@@ -7,13 +7,16 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"restfest/db"
 	"strconv"
 	"strings"
 
-	"restfest/db"
+	"github.com/gorilla/schema"
 )
 
-func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err error) {
+var decoder = schema.NewDecoder()
+
+func rowScanner(tab string, rows *sql.Rows, len int) (stru interface{}, err error) {
 	t := make([]interface{}, 0)
 	fun := db.ScannerFunMap[tab]
 
@@ -23,12 +26,12 @@ func rowScanner(tab string, rows *sql.Rows, len int) (stru []interface{}, err er
 			return
 		}
 		if len == 1 {
-			stru = []interface{}{ts}
+			stru = ts
 			return
 		}
 		t = append(t, ts)
 	}
-	stru = []interface{}{&t}
+	stru = &t
 	return
 }
 
@@ -128,6 +131,26 @@ func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interfa
 	} else {
 		json, err = leser1(w, r, fun1())
 	}
+	return
+}
+
+func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
+	if fun1, ok := db.ParamFunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		return
+	} else {
+
+		err = r.ParseForm()
+
+		if err != nil {
+			return
+		}
+
+		json = fun1()
+		err = decoder.Decode(json, r.Form)
+
+	}
+
 	return
 }
 

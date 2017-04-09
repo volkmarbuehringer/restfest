@@ -9,37 +9,53 @@ func dbSequenzer(tab string) string {
 	return ""
 }
 
-const sqlalltabs string = `SELECT
-  tc.table_name
-	,c.column_name
- FROM
- information_schema.table_constraints
- tc JOIN
- information_schema.constraint_column_usage
-AS
- ccu USING
-(constraint_schema,
- constraint_name)
-JOIN
- information_schema.columns
-AS
- c ON
- c.table_schema
-= tc.constraint_schema
-AND tc.table_name
-= c.table_name
-AND ccu.column_name
-= c.column_name
-where
- constraint_type =
-'PRIMARY KEY'   and tc.table_name not in ( 'logger')
- and tc.table_schema ='` + dbschema + `'
+const sqlfunctionparams string = `sELECT parameter_name
+ parameters.data_type, parameters.ordinal_position
+FROM information_schema.routines
+    JOIN information_schema.parameters where parameters.specific_name =$1
+and parameters.specific_schema='` + dbschema + `'
+and parameters_type = 'IN' and parameter_name is not null
+ORDER BY  parameters.ordinal_position`
+
+const sqlalltabs string = `
+with pk as (
+	SELECT
+	  tc.table_name
+		,ccu.column_name
+	 FROM
+	 information_schema.table_constraints
+	 tc JOIN
+	 information_schema.constraint_column_usage
+	AS
+	 ccu USING
+	(constraint_schema,
+	 constraint_name)
+		where
+	 constraint_type =
+	'PRIMARY KEY'
+	and tc.table_schema ='` + dbschema + `'
+)
+select
+t.table_name,pk.column_name,
+'' as routine_name
+from
+information_schema.tables t
+inner join pk on ( t.table_name = pk.table_name)
+ where t.table_schema ='` + dbschema + `'
+   and t.table_name not in ( 'logger')
 union all
 select c.table_name
 ,column_name
+,'' as routine
 from information_schema.views v
 inner join information_schema.columns c on v.table_name = c.table_name and ordinal_position = 1
 where v.table_schema ='` + dbschema + `' and c.table_schema = '` + dbschema + `'
+union all
+sELECT routines.type_udt_name,'',specific_name
+ FROM information_schema.routines
+    WHERE routines.specific_schema='` + dbschema + `'
+		and data_type = 'USER-DEFINED'
+		and routine_type ='FUNCTION'
 `
 
 const sqlallcols string = `select column_name,
