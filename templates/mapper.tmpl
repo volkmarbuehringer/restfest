@@ -13,12 +13,13 @@ import (
 
 func init(){
 	{{- range .Table  }}
-db.SQLFunMap[{{printf "%q" .}}]= gener.SQL{{title .}}
-db.ROWInsertFunMap[{{printf "%q" .}}]= gener.ROWInsert{{title .}}
-db.ROWQueryFunMap[{{printf "%q" .}}]= gener.ROWQuery{{title .}}
-db.EmptyFunMap[{{printf "%q" .}}]=gener.Empty{{title .}}
-db.ParamFunMap[{{printf "%q" .}}]=gener.EmptyParam{{title .}}
-db.ScannerFunMap[{{printf "%q" .}}]=gener.Scanner{{title .}}
+db.SQLFunMap[{{printf "%q" .Table}}]= gener.SQL{{title .Table}}
+db.ROWInsertFunMap[{{printf "%q" .Table}}]= gener.ROWInsert{{title .Table}}
+db.ROWQueryFunMap[{{printf "%q" .Table}}]= gener.ROWQuery{{title .Table}}
+db.EmptyFunMap[{{printf "%q" .Table}}]=gener.Empty{{title .Table}}
+db.ParamFunMap[{{printf "%q" .Table}}]=gener.EmptyParam{{title .Table}}
+db.ScannerFunMap[{{printf "%q" .Table}}]=gener.Scanner{{title .Table}}
+db.FlagMap[{{printf "%q" .Table}}]={{.Flag}}
 		{{- end }}
 
 		fmt.Printf("geladene Tabellen: %d\n", len(db.SQLFunMap))

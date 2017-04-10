@@ -14,7 +14,7 @@ import (
 
 type {{title .Table}}Params struct {
 	  {{- range .Parameters  }}
-    {{title .Column}} {{.ColumnTrans}}
+    {{title .Column}} {{.ColumnTrans}} `schema:"{{.Column}}"`
 	    {{- end }}
 }
 
@@ -27,31 +27,35 @@ type {{title .Table}} struct {
 
 
 
-func SQL{{title .Table}}(tab string,flag db.SQLOper)[]interface{}{
+func SQL{{title .Table}}(flag db.SQLOper)[]interface{}{
   x :=   {{printf "%q" (joiner .ColumnsT)}}
 
   switch flag{
     case db.GenSelect:
     return []interface{}{
     x,
-      tab,
-      {{printf "%q" .PK}},
+		{{if .Flagger}}       {{printf "%q" .Table}}	{{else}} {{printf "%q" .PK}} {{end}},
+    	{{if .Flagger}}   {{printf "%q" .PK}} {{else}}  {{printf "%q" (joiner .BindsVarInsert)}}	{{end}},
     }
+			{{if .Flagger}}
     case db.GenInsert:
-    return    []interface{}{ tab,
+    return    []interface{}{   {{printf "%q" .Table}}	,
        {{printf "%q" (joiner .ColumnsInsert)  }}  ,
        {{printf "%q" (joiner .BindsInsert)  }} ,
         x,
       }
     default:
-      return    []interface{}{ tab,
+      return    []interface{}{   {{printf "%q" .Table}}	,
         {{printf "%q" (joiner .BindsUpdate)}}  ,
         {{printf "%q" .PKBind}},
       x,
         }
-
+{{end}}
   }
-
+			{{if .Flagger}}
+			{{else}}
+	return nil
+{{end}}
 }
 
 
@@ -87,11 +91,16 @@ return  []interface{}{				{{- range .Cols  }}
 
 
 func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
+					{{if .Flagger}}
   rt := inter.( *{{title .Table}} )
+	{{end}}
   return []interface{}{
+				{{if .Flagger}}
 	{{- range .BindsVarInsert  }}
 	&rt.{{title .}},
-	{{- end }}  }
+	{{- end }}
+{{end}}
+  }
 
 }
 
@@ -99,6 +108,10 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 func ROWQuery{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}}Params )
 
+{{if .Flagger}} if !rt.Length.Valid {
+	rt.Length.Int64=100
+	rt.Length.Valid=true
+} {{end}}
 
   return []interface{}{
 		{{- range .Parameters }}

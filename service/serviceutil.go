@@ -41,7 +41,7 @@ func prepare(tab string, sqlSt string, flag db.SQLOper) (stmt *sql.Stmt, err err
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {
-		sqls := fmt.Sprintf(sqlSt, sqlFun(tab, flag)...)
+		sqls := fmt.Sprintf(sqlSt, sqlFun(flag)...)
 		fmt.Println("prep", sqls)
 		stmt, err = db.DB.Prepare(sqls)
 

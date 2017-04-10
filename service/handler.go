@@ -16,6 +16,7 @@ var sqlAll = map[string]*sql.Stmt{}
 var sqlID = map[string]*sql.Stmt{}
 
 const selectAll = "select %s from " + dbschema + ".%s order by %s limit $1 offset $2"
+const selectFun = "select %s from " + dbschema + ".%s ( %s )"
 const selectID = "select %s from " + dbschema + ".%s where %s=$1"
 
 func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +32,13 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 
 	if _, ok := sqlAll[tab]; !ok {
 		var err error
-		if sqlAll[tab], err = prepare(tab, selectAll, db.GenSelect); err != nil {
+		var sqler string
+		if db.FlagMap[tab] == 3 {
+			sqler = selectFun
+		} else {
+			sqler = selectAll
+		}
+		if sqlAll[tab], err = prepare(tab, sqler, db.GenSelect); err != nil {
 			senderErr(w, err)
 			return
 		}

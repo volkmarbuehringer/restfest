@@ -12,10 +12,15 @@ import (
 	"time"
 )
 
-func generateMap(t *template.Template, f io.Writer, arr []string) {
+type TabFlag struct {
+	Table string
+	Flag  int
+}
+
+func generateMap(t *template.Template, f io.Writer, arr []TabFlag) {
 	if len(arr) > 0 {
 		err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
-			Table     []string
+			Table     []TabFlag
 			Timestamp time.Time
 		}{arr, time.Now()})
 		die(err)
@@ -26,6 +31,7 @@ func generateMap(t *template.Template, f io.Writer, arr []string) {
 func generateStru(t *template.Template, table string, pk string, parameter string) {
 
 	namer := table
+	flagger := false
 	type Prof struct {
 		Column      string
 		ColumnTrans string
@@ -37,7 +43,8 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		namer = parameter
 
 	} else {
-		profB = []Prof{Prof{"Length", "db.JSONNullInt64", ""}, Prof{"Offset", "db.JSONNullInt64", ""}}
+		profB = []Prof{Prof{"length", "db.JSONNullInt64", ""}, Prof{"offset", "db.JSONNullInt64", ""}}
+		flagger = true
 	}
 	f, err := os.Create("gener/" + namer + ".go")
 	die(err)
@@ -110,11 +117,18 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 					profB = append(profB, prof)
 
 				}
+				if !flagger {
+					BindsVarInsert = make([]string, len(profB))
+					for i := 0; i < len(profB); i++ {
+						BindsVarInsert[i] = "$" + strconv.Itoa(i+1)
+					}
+				}
 			}
 
 		}
 		if len(profA) > 0 {
 			err := t.ExecuteTemplate(f, "stru.tmpl", struct {
+				Flagger        bool
 				Table          string
 				PK             string
 				Timestamp      time.Time
@@ -129,6 +143,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 				BindsUpdate    []string
 				Parameters     []Prof
 			}{
+				flagger,
 				namer,
 				pk,
 				time.Now(),
@@ -169,23 +184,26 @@ func Generator() {
 	}
 
 	defer rows.Close()
-	arr := []string{}
+
+	arr := []TabFlag{}
+
 	for rows.Next() {
 		var table string
 		var pk string
+		var flag int
 		var parameter string
-		if err := rows.Scan(&table, &pk, &parameter); err != nil {
+		if err := rows.Scan(&flag, &table, &pk, &parameter); err != nil {
 			log.Fatal(err)
 		}
-		if len(parameter) > 0 {
-			arr = append(arr, parameter)
-		} else {
-			arr = append(arr, table)
-		}
 
-		fmt.Println("tabelle", table)
+		fmt.Println("tabelle", table, parameter)
 		generateStru(t, table, pk, parameter)
-		die(err1)
+		if flag == 3 {
+			table = parameter
+		}
+		flags := TabFlag{table, flag}
+		arr = append(arr, flags)
+
 	}
 
 	f1, err1 := os.Create("mapper.go")

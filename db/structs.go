@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -37,6 +38,17 @@ func (v NullTime) MarshalJSON() ([]byte, error) {
 
 }
 
+func (e *NullTime) UnmarshalText(text []byte) (err error) {
+	var x *time.Time
+
+	if err = x.UnmarshalText(text); err != nil {
+		return
+	}
+
+	e.Valid = true
+	return
+}
+
 func (v *NullTime) UnmarshalJSON(data []byte) error {
 	// Unmarshalling into a pointer will let us detect null
 	var x *time.Time
@@ -50,6 +62,17 @@ func (v *NullTime) UnmarshalJSON(data []byte) error {
 		v.Valid = false
 	}
 	return nil
+}
+
+func (e *JSONNullInt64) UnmarshalText(text []byte) (err error) {
+	var g int
+	g, err = strconv.Atoi(string(text))
+	if err != nil {
+		return
+	}
+	e.Int64 = int64(g)
+	e.Valid = true
+	return
 }
 
 type JSONNullInt64 struct {
@@ -66,6 +89,11 @@ type JSONTime struct {
 
 type JSONString struct {
 	String
+}
+
+func (e *JSONString) UnmarshalText(text []byte) (err error) {
+	e.String = String(text)
+	return
 }
 
 func (n JSONString) Value() (driver.Value, error) {
@@ -141,6 +169,17 @@ func (v JSONNullBool) MarshalJSON() ([]byte, error) {
 
 }
 
+func (e *JSONNullBool) UnmarshalText(text []byte) (err error) {
+	var x bool
+
+	if x, err = strconv.ParseBool(string(text)); err != nil {
+		return
+	}
+	e.Bool = x
+	e.Valid = true
+	return
+}
+
 func (v *JSONNullBool) UnmarshalJSON(data []byte) error {
 	// Unmarshalling into a pointer will let us detect null
 	var x *bool
@@ -158,6 +197,15 @@ func (v *JSONNullBool) UnmarshalJSON(data []byte) error {
 
 type JSONNullFloat64 struct {
 	sql.NullFloat64
+}
+
+func (e *JSONNullFloat64) UnmarshalText(text []byte) (err error) {
+	e.Float64, err = strconv.ParseFloat(string(text), 64)
+	if err != nil {
+		return
+	}
+	e.Valid = true
+	return
 }
 
 func (v JSONNullFloat64) MarshalJSON() ([]byte, error) {
