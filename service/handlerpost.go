@@ -23,16 +23,13 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := sqlIns[tab]; !ok {
-		var sqler string
-		var flagger db.SQLOper
+
 		if db.FlagMap[tab] == 3 {
-			sqler = selectFun
-			flagger = db.GenSelect
+			sqlIns[tab], err = prepare(tab, selectFun, db.GenSelect)
 		} else {
-			sqler = sqlInsert
-			flagger = db.GenInsert
+			sqlIns[tab], err = prepare(tab, sqlInsert, db.GenInsert)
 		}
-		if sqlIns[tab], err = prepare(tab, sqler, flagger); err != nil {
+		if err != nil {
 			senderErr(w, err)
 			return
 		}
