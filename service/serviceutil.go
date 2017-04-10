@@ -125,12 +125,17 @@ func sender(w http.ResponseWriter, todos interface{}) {
 }
 
 func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
-	if fun1, ok := db.EmptyFunMap[tab]; !ok {
+	if flag, ok := db.FlagMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
+	} else if flag == 3 {
+		fun1 := db.ParamFunMap[tab]
+		json, err = leser1(w, r, fun1())
 	} else {
+		fun1 := db.EmptyFunMap[tab]
 		json, err = leser1(w, r, fun1())
 	}
+
 	return
 }
 

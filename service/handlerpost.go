@@ -23,15 +23,29 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, ok := sqlIns[tab]; !ok {
-
-		if sqlIns[tab], err = prepare(tab, sqlInsert, db.GenInsert); err != nil {
+		var sqler string
+		var flagger db.SQLOper
+		if db.FlagMap[tab] == 3 {
+			sqler = selectFun
+			flagger = db.GenSelect
+		} else {
+			sqler = sqlInsert
+			flagger = db.GenInsert
+		}
+		if sqlIns[tab], err = prepare(tab, sqler, flagger); err != nil {
 			senderErr(w, err)
 			return
 		}
 
 	}
+	var input []interface{}
+	if db.FlagMap[tab] == 3 {
+		input = db.ROWQueryFunMap[tab](json)
+	} else {
+		input = db.ROWInsertFunMap[tab](json)
+	}
 
-	rows, err := sqlIns[tab].Query(db.ROWInsertFunMap[tab](json)...)
+	rows, err := sqlIns[tab].Query(input...)
 	if err != nil {
 		senderErr(w, err)
 		return
