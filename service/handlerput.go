@@ -5,6 +5,8 @@ import (
 	"restfest/db"
 	"strconv"
 
+	log15 "gopkg.in/inconshreveable/log15.v2"
+
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx"
 )
@@ -17,12 +19,14 @@ func putter(w http.ResponseWriter, r *http.Request) {
 	json, err := prepLesen(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "put", err)
 		return
 	}
 
 	var stmt *pgx.PreparedStatement
 	if stmt, err = prepare(tab, db.GenUpdate); err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "put", err)
 		return
 	}
 
@@ -33,6 +37,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "put", err)
 		return
 	}
 

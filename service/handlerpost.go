@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func poster(w http.ResponseWriter, r *http.Request) {
@@ -15,6 +16,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	json, err := prepLesen(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "post", err)
 		return
 	}
 	var stmt *pgx.PreparedStatement
@@ -26,6 +28,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "post", err)
 		return
 	}
 
@@ -40,6 +43,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "post", err)
 		return
 	}
 

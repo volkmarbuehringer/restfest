@@ -5,6 +5,8 @@ import (
 	"restfest/db"
 	"strconv"
 
+	log15 "gopkg.in/inconshreveable/log15.v2"
+
 	"github.com/gorilla/mux"
 )
 
@@ -17,6 +19,7 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "delete", err)
 		return
 	}
 
@@ -25,6 +28,7 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "delete", err)
 		return
 	}
 

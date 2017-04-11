@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	log15 "gopkg.in/inconshreveable/log15.v2"
+
 	"github.com/gorilla/mux"
 
 	"restfest/db"
@@ -17,6 +19,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 	ga, err := prepParam(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
+		log15.Error("DBFehler", "getall", err)
 		return
 	}
 
@@ -28,11 +31,13 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 	}
 	if stmt, err1 := prepare(tab, sqler); err1 != nil {
 		senderErr(w, err1)
+		log15.Error("DBFehler", "getall", err1)
 		return
 	} else {
 		rows, err := db.DBx.Query(stmt.Name, db.ROWQueryFunMap[tab](ga)...)
 		if err != nil {
 			senderErr(w, err)
+			log15.Error("DBFehler", "getall", err)
 			return
 		}
 		defer rows.Close()
@@ -40,6 +45,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 		inter, err := rowScanner(tab, rows)
 		if err != nil {
 			senderErr(w, err)
+			log15.Error("DBFehler", "getall", err)
 			return
 		}
 
@@ -57,6 +63,7 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 
 	if stmt, err1 := prepare(tab, db.GenSelectID); err1 != nil {
 		senderErr(w, err1)
+		log15.Error("DBFehler", "getid", err1)
 		return
 	} else {
 
@@ -65,6 +72,7 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 		inter, err := row1Scanner(tab, rows)
 		if err != nil {
 			senderErr(w, err)
+			log15.Error("DBFehler", "getid", err)
 			return
 		}
 		sender(w, inter)
