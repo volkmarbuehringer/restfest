@@ -8,13 +8,13 @@ import (
 	"restfest/gener"
 	"strconv"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx"
 )
 
 func main() {
 
 	limiter, _ := strconv.Atoi(os.Args[1])
-	rows, err := db.DB.Query(fmt.Sprintf("select %s from gutschein", gener.SQLGutschein("gutschein", db.GenSelect)[0]))
+	rows, err := db.DBx.Query(fmt.Sprintf("select %s from gutschein", gener.SQLGutschein(db.GenSelect)[0]))
 	if err != nil {
 		return
 	}
@@ -40,36 +40,55 @@ func main() {
 			break
 		}
 	}
-	defer db.DB.Close()
-	txn, err := db.DB.Begin()
+	defer db.DBx.Close()
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	stmt, err := txn.Prepare(pq.CopyIn("csvtest", "id", "bemerkung", "upd"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("starte copy ", len(store))
+	rower := make([][]interface{}, 0)
 	for _, t := range store {
-		if _, err = stmt.Exec(t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid); err != nil {
+		rower = append(rower, []interface{}{t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid})
+	}
+	fmt.Println("vor copy", len(rower))
+	copyCount, err1 := db.DBx.CopyFrom(
+		[]string{"csvtest"},
+		[]string{"id", "bemerkung", "upd"},
+		pgx.CopyFromRows(rower),
+	)
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+
+	fmt.Println("nach copy", copyCount)
+	/*
+
+		txn, err := db.DBx.Begin()
+
+		if err != nil {
 			log.Fatal(err)
 		}
-	}
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
-	}
+			stmt, err := txn.Prepare(pq.CopyIn("csvtest", "id", "bemerkung", "upd"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("starte copy ", len(store))
+			for _, t := range store {
+				if _, err = stmt.Exec(t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid); err != nil {
+					log.Fatal(err)
+				}
+			}
+			_, err = stmt.Exec()
+			if err != nil {
+				log.Fatal(err)
+			}
 
-	err = stmt.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
+			err = stmt.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
 
-	err = txn.Commit()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("nach copy ", len(store))
+			err = txn.Commit()
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("nach copy ", len(store))
+	*/
 	os.Exit(0)
 }
