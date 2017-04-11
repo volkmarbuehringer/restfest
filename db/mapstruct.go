@@ -8,6 +8,7 @@ const (
 	GenUpdate
 	GenFunction
 	GenSelectAll
+	GenDelete
 )
 
 type MapperFun1 func(interface{}) []interface{}

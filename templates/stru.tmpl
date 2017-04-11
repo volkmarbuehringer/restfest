@@ -55,6 +55,11 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 			 {{printf "%q" (joiner .BindsInsert)  }} ,
 				x)
 
+				case db.GenDelete:
+				return  fmt.Sprintf(   `delete from ` + db.DBschema + `.%s where %s=$1 returning %s`,
+					{{printf "%q" .Table}}	,
+						{{printf "%q" .PK}},
+						x)
 				default:
 				return  fmt.Sprintf(  `update ` + db.DBschema + `.%s set %s where %s returning %s`,
 					{{printf "%q" .Table}}	,
@@ -86,7 +91,15 @@ func Empty{{title .Table}}() interface{}{
 
 
 func EmptyParam{{title .Table}}() interface{}{
-    return new({{title .Table}}Params)
+
+ rt := new({{title .Table}}Params)
+
+	{{if .Flagger}} if !rt.Length.Valid {
+		rt.Length.Int64=100
+		rt.Length.Valid=true
+	} {{end}}
+
+    return rt
 }
 
 func Scanner{{title .Table}}()( []interface{}, interface{}){
@@ -128,11 +141,6 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 
 func ROWQuery{{title .Table}}(inter interface{})[]interface{}{
   rt := inter.( *{{title .Table}}Params )
-
-{{if .Flagger}} if !rt.Length.Valid {
-	rt.Length.Int64=100
-	rt.Length.Valid=true
-} {{end}}
 
   return []interface{}{
 		{{- range .Parameters }}

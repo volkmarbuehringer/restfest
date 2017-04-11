@@ -39,4 +39,11 @@ var routes = Routes{
 		"/test/service/{tab}/{id:[0-9]+}",
 		putter,
 	},
+
+	Route{
+		"Delete",
+		"DELETE",
+		"/test/service/{tab}/{id:[0-9]+}",
+		deleter,
+	},
 }
