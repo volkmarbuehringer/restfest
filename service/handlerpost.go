@@ -35,14 +35,9 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	} else {
 		input = db.ROWInsertFunMap[tab](json)
 	}
+	rows := db.DBx.QueryRow(stmt.Name, input...)
 
-	rows, err := db.DBx.Query(stmt.Name, input...)
-	if err != nil {
-		senderErr(w, err)
-		return
-	}
-
-	inter, err := rowScanner(tab, rows, 1)
+	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
 		return

@@ -16,6 +16,19 @@ import (
 
 var decoder = schema.NewDecoder()
 
+func row1Scanner(tab string, rows *pgx.Row) (stru interface{}, err error) {
+
+	fun := db.ScannerFunMap[tab]
+
+	arr, ts := fun()
+	if err = rows.Scan(arr...); err != nil {
+		return
+	}
+	stru = ts
+	return
+
+}
+
 func rowScanner(tab string, rows *pgx.Rows, len int) (stru interface{}, err error) {
 	t := make([]interface{}, 0)
 	fun := db.ScannerFunMap[tab]

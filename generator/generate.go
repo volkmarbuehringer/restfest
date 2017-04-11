@@ -43,7 +43,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		namer = parameter
 
 	} else {
-		profB = []Prof{Prof{"length", "db.JSONNullInt64", ""}, Prof{"offset", "db.JSONNullInt64", ""}}
+		profB = []Prof{Prof{"length", "*int64", ""}, Prof{"offset", "*int64", ""}}
 		flagger = true
 	}
 	f, err := os.Create("gener/" + namer + ".go")

@@ -14,11 +14,12 @@ case when data_type
 in ('integer',
  'bigint',
  'smallint')  then
-'db.JSONNullInt64'
+--'db.JSONNullInt64'
+'*int64'
 when data_type in ( 'boolean') then
-'db.JSONNullBool'
+'*bool'
 when data_type in ('double precision','real')  then
-'db.JSONNullFloat64'
+'*float64'
 when data_type in ('character varying',
 'text',
 'character') then
@@ -27,14 +28,14 @@ when data_type in ('character varying',
 'db.JSONString'
 when data_type = 'numeric'  then
 case
-  when numeric_scale > 0 then 'db.JSONNullFloat64'
+  when numeric_scale > 0 then '*float64'
 else
-'db.JSONNullInt64'
+'*int64'
   end
 when data_type in ('timestamp without time zone',
 	'timestamp with time zone',
 'date') then
-'db.NullTime'
+'*time.Time'
 	else 'gaga'
 end as coltrans
 FROM  information_schema.parameters where parameters.specific_name =$1
@@ -88,23 +89,32 @@ case when data_type
 in ('integer',
  'bigint',
  'smallint')  then
+ /*
 case when is_nullable = 'YES' then
 'db.JSONNullInt64'
 else
 'int64'
 end
+*/
+'*int64'
 when data_type in ( 'boolean') then
+'*bool'
+/*
 case when is_nullable = 'YES' then
 'db.JSONNullBool'
 else
 'bool'
 end
+*/
 when data_type in ('double precision','real')  then
+/*
 case when is_nullable = 'YES' then
 'db.JSONNullFloat64'
 else
 'float64'
 end
+*/
+'*float64'
 when data_type in ('character varying',
 'text',
 'character') then
@@ -117,19 +127,21 @@ else
 end
 when data_type = 'numeric'  then
 case
-  when numeric_scale > 0 and is_nullable = 'YES' then 'db.JSONNullFloat64'
-  when numeric_scale > 0 and is_nullable = 'NO' then 'float64'
-  when numeric_scale = 0 and is_nullable = 'NO' then 'int64'
+  when numeric_scale > 0  then '*float64'
+  when numeric_scale = 0 then '*int64'
 else
-'db.JSONNullInt64'
+'*int64'
   end
 when data_type in ('timestamp without time zone',
 	'timestamp with time zone',
 'date') then
+/*
 case when is_nullable = 'YES' then 'db.NullTime'
 else
   'db.NullTime'
   end
+*/
+	'*time.Time'
 	else 'gaga'
 end as coltrans,
 /*

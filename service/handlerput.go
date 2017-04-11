@@ -28,18 +28,14 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 	x := db.ROWInsertFunMap[tab](json)
 	x = append(x, id)
-	rows, err := db.DBx.Query(stmt.Name, x...)
+	rows := db.DBx.QueryRow(stmt.Name, x...)
 
+	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
 		return
 	}
 
-	inter, err := rowScanner(tab, rows, 1)
-	if err != nil {
-		senderErr(w, err)
-		return
-	}
 	sender(w, inter)
 
 }

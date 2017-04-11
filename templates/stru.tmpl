@@ -12,7 +12,10 @@ package gener
 import (
 	"restfest/db"
 	"fmt"
+	"time"
 )
+
+var dummy{{title .Table}} time.Time
 
 type {{title .Table}}Params struct {
 	  {{- range .Parameters  }}
@@ -93,10 +96,15 @@ func EmptyParam{{title .Table}}() interface{}{
 
  rt := new({{title .Table}}Params)
 
-	{{if .Flagger}} if !rt.Length.Valid {
-		rt.Length.Int64=100
-		rt.Length.Valid=true
-	} {{end}}
+	{{if .Flagger}}
+		tt := new(int64)
+		*tt = 100
+		rt.Length=tt
+				tt = new(int64)
+ 	*tt = 0
+ 	rt.Offset=tt
+
+	{{end}}
 
     return rt
 }
