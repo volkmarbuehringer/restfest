@@ -1,94 +1,100 @@
 package main
 
-import (
+import
+//"encoding/json"
+
+(
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"restfest/db"
-	"restfest/gener"
-	"strconv"
+	"time"
 
-	"github.com/jackc/pgx"
+	httpstat "github.com/tcnksm/go-httpstat"
 )
 
 func main() {
 
-	limiter, _ := strconv.Atoi(os.Args[1])
-	rows, err := db.DBx.Query(fmt.Sprintf("select %s from gutschein", gener.SQLGutschein(db.GenSelect)[0]))
+	tr := &http.Transport{
+		//	MaxIdleConns:       10,
+		//	IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+		DisableKeepAlives:  true,
+	}
+	client := &http.Client{Transport: tr,
+		Timeout: 10 * time.Second}
+	c := make(chan int)
+	for i := 0; i < 20; i++ {
+		go getter(client, c)
+	}
+
+	for i := 0; i < 1000; i++ {
+		rows, err := db.DBx.Query(fmt.Sprintf("SELECT %s from %s", os.Args[2], os.Args[1]))
+		checkErr(err)
+		// iterate over each row
+		for rows.Next() {
+			var adsid int
+			err = rows.Scan(&adsid)
+			checkErr(err)
+			c <- adsid
+		}
+	}
+
+	close(c)
+	//time.Sleep(1000 * time.Second)
+}
+
+func getter(client *http.Client, c chan int) {
+
+	//stop := timer("get" + strconv.Itoa(i))
+	//defer stop()
+	for ga := range c {
+		req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:8080/test/service/%s/%d", os.Args[3], os.Args[1], ga), nil)
+
+		checkErr(err)
+
+		// Create a httpstat powered context
+		var result httpstat.Result
+		ctx := httpstat.WithHTTPStat(req.Context(), &result)
+		req = req.WithContext(ctx)
+		resp, err := client.Do(req)
+		checkErr(err)
+
+		//t := []dbstructs.Weburl{}
+		t := make(map[string]interface{})
+		checkErr(json.NewDecoder(resp.Body).Decode(&t))
+
+		//_, err = ioutil.ReadAll(resp.Body)
+		checkErr(err)
+		resp.Body.Close()
+
+		//fmt.Println("sync", <-c)
+		log.Printf("Server processing: %d ms %d", int(result.ServerProcessing/time.Millisecond), ga)
+		//		log.Printf("%d", ga)
+		/*
+			// Show the results
+			log.Printf("DNS lookup: %d ms", int(result.DNSLookup/time.Millisecond))
+			log.Printf("TCP connection: %d ms", int(result.TCPConnection/time.Millisecond))
+			log.Printf("TLS handshake: %d ms", int(result.TLSHandshake/time.Millisecond))
+			log.Printf("Server processing: %d ms", int(result.ServerProcessing/time.Millisecond))
+			log.Printf("Content transfer: %d ms", int(result.ContentTransfer(time.Now())/time.Millisecond))
+		*/
+	}
+}
+
+func checkErr(err error) {
 	if err != nil {
-		return
+		panic(err)
 	}
-	store := make(map[int64]*gener.Gutschein, 0)
-	defer rows.Close()
-	for anz := 0; rows.Next(); anz++ {
-		arr, ts := gener.ScannerTGutschein()
-		if err = rows.Scan(arr...); err != nil {
-			return
-		}
-		store[ts.Aug_id.Int64] = ts
-		if ts.Auf_anzahl.Int64 > 1 {
-			fmt.Printf("grösser %s %s\n", ts.Auf_upd_uid, ts.Auf_bemerkung)
-		}
+}
 
-		if len(ts.Auf_partner.String) > 0 {
-			fmt.Printf("%d %s \n", ts.Auf_id.Int64, ts.Auf_partner)
-		} else {
-			fmt.Printf("%d null \n", ts.Auf_id.Int64)
-		}
-		//fmt.Printf("%v %T \n", ts, ts)
-		if anz > limiter {
-			break
-		}
+func timer(name string) func() {
+	t := time.Now()
+	log.Println(name, "start", t)
+	return func() {
+		d := time.Now().Sub(t)
+		log.Println(name, "took", d)
 	}
-	defer db.DBx.Close()
-
-	rower := make([][]interface{}, 0)
-	for _, t := range store {
-		rower = append(rower, []interface{}{t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid})
-	}
-	fmt.Println("vor copy", len(rower))
-	copyCount, err1 := db.DBx.CopyFrom(
-		[]string{"csvtest"},
-		[]string{"id", "bemerkung", "upd"},
-		pgx.CopyFromRows(rower),
-	)
-	if err1 != nil {
-		log.Fatal(err1)
-	}
-
-	fmt.Println("nach copy", copyCount)
-	/*
-
-		txn, err := db.DBx.Begin()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-			stmt, err := txn.Prepare(pq.CopyIn("csvtest", "id", "bemerkung", "upd"))
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("starte copy ", len(store))
-			for _, t := range store {
-				if _, err = stmt.Exec(t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid); err != nil {
-					log.Fatal(err)
-				}
-			}
-			_, err = stmt.Exec()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = stmt.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			err = txn.Commit()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("nach copy ", len(store))
-	*/
-	os.Exit(0)
 }
