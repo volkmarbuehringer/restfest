@@ -31,7 +31,7 @@ func main() {
 	}
 
 	for i := 0; i < 1000; i++ {
-		rows, err := db.DB.Query(fmt.Sprintf("SELECT %s from %s", os.Args[2], os.Args[1]))
+		rows, err := db.DBx.Query(fmt.Sprintf("SELECT %s from %s", os.Args[2], os.Args[1]))
 		checkErr(err)
 		// iterate over each row
 		for rows.Next() {
