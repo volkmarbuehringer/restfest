@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,11 +11,12 @@ import (
 	"strings"
 
 	"github.com/gorilla/schema"
+	"github.com/jackc/pgx"
 )
 
 var decoder = schema.NewDecoder()
 
-func rowScanner(tab string, rows *sql.Rows, len int) (stru interface{}, err error) {
+func rowScanner(tab string, rows *pgx.Rows, len int) (stru interface{}, err error) {
 	t := make([]interface{}, 0)
 	fun := db.ScannerFunMap[tab]
 
@@ -35,15 +35,13 @@ func rowScanner(tab string, rows *sql.Rows, len int) (stru interface{}, err erro
 	return
 }
 
-func prepare(tab string, sqlSt string, flag db.SQLOper) (stmt *sql.Stmt, err error) {
+func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, err error) {
 
 	if sqlFun, ok := db.SQLFunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {
-		sqls := fmt.Sprintf(sqlSt, sqlFun(flag)...)
-		fmt.Println("prep", sqls)
-		stmt, err = db.DB.Prepare(sqls)
+		stmt, err = db.DBx.Prepare(tab+strconv.Itoa(int(flag)), sqlFun(flag))
 
 	}
 	return

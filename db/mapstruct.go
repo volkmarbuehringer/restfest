@@ -3,14 +3,16 @@ package db
 type SQLOper int
 
 const (
-	GenSelect SQLOper = iota
+	GenSelectID SQLOper = iota
 	GenInsert
 	GenUpdate
+	GenFunction
+	GenSelectAll
 )
 
 type MapperFun1 func(interface{}) []interface{}
 
-var SQLFunMap = map[string]func(SQLOper) []interface{}{}
+var SQLFunMap = map[string]func(SQLOper) string{}
 
 var ROWInsertFunMap = map[string]MapperFun1{}
 

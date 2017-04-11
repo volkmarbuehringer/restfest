@@ -1,16 +1,12 @@
 package service
 
 import (
-	"database/sql"
 	"net/http"
 	"restfest/db"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx"
 )
-
-var sqlIns = map[string]*sql.Stmt{}
-
-const sqlInsert string = `insert into ` + dbschema + `.%s(%s)values(%s) returning %s`
 
 func poster(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -21,20 +17,18 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		senderErr(w, err)
 		return
 	}
+	var stmt *pgx.PreparedStatement
 
-	if _, ok := sqlIns[tab]; !ok {
-
-		if db.FlagMap[tab] == 3 {
-			sqlIns[tab], err = prepare(tab, selectFun, db.GenSelect)
-		} else {
-			sqlIns[tab], err = prepare(tab, sqlInsert, db.GenInsert)
-		}
-		if err != nil {
-			senderErr(w, err)
-			return
-		}
-
+	if db.FlagMap[tab] == 3 {
+		stmt, err = prepare(tab, db.GenFunction)
+	} else {
+		stmt, err = prepare(tab, db.GenInsert)
 	}
+	if err != nil {
+		senderErr(w, err)
+		return
+	}
+
 	var input []interface{}
 	if db.FlagMap[tab] == 3 {
 		input = db.ROWQueryFunMap[tab](json)
@@ -42,7 +36,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		input = db.ROWInsertFunMap[tab](json)
 	}
 
-	rows, err := sqlIns[tab].Query(input...)
+	rows, err := db.DBx.Query(stmt.Name, input...)
 	if err != nil {
 		senderErr(w, err)
 		return

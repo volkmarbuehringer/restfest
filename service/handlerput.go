@@ -1,17 +1,13 @@
 package service
 
 import (
-	"database/sql"
 	"net/http"
 	"restfest/db"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx"
 )
-
-var sqlUpd = map[string]*sql.Stmt{}
-
-const sqlUpdate string = `update ` + dbschema + `.%s set %s where %s returning %s`
 
 func putter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -24,18 +20,15 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := sqlUpd[tab]; !ok {
-
-		if sqlUpd[tab], err = prepare(tab, sqlUpdate, db.GenUpdate); err != nil {
-			senderErr(w, err)
-			return
-		}
-
+	var stmt *pgx.PreparedStatement
+	if stmt, err = prepare(tab, db.GenUpdate); err != nil {
+		senderErr(w, err)
+		return
 	}
 
 	x := db.ROWInsertFunMap[tab](json)
 	x = append(x, id)
-	rows, err := sqlUpd[tab].Query(x...)
+	rows, err := db.DBx.Query(stmt.Name, x...)
 
 	if err != nil {
 		senderErr(w, err)

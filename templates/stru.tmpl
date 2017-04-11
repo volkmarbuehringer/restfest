@@ -8,8 +8,10 @@
 package gener
 
 
+
 import (
 	"restfest/db"
+	"fmt"
 )
 
 type {{title .Table}}Params struct {
@@ -27,34 +29,53 @@ type {{title .Table}} struct {
 
 
 
-func SQL{{title .Table}}(flag db.SQLOper)[]interface{}{
+func SQL{{title .Table}}(flag db.SQLOper)string{
   x :=   {{printf "%q" (joiner .ColumnsT)}}
 
   switch flag{
-    case db.GenSelect:
-    return []interface{}{
-    x,
-		{{if .Flagger}}       {{printf "%q" .Table}}	{{else}} {{printf "%q" .PK}} {{end}},
-    	{{if .Flagger}}   {{printf "%q" .PK}} {{else}}  {{printf "%q" (joiner .BindsVarInsert)}}	{{end}},
-    }
 			{{if .Flagger}}
-    case db.GenInsert:
-    return    []interface{}{   {{printf "%q" .Table}}	,
-       {{printf "%q" (joiner .ColumnsInsert)  }}  ,
-       {{printf "%q" (joiner .BindsInsert)  }} ,
-        x,
-      }
-    default:
-      return    []interface{}{   {{printf "%q" .Table}}	,
-        {{printf "%q" (joiner .BindsUpdate)}}  ,
-        {{printf "%q" .PKBind}},
-      x,
-        }
+    case db.GenSelectID:
+    return fmt.Sprintf("select %s from " + db.DBschema + ".%s where %s=$1",
+    x,
+	     {{printf "%q" .Table}}	,
+      {{printf "%q" .PK}} ,
+    )
+
+		case db.GenSelectAll:
+		return fmt.Sprintf("select %s from " + db.DBschema + ".%s order by %s limit $1 offset $2",
+		x,
+   {{printf "%q" .Table}}	,
+  {{printf "%q" .PK}},
+		)
+
+		case db.GenInsert:
+		return  fmt.Sprintf(   `insert into ` + db.DBschema + `.%s(%s)values(%s) returning %s`,
+			{{printf "%q" .Table}}	,
+			 {{printf "%q" (joiner .ColumnsInsert)  }}  ,
+			 {{printf "%q" (joiner .BindsInsert)  }} ,
+				x)
+
+				default:
+				return  fmt.Sprintf(  `update ` + db.DBschema + `.%s set %s where %s returning %s`,
+					{{printf "%q" .Table}}	,
+						{{printf "%q" (joiner .BindsUpdate)}}  ,
+						{{printf "%q" .PKBind}},
+					x)
+
+			{{else}}
+
+		case db.GenFunction:
+		return fmt.Sprintf("select %s from " + db.DBschema + ".%s ( %s )",
+		x,
+ {{printf "%q" .PK}} ,
+ {{printf "%q" (joiner .BindsVarInsert)}}	,
+		)
+
 {{end}}
   }
 			{{if .Flagger}}
 			{{else}}
-	return nil
+	return ""
 {{end}}
 }
 
