@@ -50,7 +50,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 	die(err)
 	defer f.Close()
 
-	if rows, err := db.DB.Query(sqlallcols, table); err != nil {
+	if rows, err := db.DBx.Query(sqlallcols, table); err != nil {
 		log.Fatal(err)
 	} else {
 		defer rows.Close()
@@ -104,7 +104,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		}
 		{
 
-			if rows, err := db.DB.Query(sqlfunctionparams, parameter); err != nil {
+			if rows, err := db.DBx.Query(sqlfunctionparams, parameter); err != nil {
 				log.Fatal(err)
 			} else {
 				defer rows.Close()
@@ -178,7 +178,7 @@ func Generator() {
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("templates/*")
 	die(err1)
 
-	rows, err := db.DB.Query(sqlalltabs)
+	rows, err := db.DBx.Query(sqlalltabs)
 	if err != nil {
 		log.Fatal(err)
 	}
