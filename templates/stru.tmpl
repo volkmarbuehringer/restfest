@@ -35,33 +35,33 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
   switch flag{
 			{{if .Flagger}}
     case db.GenSelectID:
-    return fmt.Sprintf("select %s from " + db.DBschema + ".%s where %s=$1",
+    return fmt.Sprintf(db.SQLPattern[db.GenSelectID],
     x,
 	     {{printf "%q" .Table}}	,
       {{printf "%q" .PK}} ,
     )
 
 		case db.GenSelectAll:
-		return fmt.Sprintf("select %s from " + db.DBschema + ".%s order by %s limit $1 offset $2",
+		return fmt.Sprintf(db.SQLPattern[db.GenSelectAll],
 		x,
    {{printf "%q" .Table}}	,
   {{printf "%q" .PK}},
 		)
 
 		case db.GenInsert:
-		return  fmt.Sprintf(   `insert into ` + db.DBschema + `.%s(%s)values(%s) returning %s`,
+		return  fmt.Sprintf( db.SQLPattern[db.GenInsert],
 			{{printf "%q" .Table}}	,
 			 {{printf "%q" (joiner .ColumnsInsert)  }}  ,
 			 {{printf "%q" (joiner .BindsInsert)  }} ,
 				x)
 
 				case db.GenDelete:
-				return  fmt.Sprintf(   `delete from ` + db.DBschema + `.%s where %s=$1 returning %s`,
+				return  fmt.Sprintf(db.SQLPattern[db.GenDelete]  ,
 					{{printf "%q" .Table}}	,
 						{{printf "%q" .PK}},
 						x)
-				default:
-				return  fmt.Sprintf(  `update ` + db.DBschema + `.%s set %s where %s returning %s`,
+				case db.GenUpdate:
+				return  fmt.Sprintf(db.SQLPattern[db.GenUpdate]  ,
 					{{printf "%q" .Table}}	,
 						{{printf "%q" (joiner .BindsUpdate)}}  ,
 						{{printf "%q" .PKBind}},
@@ -70,7 +70,7 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 			{{else}}
 
 		case db.GenFunction:
-		return fmt.Sprintf("select %s from " + db.DBschema + ".%s ( %s )",
+		return fmt.Sprintf(db.SQLPattern[db.GenFunction],
 		x,
  {{printf "%q" .PK}} ,
  {{printf "%q" (joiner .BindsVarInsert)}}	,
@@ -78,10 +78,9 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 
 {{end}}
   }
-			{{if .Flagger}}
-			{{else}}
+
 	return ""
-{{end}}
+
 }
 
 

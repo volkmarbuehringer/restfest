@@ -11,8 +11,6 @@ import (
 
 var DBx *pgx.ConnPool
 
-const DBschema = "public"
-
 func init() {
 
 	porter, err := strconv.Atoi(os.Getenv("PGPORT"))

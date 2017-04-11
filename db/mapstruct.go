@@ -10,6 +10,15 @@ const (
 	GenSelectAll
 	GenDelete
 )
+const DBschema = "public"
+
+var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
+	`insert into ` + DBschema + `.%s(%s)values(%s) returning %s`,
+	`update ` + DBschema + `.%s set %s where %s returning %s`,
+	"select %s from " + DBschema + ".%s ( %s )",
+	"select %s from " + DBschema + ".%s order by %s limit $1 offset $2",
+	`delete from ` + DBschema + `.%s where %s=$1 returning %s`,
+}
 
 type MapperFun1 func(interface{}) []interface{}
 
