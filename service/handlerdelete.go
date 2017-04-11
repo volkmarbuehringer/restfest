@@ -19,15 +19,10 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 		senderErr(w, err)
 		return
 	}
-	empty := []interface{}{id}
 
-	rows, err := db.DBx.Query(stmt.Name, empty...)
-	if err != nil {
-		senderErr(w, err)
-		return
-	}
+	rows := db.DBx.QueryRow(stmt.Name, id)
 
-	inter, err := rowScanner(tab, rows, 1)
+	inter, err := row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
 		return

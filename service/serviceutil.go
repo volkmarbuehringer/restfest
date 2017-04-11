@@ -29,17 +29,13 @@ func row1Scanner(tab string, rows *pgx.Row) (stru interface{}, err error) {
 
 }
 
-func rowScanner(tab string, rows *pgx.Rows, len int) (stru interface{}, err error) {
+func rowScanner(tab string, rows *pgx.Rows) (stru interface{}, err error) {
 	t := make([]interface{}, 0)
 	fun := db.ScannerFunMap[tab]
 
 	for anz := 0; rows.Next(); anz++ {
 		arr, ts := fun()
 		if err = rows.Scan(arr...); err != nil {
-			return
-		}
-		if len == 1 {
-			stru = ts
 			return
 		}
 		t = append(t, ts)

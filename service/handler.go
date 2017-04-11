@@ -37,7 +37,7 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 		}
 		defer rows.Close()
 
-		inter, err := rowScanner(tab, rows, 0)
+		inter, err := rowScanner(tab, rows)
 		if err != nil {
 			senderErr(w, err)
 			return
@@ -59,19 +59,15 @@ func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
 		senderErr(w, err1)
 		return
 	} else {
-		rows, err := db.DBx.Query(stmt.Name, id)
+
+		rows := db.DBx.QueryRow(stmt.Name, id)
+
+		inter, err := row1Scanner(tab, rows)
 		if err != nil {
 			senderErr(w, err)
 			return
 		}
-		defer rows.Close()
-
-		if inter, err := rowScanner(tab, rows, 1); err != nil {
-			senderErr(w, err)
-			return
-		} else {
-			sender(w, inter)
-		}
+		sender(w, inter)
 
 	}
 
