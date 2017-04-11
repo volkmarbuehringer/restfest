@@ -39,12 +39,14 @@ func (v NullTime) MarshalJSON() ([]byte, error) {
 }
 
 func (e *NullTime) UnmarshalText(text []byte) (err error) {
-	var x *time.Time
-
-	if err = x.UnmarshalText(text); err != nil {
+	const shortForm = "2006-01-02T15:04:05Z"
+	x := string(text)
+	if len(x) < len(shortForm) {
+		x = x + "T00:00:00Z"
+	}
+	if e.Time, err = time.Parse(shortForm, x); err != nil {
 		return
 	}
-
 	e.Valid = true
 	return
 }
