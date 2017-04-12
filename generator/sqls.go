@@ -82,7 +82,14 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name
 `
 
 const sqlallcols string = `select column_name,
-case when data_type
+case
+when data_type ='ARRAY' and udt_name = '_int4' then
+'[]int32'
+when data_type ='ARRAY' and udt_name = '_int8' then
+'[]int64'
+when data_type ='ARRAY' and udt_name = '_character varying' then
+'[]string'
+when data_type
 in ('integer') then
 case when is_nullable = 'YES' then
 '*int32'
@@ -135,7 +142,9 @@ case when is_nullable = 'YES' then
 else
   	'time.Time'
   end
-	else 'gaga'
+when data_type = 'uuid' then '*string'
+when data_type = 'jsonb' then '*string'
+	else data_type
 end as coltrans,
 /*
 case
