@@ -34,6 +34,9 @@ func rowScanner(tab string, rows *pgx.Rows) (stru interface{}, err error) {
 	fun := db.ScannerFunMap[tab]
 
 	for rows.Next() {
+		if err = rows.Err(); err != nil {
+			return
+		}
 		arr, ts := fun()
 		if err = rows.Scan(arr...); err != nil {
 			return
