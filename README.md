@@ -79,26 +79,6 @@ The null-handling of strings can be changed between sql.Nullstring and convertin
 
 Flexible REST-Services with functions:
 
-<!--  -->
-cREATE OR REPLACE FUNCTION get_weburl(
-p_id integer,
-	p_start integer,
-  p_end integer,
-  p_len integer,
-	p_lala character varying)
-    RETURNS setof weburl
-    LANGUAGE 'sql'
-    COST 100.0
-    ROWS 1000.0
-AS $function$
-
-SELECT * FROM weburl WHERE id >= coalesce(p_id,id) and zusatz between coalesce(p_start,zusatz) and coalesce(p_end,zusatz) and url like coalesce(p_lala,'')||'%'
-order by id
-limit coalesce(p_len,100);
-
-$function$;
-<!--  -->
-
 After go generate you can use the functions for Rest-Services with variables:
 
 http://localhost:8080/test/service/get_weburl_173826?p_start=80&p_end=100&p_len=100&p_lala=www&p_id=7000
