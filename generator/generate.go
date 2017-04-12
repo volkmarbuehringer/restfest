@@ -4,36 +4,39 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"restfest/db"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/jackc/pgx"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
 type TabFlag struct {
-	Table string
-	Flag  int
+	Table     string
+	Flag      int
+	PK        string
+	Parameter string
 }
 
-func generateMap(t *template.Template, f io.Writer, arr []TabFlag) {
+var db *pgx.Conn
+
+func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	if len(arr) > 0 {
-		err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
-			Table     []TabFlag
+		if err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
+			Table     []*TabFlag
 			Timestamp time.Time
-		}{arr, time.Now()})
-		if err != nil {
+		}{arr, time.Now()}); err != nil {
 			log15.Crit("DBFehler", "map", err)
-			return
+			return err
 		}
 
 	}
-
+	return nil
 }
 
-func generateStru(t *template.Template, table string, pk string, parameter string) {
+func generateStru(t *template.Template, table string, pk string, parameter string) error {
 
 	namer := table
 	flagger := false
@@ -48,20 +51,20 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		namer = parameter
 
 	} else {
-		profB = []Prof{Prof{"length", "int64", ""}, Prof{"offset", "int64", ""}}
+		profB = []Prof{Prof{"length", "int", ""}, Prof{"offset", "int", ""}}
 		flagger = true
 	}
 	f, err := os.Create("gener/" + namer + ".go")
 	if err != nil {
 		log15.Crit("DBFehler", "gener", err)
-		return
+		return err
 	}
 
 	defer f.Close()
 
-	if rows, err := db.DBx.Query(sqlallcols, table); err != nil {
+	if rows, err := db.Query(sqlallcols, table); err != nil {
 		log15.Crit("DBFehler", "query", err)
-		return
+		return err
 	} else {
 		defer rows.Close()
 
@@ -79,7 +82,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 			prof := Prof{}
 			if err := rows.Scan(&prof.Column, &prof.ColumnTrans, &prof.ColumnT); err != nil {
 				log15.Crit("DBFehler", "scan", err)
-				return
+				return err
 			}
 			profA = append(profA, prof)
 			Columns = append(Columns, prof.Column)
@@ -115,9 +118,9 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		}
 		{
 
-			if rows, err := db.DBx.Query(sqlfunctionparams, parameter); err != nil {
+			if rows, err := db.Query(sqlfunctionparams, parameter); err != nil {
 				log15.Crit("DBFehler", "query", err)
-				return
+				return err
 			} else {
 				defer rows.Close()
 
@@ -125,7 +128,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 					prof := Prof{}
 					if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
 						log15.Crit("DBFehler", "scann", err)
-						return
+						return err
 					}
 					profB = append(profB, prof)
 
@@ -173,16 +176,41 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 			})
 			if err != nil {
 				log15.Crit("DBFehler", "temp", err)
-				return
+				return err
 			}
 
 		}
 
 	}
-
+	return nil
 }
 
-func Generator() {
+func dbGen() (arr []*TabFlag, err error) {
+
+	rows, err := db.Query(sqlalltabs)
+	if err != nil {
+		log15.Crit("DBFehler", "querymain", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var row TabFlag
+		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter); err != nil {
+			log15.Crit("DBFehler", "scan", err)
+			return
+		}
+
+		arr = append(arr, &row)
+
+	}
+	return
+}
+
+func Generator() error {
+	defer db.Close()
+	arr, err := dbGen()
 	os.RemoveAll("gener")
 	os.Mkdir("gener", 0777)
 	os.Remove("mapper.go")
@@ -195,46 +223,41 @@ func Generator() {
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("templates/*")
 	if err1 != nil {
 		log15.Crit("DBFehler", "temp1", err1)
-		return
+		return err1
 	}
 
-	rows, err := db.DBx.Query(sqlalltabs)
-	if err != nil {
-		log15.Crit("DBFehler", "query", err)
-		return
-	}
-
-	defer rows.Close()
-
-	arr := []TabFlag{}
-
-	for rows.Next() {
-		var table string
-		var pk string
-		var flag int
-		var parameter string
-		if err = rows.Scan(&flag, &table, &pk, &parameter); err != nil {
-			log15.Crit("DBFehler", "scan", err)
-			return
+	for _, row := range arr {
+		fmt.Println("tabelle", row.Table, row.Parameter)
+		if err = generateStru(t, row.Table, row.PK, row.Parameter); err != nil {
+			return err
 		}
-
-		fmt.Println("tabelle", table, parameter)
-		generateStru(t, table, pk, parameter)
-		if flag == 3 {
-			table = parameter
+		if row.Flag == 3 {
+			row.Table = row.Parameter
 		}
-		flags := TabFlag{table, flag}
-		arr = append(arr, flags)
 
 	}
 
 	f1, err1 := os.Create("mapper.go")
 	if err1 != nil {
 		log15.Crit("DBFehler", "create", err1)
-		return
+		return err
 	}
 
 	defer f1.Close()
 
-	generateMap(t, f1, arr)
+	return generateMap(t, f1, arr)
+
+}
+
+func init() {
+	connConfig, err := pgx.ParseEnvLibpq()
+	if err != nil {
+		log15.Crit("DB", "parse", err)
+		os.Exit(1)
+	}
+	connConfig.LogLevel = pgx.LogLevelWarn
+	if db, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
 }

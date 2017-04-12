@@ -6,8 +6,16 @@
 // go generate
 package main
 
-import "restfest/generator"
+import (
+	"fmt"
+	"restfest/generator"
+)
 
 func main() {
-	generator.Generator()
+	if err := generator.Generator(); err != nil {
+		fmt.Println("Generation aborted", err)
+	} else {
+		fmt.Println("generation ok")
+	}
+
 }
