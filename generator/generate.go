@@ -3,13 +3,14 @@ package generator
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"restfest/db"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
+
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 type TabFlag struct {
@@ -23,7 +24,11 @@ func generateMap(t *template.Template, f io.Writer, arr []TabFlag) {
 			Table     []TabFlag
 			Timestamp time.Time
 		}{arr, time.Now()})
-		die(err)
+		if err != nil {
+			log15.Crit("DBFehler", "map", err)
+			return
+		}
+
 	}
 
 }
@@ -43,15 +48,20 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		namer = parameter
 
 	} else {
-		profB = []Prof{Prof{"length", "*int64", ""}, Prof{"offset", "*int64", ""}}
+		profB = []Prof{Prof{"length", "int64", ""}, Prof{"offset", "int64", ""}}
 		flagger = true
 	}
 	f, err := os.Create("gener/" + namer + ".go")
-	die(err)
+	if err != nil {
+		log15.Crit("DBFehler", "gener", err)
+		return
+	}
+
 	defer f.Close()
 
 	if rows, err := db.DBx.Query(sqlallcols, table); err != nil {
-		log.Fatal(err)
+		log15.Crit("DBFehler", "query", err)
+		return
 	} else {
 		defer rows.Close()
 
@@ -68,7 +78,8 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 
 			prof := Prof{}
 			if err := rows.Scan(&prof.Column, &prof.ColumnTrans, &prof.ColumnT); err != nil {
-				log.Fatal(err)
+				log15.Crit("DBFehler", "scan", err)
+				return
 			}
 			profA = append(profA, prof)
 			Columns = append(Columns, prof.Column)
@@ -105,14 +116,16 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 		{
 
 			if rows, err := db.DBx.Query(sqlfunctionparams, parameter); err != nil {
-				log.Fatal(err)
+				log15.Crit("DBFehler", "query", err)
+				return
 			} else {
 				defer rows.Close()
 
 				for rows.Next() {
 					prof := Prof{}
 					if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
-						log.Fatal(err)
+						log15.Crit("DBFehler", "scann", err)
+						return
 					}
 					profB = append(profB, prof)
 
@@ -158,7 +171,11 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 				BindsUpdate,
 				profB,
 			})
-			die(err)
+			if err != nil {
+				log15.Crit("DBFehler", "temp", err)
+				return
+			}
+
 		}
 
 	}
@@ -168,7 +185,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 func Generator() {
 	os.RemoveAll("gener")
 	os.Mkdir("gener", 0777)
-
+	os.Remove("mapper.go")
 	funcMap := template.FuncMap{
 		// The name "title" is what the function will be called in the template text.
 		"title":  strings.Title,
@@ -176,11 +193,15 @@ func Generator() {
 	}
 	// Create a new template and parse the letter into it.
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("templates/*")
-	die(err1)
+	if err1 != nil {
+		log15.Crit("DBFehler", "temp1", err1)
+		return
+	}
 
 	rows, err := db.DBx.Query(sqlalltabs)
 	if err != nil {
-		log.Fatal(err)
+		log15.Crit("DBFehler", "query", err)
+		return
 	}
 
 	defer rows.Close()
@@ -192,8 +213,9 @@ func Generator() {
 		var pk string
 		var flag int
 		var parameter string
-		if err := rows.Scan(&flag, &table, &pk, &parameter); err != nil {
-			log.Fatal(err)
+		if err = rows.Scan(&flag, &table, &pk, &parameter); err != nil {
+			log15.Crit("DBFehler", "scan", err)
+			return
 		}
 
 		fmt.Println("tabelle", table, parameter)
@@ -207,14 +229,12 @@ func Generator() {
 	}
 
 	f1, err1 := os.Create("mapper.go")
-	die(err1)
+	if err1 != nil {
+		log15.Crit("DBFehler", "create", err1)
+		return
+	}
+
 	defer f1.Close()
 
 	generateMap(t, f1, arr)
-}
-
-func die(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
