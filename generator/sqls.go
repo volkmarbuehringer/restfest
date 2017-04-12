@@ -11,11 +11,12 @@ func dbSequenzer(tab string) string {
 
 const sqlfunctionparams string = `sELECT parameter_name,
 case when data_type
-in ('integer',
- 'bigint',
- 'smallint')  then
---'db.JSONNullInt64'
+in ('integer') then
+'*int32'
+when data_type in ('bigint') then
 '*int64'
+when data_type in ('smallint') then
+'*int16'
 when data_type in ( 'boolean') then
 '*bool'
 when data_type in ('double precision','real')  then
@@ -24,14 +25,10 @@ when data_type in ('character varying',
 'text',
 'character') then
 --'db.JSONNullString'
---'string'
-'db.JSONString'
+'*string'
+--'db.JSONString'
 when data_type = 'numeric'  then
-case
-  when numeric_scale > 0 then '*float64'
-else
-'*int64'
-  end
+ '*string'
 when data_type in ('timestamp without time zone',
 	'timestamp with time zone',
 'date') then
@@ -86,62 +83,58 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name
 
 const sqlallcols string = `select column_name,
 case when data_type
-in ('integer',
- 'bigint',
- 'smallint')  then
- /*
+in ('integer') then
 case when is_nullable = 'YES' then
-'db.JSONNullInt64'
+'*int32'
+else
+'int32'
+end
+when data_type in ('bigint') then
+case when is_nullable = 'YES' then
+'*int64'
 else
 'int64'
 end
-*/
-'*int64'
-when data_type in ( 'boolean') then
-'*bool'
-/*
+when data_type in ('smallint') then
 case when is_nullable = 'YES' then
-'db.JSONNullBool'
+'*int16'
+else
+'int16'
+end
+when data_type in ( 'boolean') then
+case when is_nullable = 'YES' then
+'*bool'
 else
 'bool'
 end
-*/
 when data_type in ('double precision','real')  then
-/*
 case when is_nullable = 'YES' then
-'db.JSONNullFloat64'
+'*float64'
 else
 'float64'
 end
-*/
-'*float64'
 when data_type in ('character varying',
 'text',
 'character') then
 case when is_nullable = 'YES' then
---'db.JSONNullString'
---'string'
-'db.JSONString'
+'*string'
 else
 'string'
 end
 when data_type = 'numeric'  then
-case
-  when numeric_scale > 0  then '*float64'
-  when numeric_scale = 0 then '*int64'
+case when is_nullable = 'YES' then
+'*string'
 else
-'*int64'
-  end
+'string'
+end
 when data_type in ('timestamp without time zone',
 	'timestamp with time zone',
 'date') then
-/*
-case when is_nullable = 'YES' then 'db.NullTime'
-else
-  'db.NullTime'
-  end
-*/
+case when is_nullable = 'YES' then
 	'*time.Time'
+else
+  	'time.Time'
+  end
 	else 'gaga'
 end as coltrans,
 /*
