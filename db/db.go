@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx"
 	"gopkg.in/inconshreveable/log15.v2"
@@ -13,7 +14,8 @@ func init() {
 
 	connConfig, err := pgx.ParseEnvLibpq()
 	if err != nil {
-		log15.Crit("DBFehler", err)
+		log15.Crit("DB", "parse", err)
+		os.Exit(1)
 	}
 	connConfig.LogLevel = pgx.LogLevelWarn
 
@@ -21,7 +23,8 @@ func init() {
 	config := pgx.ConnPoolConfig{ConnConfig: connConfig, MaxConnections: 20}
 	DBx, err = pgx.NewConnPool(config)
 	if err != nil {
-		log15.Crit("DBFehler", err)
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
 	}
 	fmt.Println("stat", DBx.Stat())
 
