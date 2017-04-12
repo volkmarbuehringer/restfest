@@ -97,13 +97,7 @@ func EmptyParam{{title .Table}}() interface{}{
  rt := new({{title .Table}}Params)
 
 	{{if .Flagger}}
-		tt := new(int64)
-		*tt = 100
-		rt.Length=tt
-				tt = new(int64)
- 	*tt = 0
- 	rt.Offset=tt
-
+		rt.Length=100
 	{{end}}
 
     return rt
