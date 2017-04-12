@@ -1,14 +1,6 @@
 package db
 
-import (
-	"database/sql"
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
-	"strconv"
-	"time"
-)
-
+/*
 type String string
 
 type NullTime struct {
@@ -259,3 +251,4 @@ func (v *JSONNullString) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+*/
