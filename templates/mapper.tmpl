@@ -13,6 +13,7 @@ import (
 
 func init(){
 	{{- range .Table  }}
+	{{if .Worker}}
 db.SQLFunMap[{{printf "%q" .Table}}]= gener.SQL{{title .Table}}
 db.ROWInsertFunMap[{{printf "%q" .Table}}]= gener.ROWInsert{{title .Table}}
 db.ROWQueryFunMap[{{printf "%q" .Table}}]= gener.ROWQuery{{title .Table}}
@@ -20,6 +21,7 @@ db.EmptyFunMap[{{printf "%q" .Table}}]=gener.Empty{{title .Table}}
 db.ParamFunMap[{{printf "%q" .Table}}]=gener.EmptyParam{{title .Table}}
 db.ScannerFunMap[{{printf "%q" .Table}}]=gener.Scanner{{title .Table}}
 db.FlagMap[{{printf "%q" .Table}}]={{.Flag}}
+{{end}}
 		{{- end }}
 
 		fmt.Printf("geladene Tabellen: %d\n", len(db.SQLFunMap))
