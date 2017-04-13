@@ -1,15 +1,18 @@
 package generator
 
+import "os"
+
 const BindVar string = "$"
 const EqBindVar string = "=$"
 const dbTimestamp string = "current_timestamp"
-const dbschema = "public"
+
+var dbschema = os.Getenv("PGSCHEMA")
 
 func dbSequenzer(tab string) string {
 	return ""
 }
 
-const sqlfunctionparams string = `sELECT parameter_name,
+var sqlfunctionparams string = `sELECT parameter_name,
 case when data_type
 in ('integer') then
 '*int32'
@@ -40,7 +43,7 @@ and parameters.specific_schema='` + dbschema + `'
 and parameter_mode = 'IN' and parameter_name is not null
 ORDER BY  parameters.ordinal_position`
 
-const sqlalltabs string = `
+var sqlalltabs string = `
 with pk as (
 	SELECT
 	  tc.table_name
@@ -81,7 +84,7 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name
 		and routine_type ='FUNCTION'
 `
 
-const sqlallcols string = `select column_name,
+var sqlallcols string = `select column_name,
 case
 when data_type ='ARRAY' and udt_name = '_int4' then
 '[]int32'
@@ -144,7 +147,7 @@ else
   end
 when data_type = 'uuid' then '*string'
 when data_type = 'jsonb' then '*string'
-	else data_type
+	else 'string'
 end as coltrans,
 /*
 case
