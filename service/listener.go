@@ -25,7 +25,12 @@ func Logger(inner http.Handler, name string) http.Handler {
 
 func Listen() {
 
+	srv := &http.Server{
+		ReadTimeout:  200 * time.Second,
+		WriteTimeout: 200 * time.Second,
+		Addr:         ":8080",
+		Handler:      NewRouter(),
+	}
 	fmt.Println("listen")
-	router := NewRouter()
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(srv.ListenAndServe())
 }
