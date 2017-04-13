@@ -1,5 +1,7 @@
 package db
 
+import "os"
+
 type SQLOper int
 
 const (
@@ -10,7 +12,8 @@ const (
 	GenSelectAll
 	GenDelete
 )
-const DBschema = "public"
+
+var DBschema = os.Getenv("PGSCHEMA")
 
 var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 	`insert into ` + DBschema + `.%s(%s)values(%s) returning %s`,
