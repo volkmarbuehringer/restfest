@@ -11,6 +11,7 @@ const (
 	GenFunction
 	GenSelectAll
 	GenDelete
+	GenSelectAll1
 )
 
 var DBschema = os.Getenv("PGSCHEMA")
@@ -21,6 +22,7 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 	"select %s from " + DBschema + ".%s ( %s )",
 	"select %s from " + DBschema + ".%s order by %s limit $1 offset $2",
 	`delete from ` + DBschema + `.%s where %s=$1 returning %s`,
+	"select %s from " + DBschema + ".%s",
 }
 
 type MapperFun1 func(interface{}) []interface{}
