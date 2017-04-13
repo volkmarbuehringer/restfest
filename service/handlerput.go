@@ -16,7 +16,14 @@ func putter(w http.ResponseWriter, r *http.Request) {
 	tab := vars["tab"]
 	id, _ := strconv.Atoi(vars["id"])
 
-	json, err := prepLesen(tab, w, r)
+	inter, err := readRow(tab, id)
+	if err != nil {
+		senderErr(w, err)
+		log15.Error("DBFehler", "put", err)
+		return
+	}
+
+	json, err := prepLesen1(tab, w, r, inter)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "put", err)
@@ -34,7 +41,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 	x = append(x, id)
 	rows := db.DBx.QueryRow(stmt.Name, x...)
 
-	inter, err := row1Scanner(tab, rows)
+	inter, err = row1Scanner(tab, rows)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "put", err)

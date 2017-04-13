@@ -15,11 +15,13 @@ import (
 )
 
 var decoder = schema.NewDecoder()
+var preparedStmt = map[string]*pgx.PreparedStatement{}
 
 func row1Scanner(tab string, rows *pgx.Row) (stru interface{}, err error) {
 	var arr []interface{}
 	arr, stru = db.ScannerFunMap[tab]()
 	if err = rows.Scan(arr...); err != nil {
+
 		return
 	}
 	return
@@ -45,12 +47,18 @@ func rowScanner(tab string, rows *pgx.Rows) (stru interface{}, err error) {
 }
 
 func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, err error) {
-
-	if sqlFun, ok := db.SQLFunMap[tab]; !ok {
-		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-		return
-	} else {
-		stmt, err = db.DBx.Prepare(tab+strconv.Itoa(int(flag)), sqlFun(flag))
+	sucher := tab + strconv.Itoa(int(flag))
+	var ok bool
+	if stmt, ok = preparedStmt[sucher]; !ok {
+		if sqlFun, ok := db.SQLFunMap[tab]; !ok {
+			err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+			return
+		} else if stmt, err = db.DBx.Prepare(sucher, sqlFun(flag)); err != nil {
+			return
+		} else {
+			preparedStmt[sucher] = stmt
+			fmt.Println(*stmt)
+		}
 
 	}
 	return
@@ -129,6 +137,13 @@ func sender(w http.ResponseWriter, todos interface{}) {
 		panic(err)
 	}
 
+}
+
+func prepLesen1(tab string, w http.ResponseWriter, r *http.Request, defaults interface{}) (json interface{}, err error) {
+
+	json, err = leser1(w, r, defaults)
+
+	return
 }
 
 func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
