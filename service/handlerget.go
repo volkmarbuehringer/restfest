@@ -9,12 +9,12 @@ import (
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
-func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
+func getAllHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	tab := vars["tab"]
 
-	ga, err := prepParam(tab, w, r)
+	params, err := prepParam(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "getall", err)
@@ -27,33 +27,18 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 	} else {
 		sqler = db.GenSelectAll
 	}
-	if stmt, err1 := prepare(tab, sqler); err1 != nil {
-		senderErr(w, err1)
-		log15.Error("DBFehler", "getall", err1)
+	inter, err := readRows(tab, sqler, params)
+	if err != nil {
+		senderErr(w, err)
+		log15.Error("DBFehler", "getall", err)
 		return
-	} else {
-		rows, err := db.DBx.Query(stmt.Name, db.ROWQueryFunMap[tab](ga)...)
-		if err != nil {
-			senderErr(w, err)
-			log15.Error("DBFehler", "getall", err)
-			return
-		}
-		defer rows.Close()
-
-		inter, err := rowScanner(tab, rows)
-		if err != nil {
-			senderErr(w, err)
-			log15.Error("DBFehler", "getall", err)
-			return
-		}
-
-		sender(w, inter)
-
 	}
+
+	sender(w, inter)
 
 }
 
-func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
+func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	tab := vars["tab"]

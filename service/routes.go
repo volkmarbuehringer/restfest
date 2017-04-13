@@ -17,13 +17,13 @@ var routes = Routes{
 		"read id",
 		"GET",
 		"/test/service/{tab}/{id:[0-9]+}",
-		getByIDHandler5,
+		getByIDHandler,
 	},
 	Route{
 		"read all",
 		"GET",
 		"/test/service/{tab}",
-		getByIDHandler3,
+		getAllHandler,
 	},
 
 	Route{

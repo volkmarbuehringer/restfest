@@ -70,3 +70,21 @@ func readRow(tab string, id int) (inter interface{}, err error) {
 	}
 	return
 }
+
+func readRows(tab string, sqler db.SQLOper, params interface{}) (inter interface{}, err error) {
+	var stmt *pgx.PreparedStatement
+	if stmt, err = prepare(tab, sqler); err != nil {
+
+		return
+	}
+	rows, err := db.DBx.Query(stmt.Name, db.ROWQueryFunMap[tab](params)...)
+	if err != nil {
+
+		return nil, err
+	}
+	defer rows.Close()
+
+	inter, err = rowScanner(tab, rows)
+	return
+
+}
