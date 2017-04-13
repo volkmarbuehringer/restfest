@@ -2,13 +2,11 @@ package service
 
 import (
 	"net/http"
+	"restfest/db"
 	"strconv"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
-
 	"github.com/gorilla/mux"
-
-	"restfest/db"
+	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
@@ -53,20 +51,6 @@ func getByIDHandler3(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-}
-
-func readRow(tab string, id int) (inter interface{}, err error) {
-	if stmt, err1 := prepare(tab, db.GenSelectID); err1 != nil {
-
-		return nil, err1
-	} else {
-
-		rows := db.DBx.QueryRow(stmt.Name, id)
-
-		inter, err = row1Scanner(tab, rows)
-
-	}
-	return
 }
 
 func getByIDHandler5(w http.ResponseWriter, r *http.Request) {
