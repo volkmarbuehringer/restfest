@@ -6,65 +6,90 @@ import (
 	"restfest/db"
 	"restfest/gener"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx"
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
+var dbx *pgx.Conn
+
+type Copy struct {
+	rows *pgx.Rows
+}
+
+func (t Copy) Next() bool {
+	if anz >= limiter {
+		return false
+	}
+	anz++
+
+	return t.rows.Next()
+}
+
+func (t Copy) Values() (arr []interface{}, err error) {
+	arrr, _ := gener.ScannerTZahlung()
+	if err = t.rows.Scan(arrr...); err != nil {
+		log15.Crit("DBFehler", "scan", err)
+		return
+	}
+	return arrr, nil
+}
+
+func (t Copy) Err() error {
+	return t.rows.Err()
+}
+
+var limiter int
+var anz int
+
 func main() {
 
-	limiter, _ := strconv.Atoi(os.Args[1])
-	rows, err := db.DBx.Query(gener.SQLGutschein(db.GenSelectAll), limiter, 0)
+	limiter, _ = strconv.Atoi(os.Args[1])
+	var dat Copy
+	var err error
+	dat.rows, err = dbx.Query(gener.SQLZahlung(db.GenSelectAll1))
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return
 	}
-	store := make(map[int32]*gener.Gutschein, 0)
-	defer rows.Close()
-	for anz := 0; rows.Next() && anz < limiter; anz++ {
-		if err = rows.Err(); err != nil {
-			log15.Crit("DBFehler", "get", err)
-			return
-		}
+	defer dat.rows.Close()
 
-		arr, ts := gener.ScannerTGutschein()
-		if err = rows.Scan(arr...); err != nil {
-			log15.Crit("DBFehler", "get", err)
-			return
-		}
-		store[*ts.Aug_id] = ts
+	var datI pgx.CopyFromSource
 
-		if ts.Auf_anzahl != nil {
-			tt, _ := strconv.Atoi(*ts.Auf_anzahl)
-			if tt > 1 && ts.Auf_upd_uid != nil && ts.Auf_bemerkung != nil {
-				fmt.Printf("grösser %s %s\n", *ts.Auf_upd_uid, *ts.Auf_bemerkung)
-			}
+	datI = dat
 
-		}
+	//store := make(map[int64]*gener.Zahlung, 0)
+	fmt.Println("vor copy")
+	t := time.Now()
 
-		if ts.Auf_partner != nil && len(*ts.Auf_partner) > 0 {
-			fmt.Printf("%d %s \n", ts.Auf_id, *ts.Auf_partner)
-		} else {
-			fmt.Printf("%d null \n", ts.Auf_id)
-		}
-	}
-	defer db.DBx.Close()
+	copyCount, err := db.DBx.CopyFrom(
+		[]string{"copyzahlung"},
+		[]string{"z_id", "z_jobid", "z_packageid", "z_ticketcompid", "z_paytypeid", "z_wsid", "z_ezid", "z_flid", "z_hznr_buchung", "z_betrag", "z_zahlungsdatum", "z_blz", "z_konto", "z_bankref", "z_blzempf", "z_kontoempf", "z_loeschkenn", "z_cr_uid", "z_cr_date", "z_upd_uid", "z_upd_date", "z_bicempf", "z_ibanempf", "z_bic", "z_iban"},
+		datI,
+	)
 
-	rower := make([][]interface{}, 0)
-	for _, t := range store {
-		rower = append(rower, []interface{}{t.Aug_id, t.Auf_bemerkung, t.Auf_upd_uid})
-	}
-	fmt.Println("vor copy", len(rower))
-	if copyCount, err := db.DBx.CopyFrom(
-		[]string{"csvtest"},
-		[]string{"id", "bemerkung", "upd"},
-		pgx.CopyFromRows(rower),
-	); err != nil {
-		log15.Crit("DBFehler", "get", err)
+	if err != nil {
+		log15.Crit("DBFehler", "copy", err)
 		return
-	} else {
-		fmt.Println("nach copy", copyCount)
 	}
+
+	//		store[struT.Z_id] = struT
+	fmt.Println("nach copy", copyCount, time.Since(t))
+	defer dbx.Close()
 
 	os.Exit(0)
+}
+
+func init() {
+	connConfig, err := pgx.ParseEnvLibpq()
+	if err != nil {
+		log15.Crit("DB", "parse", err)
+		os.Exit(1)
+	}
+	connConfig.LogLevel = pgx.LogLevelWarn
+	if dbx, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
 }
