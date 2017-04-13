@@ -18,6 +18,7 @@ type TabFlag struct {
 	Flag      int
 	PK        string
 	Parameter string
+	Worker    bool
 }
 
 var db *pgx.Conn
@@ -36,9 +37,9 @@ func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	return nil
 }
 
-func generateStru(t *template.Template, table string, pk string, parameter string) error {
+func generateStru(t *template.Template, row *TabFlag) error {
 
-	namer := table
+	namer := row.Table
 	flagger := false
 	type Prof struct {
 		Column      string
@@ -47,22 +48,14 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 	}
 	profA := []Prof{}
 	profB := []Prof{}
-	if len(parameter) > 0 {
-		namer = parameter
+	if len(row.Parameter) > 0 {
+		namer = row.Parameter
 
 	} else {
 		profB = []Prof{Prof{"length", "int", ""}, Prof{"offset", "int", ""}}
 		flagger = true
 	}
-	f, err := os.Create("gener/" + namer + ".go")
-	if err != nil {
-		log15.Crit("DBFehler", "gener", err)
-		return err
-	}
-
-	defer f.Close()
-
-	if rows, err := db.Query(sqlallcols, table); err != nil {
+	if rows, err := db.Query(sqlallcols, row.Table); err != nil {
 		log15.Crit("DBFehler", "query", err)
 		return err
 	} else {
@@ -88,8 +81,8 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 			Columns = append(Columns, prof.Column)
 			ColumnsT = append(ColumnsT, prof.ColumnT)
 			switch {
-			case prof.Column == pk:
-				if g := dbSequenzer(table); len(g) > 0 {
+			case prof.Column == row.PK:
+				if g := dbSequenzer(row.Table); len(g) > 0 {
 					ColumnsInsert = append(ColumnsInsert, prof.Column)
 					BindsInsert = append(BindsInsert, g)
 				}
@@ -113,12 +106,12 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 				ColumnsUpdate = append(ColumnsUpdate, prof.Column)
 				BindsInsert = append(BindsInsert, BindVar+strconv.Itoa(inser))
 				BindsUpdate = append(BindsUpdate, prof.Column+EqBindVar+strconv.Itoa(upder))
-				pkBind = pk + EqBindVar + strconv.Itoa(upder+1)
+				pkBind = row.PK + EqBindVar + strconv.Itoa(upder+1)
 			}
 		}
 		{
 
-			if rows, err := db.Query(sqlfunctionparams, parameter); err != nil {
+			if rows, err := db.Query(sqlfunctionparams, row.Parameter); err != nil {
 				log15.Crit("DBFehler", "query", err)
 				return err
 			} else {
@@ -142,8 +135,16 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 			}
 
 		}
-		if len(profA) > 0 {
-			err := t.ExecuteTemplate(f, "stru.tmpl", struct {
+		if (len(profA) > 0 && flagger) || (len(profA) > 0 && len(profB) > 0) {
+			f, err := os.Create("gener/" + namer + ".go")
+			if err != nil {
+				log15.Crit("DBFehler", "gener", err)
+				return err
+			}
+
+			defer f.Close()
+
+			err = t.ExecuteTemplate(f, "stru.tmpl", struct {
 				Flagger        bool
 				Table          string
 				PK             string
@@ -161,7 +162,7 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 			}{
 				flagger,
 				namer,
-				pk,
+				row.PK,
 				time.Now(),
 				pkBind,
 				profA,
@@ -174,11 +175,14 @@ func generateStru(t *template.Template, table string, pk string, parameter strin
 				BindsUpdate,
 				profB,
 			})
+
 			if err != nil {
 				log15.Crit("DBFehler", "temp", err)
 				return err
 			}
-
+			row.Worker = true
+		} else {
+			row.Worker = false
 		}
 
 	}
@@ -228,7 +232,7 @@ func Generator() error {
 
 	for _, row := range arr {
 		fmt.Println("tabelle", row.Table, row.Parameter)
-		if err = generateStru(t, row.Table, row.PK, row.Parameter); err != nil {
+		if err = generateStru(t, row); err != nil {
 			return err
 		}
 		if row.Flag == 3 {
