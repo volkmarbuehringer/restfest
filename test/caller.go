@@ -97,7 +97,7 @@ func timer(name string) func() {
 	t := time.Now()
 	log.Println(name, "start", t)
 	return func() {
-		d := time.Now().Sub(t)
+		d := time.Since(t)
 		log.Println(name, "took", d)
 	}
 }
