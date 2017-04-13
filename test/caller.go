@@ -15,6 +15,8 @@ import
 	httpstat "github.com/tcnksm/go-httpstat"
 )
 
+var zahler int = 0
+
 func main() {
 
 	tr := &http.Transport{
@@ -31,7 +33,7 @@ func main() {
 	}
 
 	for i := 0; i < 1000; i++ {
-		rows, err := db.DBx.Query(fmt.Sprintf("SELECT %s from %s", os.Args[2], os.Args[1]))
+		rows, err := db.DBx.Query(fmt.Sprintf("SELECT %s from %s.%s", os.Args[2], os.Getenv("PGSCHEMA"), os.Args[1]))
 		checkErr(err)
 		// iterate over each row
 		for rows.Next() {
@@ -71,7 +73,8 @@ func getter(client *http.Client, c chan int) {
 		resp.Body.Close()
 
 		//fmt.Println("sync", <-c)
-		log.Printf("Server processing: %d ms %d", int(result.ServerProcessing/time.Millisecond), ga)
+		zahler++
+		log.Printf("Server processing: %d %d ms %d", zahler, int(result.ServerProcessing/time.Millisecond), ga)
 		//		log.Printf("%d", ga)
 		/*
 			// Show the results
