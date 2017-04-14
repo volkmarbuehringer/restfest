@@ -26,9 +26,10 @@ var db *pgx.Conn
 func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	if len(arr) > 0 {
 		if err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
+			Package   string
 			Table     []*TabFlag
 			Timestamp time.Time
-		}{arr, time.Now()}); err != nil {
+		}{os.Args[1], arr, time.Now()}); err != nil {
 			log15.Crit("DBFehler", "map", err)
 			return err
 		}
@@ -136,7 +137,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 		}
 		if (len(profA) > 0 && flagger) || (len(profA) > 0 && len(profB) > 0) {
-			f, err := os.Create("gener/" + namer + ".go")
+			f, err := os.Create("../gener" + os.Args[1] + "/" + namer + ".go")
 			if err != nil {
 				log15.Crit("DBFehler", "gener", err)
 				return err
@@ -145,6 +146,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 			defer f.Close()
 
 			err = t.ExecuteTemplate(f, "stru.tmpl", struct {
+				Package        string
 				Flagger        bool
 				Table          string
 				PK             string
@@ -160,6 +162,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 				BindsUpdate    []string
 				Parameters     []Prof
 			}{
+				os.Args[1],
 				flagger,
 				namer,
 				row.PK,
@@ -213,18 +216,25 @@ func dbGen() (arr []*TabFlag, err error) {
 }
 
 func Generator() error {
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(pwd)
+
 	defer db.Close()
 	arr, err := dbGen()
-	os.RemoveAll("gener")
-	os.Mkdir("gener", 0777)
-	os.Remove("mapper.go")
+	os.RemoveAll("../gener" + os.Args[1])
+	os.Mkdir("../gener"+os.Args[1], 0777)
+	os.Remove("/mapper.go")
 	funcMap := template.FuncMap{
 		// The name "title" is what the function will be called in the template text.
 		"title":  strings.Title,
 		"joiner": func(x []string) string { return strings.Join(x, ",") },
 	}
 	// Create a new template and parse the letter into it.
-	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("templates/*")
+	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("../templates/*")
 	if err1 != nil {
 		log15.Crit("DBFehler", "temp1", err1)
 		return err1
@@ -240,17 +250,18 @@ func Generator() error {
 		}
 
 	}
+	if os.Args[2] != "1" {
 
-	f1, err1 := os.Create("mapper.go")
-	if err1 != nil {
-		log15.Crit("DBFehler", "create", err1)
-		return err
+		f1, err1 := os.Create("mapper.go")
+		if err1 != nil {
+			log15.Crit("DBFehler", "create", err1)
+			return err
+		}
+
+		defer f1.Close()
+		generateMap(t, f1, arr)
 	}
-
-	defer f1.Close()
-
-	return generateMap(t, f1, arr)
-
+	return nil
 }
 
 func init() {

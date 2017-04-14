@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 	"restfest/db"
-	"restfest/gener"
+	"restfest/generspecial"
 	"strconv"
 	"time"
 
 	"github.com/jackc/pgx"
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
+
+//go:generate go run ../gen.go special 1
 
 var dbx *pgx.Conn
 
@@ -28,7 +30,7 @@ func (t Copy) Next() bool {
 }
 
 func (t Copy) Values() (arr []interface{}, err error) {
-	arrr, _ := gener.ScannerTZahlung()
+	arrr, _ := generspecial.ScannerTZahlung()
 	if err = t.rows.Scan(arrr...); err != nil {
 		log15.Crit("DBFehler", "scan", err)
 		return
@@ -48,7 +50,7 @@ func main() {
 	limiter, _ = strconv.Atoi(os.Args[1])
 	var dat Copy
 	var err error
-	dat.rows, err = dbx.Query(gener.SQLZahlung(db.GenSelectAll1))
+	dat.rows, err = dbx.Query(generspecial.SQLZahlung(db.GenSelectAll1))
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return
