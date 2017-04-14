@@ -37,41 +37,33 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 
   switch flag{
 			{{if .Flagger}}
-    case db.GenSelectID:
-    return fmt.Sprintf(db.SQLPattern[db.GenSelectID],
+    case db.GenSelectID,  db.GenSelectAll:
+    return fmt.Sprintf(db.SQLPattern[flag],
     x,
 	     {{printf "%q" .Table}}	,
       {{printf "%q" .PK}} ,
     )
 
-		case db.GenSelectAll:
-		return fmt.Sprintf(db.SQLPattern[db.GenSelectAll],
-		x,
-   {{printf "%q" .Table}}	,
-  {{printf "%q" .PK}},
-		)
-
-
 		case db.GenSelectAll1:
-		return fmt.Sprintf(db.SQLPattern[db.GenSelectAll1],
+		return fmt.Sprintf(db.SQLPattern[flag],
 		x,
    {{printf "%q" .Table}}	,
   		)
 
 		case db.GenInsert:
-		return  fmt.Sprintf( db.SQLPattern[db.GenInsert],
+		return  fmt.Sprintf( db.SQLPattern[flag],
 			{{printf "%q" .Table}}	,
 			 {{printf "%q" (joiner .ColumnsInsert)  }}  ,
 			 {{printf "%q" (joiner .BindsInsert)  }} ,
 				x)
 
 				case db.GenDelete:
-				return  fmt.Sprintf(db.SQLPattern[db.GenDelete]  ,
+				return  fmt.Sprintf(db.SQLPattern[flag]  ,
 					{{printf "%q" .Table}}	,
 						{{printf "%q" .PK}},
 						x)
 				case db.GenUpdate:
-				return  fmt.Sprintf(db.SQLPattern[db.GenUpdate]  ,
+				return  fmt.Sprintf(db.SQLPattern[flag]  ,
 					{{printf "%q" .Table}}	,
 						{{printf "%q" (joiner .BindsUpdate)}}  ,
 						{{printf "%q" .PKBind}},
@@ -80,7 +72,7 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 			{{else}}
 
 		case db.GenFunction:
-		return fmt.Sprintf(db.SQLPattern[db.GenFunction],
+		return fmt.Sprintf(db.SQLPattern[flag],
 		x,
  {{printf "%q" .PK}} ,
  {{printf "%q" (joiner .BindsVarInsert)}}	,
