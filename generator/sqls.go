@@ -48,7 +48,7 @@ when  'jsonb' then 'string'
 else  initcap(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type))
  end `
 
-var sqlfunctionparams string = `sELECT parameter_name,` + transform_sql + ` as coltrans
+var sqlfunctionparams string = `sELECT parameter_name,'*'||` + transform_sql + ` as coltrans
 FROM  information_schema.parameters where parameters.specific_name =$1
 and parameters.specific_schema='` + dbschema + `'
 and parameter_mode = 'IN' and parameter_name is not null
