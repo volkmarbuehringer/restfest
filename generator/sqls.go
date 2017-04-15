@@ -12,32 +12,43 @@ func dbSequenzer(tab string) string {
 	return ""
 }
 
-var sqlfunctionparams string = `sELECT parameter_name,
-case when data_type
-in ('integer') then
-'*int32'
-when data_type in ('bigint') then
-'*int64'
-when data_type in ('smallint') then
-'*int16'
-when data_type in ( 'boolean') then
-'*bool'
-when data_type in ('double precision','real')  then
-'*float64'
-when data_type in ('character varying',
-'text',
-'character') then
---'db.JSONNullString'
-'*string'
---'db.JSONString'
-when data_type = 'numeric'  then
- '*string'
-when data_type in ('timestamp without time zone',
-	'timestamp with time zone',
-'date') then
-'*time.Time'
-	else 'gaga'
-end as coltrans
+const transform_sql string = `
+case
+when data_type ='ARRAY' then '[]' else '' end||
+case  coalesce( case
+when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type)
+when   'int4' then
+'int32'
+when   'int8' then
+'int64'
+when 'integer' then
+'int32'
+when 'bigint' then
+'int64'
+when 'smallint' then
+'int16'
+when  'boolean' then
+'bool'
+when 'double precision' then
+'float64'
+when 'real' then
+'float64'
+when 'character varying' then 'string'
+when 'text' then 'string'
+when 'character' then
+'string'
+when  'numeric'  then
+'string'
+when 'timestamp without time zone'
+then 'time.Time'
+when 'timestamp with time zone' then 'time.Time'
+when 'date' then 'time.Time'
+when  'uuid' then 'string'
+when  'jsonb' then 'string'
+else  initcap(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type))
+ end `
+
+var sqlfunctionparams string = `sELECT parameter_name,` + transform_sql + ` as coltrans
 FROM  information_schema.parameters where parameters.specific_name =$1
 and parameters.specific_schema='` + dbschema + `'
 and parameter_mode = 'IN' and parameter_name is not null
@@ -84,85 +95,8 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name
 		and routine_type ='FUNCTION'
 `
 
-var sqlallcols string = `select column_name,
-case
-when data_type ='ARRAY' and udt_name = '_int4' then
-'[]int32'
-when data_type ='ARRAY' and udt_name = '_int8' then
-'[]int64'
-when data_type ='ARRAY' and udt_name = '_character varying' then
-'[]string'
-when data_type
-in ('integer') then
-case when is_nullable = 'YES' then
-'*int32'
-else
-'int32'
-end
-when data_type in ('bigint') then
-case when is_nullable = 'YES' then
-'*int64'
-else
-'int64'
-end
-when data_type in ('smallint') then
-case when is_nullable = 'YES' then
-'*int16'
-else
-'int16'
-end
-when data_type in ( 'boolean') then
-case when is_nullable = 'YES' then
-'*bool'
-else
-'bool'
-end
-when data_type in ('double precision','real')  then
-case when is_nullable = 'YES' then
-'*float64'
-else
-'float64'
-end
-when data_type in ('character varying',
-'text',
-'character') then
-case when is_nullable = 'YES' then
-'*string'
-else
-'string'
-end
-when data_type = 'numeric'  then
-case when is_nullable = 'YES' then
-'*string'
-else
-'string'
-end
-when data_type in ('timestamp without time zone',
-	'timestamp with time zone',
-'date') then
-case when is_nullable = 'YES' then
-	'*time.Time'
-else
-  	'time.Time'
-  end
-when data_type = 'uuid' then '*string'
-when data_type = 'jsonb' then '*string'
-	else 'string'
-end as coltrans,
-/*
-case
-when data_type in ('character varying',
-'text',
-'character') then
-case when is_nullable = 'YES' then
-'coalesce('||column_name||','''')as '||column_name
-else
-column_name
-end
-else
-column_name
-end
-*/
+var sqlallcols string = `select column_name,case when is_nullable = 'YES' then
+'*' else '' end||` + transform_sql + `as coltrans,
 column_name
 from information_schema.columns
 where table_name =$1 and table_schema = '` + dbschema + `' and column_name not like '$%' order by  ordinal_position `

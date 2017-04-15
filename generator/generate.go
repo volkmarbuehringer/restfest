@@ -22,6 +22,7 @@ type TabFlag struct {
 }
 
 var db *pgx.Conn
+var gendir string = "../" + "gener" + os.Args[1]
 
 func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	if len(arr) > 0 {
@@ -137,7 +138,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 		}
 		if (len(profA) > 0 && flagger) || (len(profA) > 0 && len(profB) > 0) {
-			f, err := os.Create("../gener" + os.Args[1] + "/" + namer + ".go")
+			f, err := os.Create(gendir + "/" + namer + ".go")
 			if err != nil {
 				log15.Crit("DBFehler", "gener", err)
 				return err
@@ -225,9 +226,9 @@ func Generator() error {
 
 	defer db.Close()
 	arr, err := dbGen()
-	os.RemoveAll("../gener" + os.Args[1])
-	os.Mkdir("../gener"+os.Args[1], 0777)
-	os.Remove("/mapper.go")
+	os.RemoveAll(gendir)
+	os.Mkdir(gendir, 0777)
+	os.Remove("mapper.go")
 	funcMap := template.FuncMap{
 		// The name "title" is what the function will be called in the template text.
 		"title":  strings.Title,
