@@ -31,6 +31,16 @@ type {{title .Table}} struct {
 }
 
 
+func Scanner{{title .Table}}I(struT *{{title  .Table}}) []interface{} {
+
+	return []interface{}{
+		{{- range .Cols  }}
+				&struT.{{title .Column}},
+				{{- end }}
+			}
+
+}
+
 
 func SQL{{title .Table}}(flag db.SQLOper)string{
   x :=   {{printf "%q" (joiner .ColumnsT)}}
@@ -105,21 +115,7 @@ func EmptyParam{{title .Table}}() interface{}{
 func Scanner{{title .Table}}()( []interface{}, interface{}){
 	struT := new({{title .Table}})
 
-return  []interface{}{				{{- range .Cols  }}
-				&struT.{{title .Column}},
-				{{- end }}
-			}, struT
-
-}
-
-
-func ScannerT{{title .Table}}()( []interface{},*{{title .Table}}){
-	struT := new({{title .Table}})
-
-return  []interface{}{				{{- range .Cols  }}
-				&struT.{{title .Column}},
-				{{- end }}
-			}, struT
+return  Scanner{{title .Table}}I(struT), struT
 
 }
 

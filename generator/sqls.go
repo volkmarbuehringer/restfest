@@ -17,6 +17,8 @@ case
 when data_type ='ARRAY' then '[]' else '' end||
 case  coalesce( case
 when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type)
+when   'int2' then
+'int16'
 when   'int4' then
 'int32'
 when   'int8' then

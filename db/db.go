@@ -19,7 +19,7 @@ func init() {
 	}
 	connConfig.LogLevel = pgx.LogLevelWarn
 
-	connConfig.Logger = log15.New("db", connConfig.Database)
+	//connConfig.Logger = log15.New("db", connConfig.Database)
 	config := pgx.ConnPoolConfig{ConnConfig: connConfig, MaxConnections: 20}
 	DBx, err = pgx.NewConnPool(config)
 	if err != nil {
