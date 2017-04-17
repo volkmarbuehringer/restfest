@@ -34,7 +34,7 @@ func HelperA(ci *pgtype.ConnInfo, src []byte) (count int32, rpp int, err error) 
 	for _, d := range arrayHeader.Dimensions[1:] {
 		elementCount *= d.Length
 	}
-	fmt.Println("testarrrr", len(src), arrayHeader, rp)
+	//fmt.Println("testarrrr", len(src), arrayHeader, rp)
 
 	return elementCount, rp, nil
 

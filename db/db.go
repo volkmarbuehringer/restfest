@@ -10,7 +10,7 @@ import (
 
 var DBx *pgx.ConnPool
 
-func init() {
+func InitDB() {
 
 	connConfig, err := pgx.ParseEnvLibpq()
 	if err != nil {
@@ -20,7 +20,7 @@ func init() {
 	connConfig.LogLevel = pgx.LogLevelWarn
 
 	//connConfig.Logger = log15.New("db", connConfig.Database)
-	config := pgx.ConnPoolConfig{ConnConfig: connConfig, MaxConnections: 20}
+	config := pgx.ConnPoolConfig{ConnConfig: connConfig, MaxConnections: 20, AfterConnect: setTyp}
 	DBx, err = pgx.NewConnPool(config)
 	if err != nil {
 		log15.Crit("DB", "connect", err)

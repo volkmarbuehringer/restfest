@@ -1,6 +1,10 @@
 package db
 
-import "os"
+import (
+	"os"
+
+	"github.com/jackc/pgx"
+)
 
 type SQLOper int
 
@@ -25,7 +29,14 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 	"select %s from " + DBschema + ".%s",
 }
 
-type MapperFun1 func(interface{}) []interface{}
+func setTyp(con *pgx.Conn) error {
+	for _, f := range ConnectorFunMap {
+		f(con)
+	}
+	return nil
+}
+
+type MapperFun1 func(interface{}) InterPgx
 
 var SQLFunMap = map[string]func(SQLOper) string{}
 
@@ -37,6 +48,8 @@ var EmptyFunMap = map[string]func() interface{}{}
 
 var ParamFunMap = map[string]func() interface{}{}
 
-var ScannerFunMap = map[string]func() ([]interface{}, interface{}){}
+var ScannerFunMap = map[string]func() (InterPgx, interface{}){}
+
+var ConnectorFunMap = map[string]func(*pgx.Conn) error{}
 
 var FlagMap = map[string]int{}

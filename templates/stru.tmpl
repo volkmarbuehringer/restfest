@@ -13,25 +13,80 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
+		"github.com/jackc/pgx/pgtype"
+		"github.com/jackc/pgx"
 )
 
-var dummy{{title .Table}} time.Time
+{{$z := title .Table -}}
+{{$a := (title .Table) | printf "%s%s" "Ar" -}}
 
-type {{title .Table}}Params struct {
+var dummy{{$z}} time.Time
+
+type {{$z}}Params struct {
 	  {{- range .Parameters  }}
     {{title .Column}} {{.ColumnTrans}} `schema:"{{.Column}}"`
 	    {{- end }}
 }
 
 
-type {{title .Table}} struct {
+type {{$z}} struct {
   {{- range .Cols  }}
     {{title .Column}} {{.ColumnTrans}}  `json:{{printf "%q" .Column}}`
     {{- end }}
 }
 
+type {{$a}} []{{$z}}
 
-func Scanner{{title .Table}}I(struT *{{title  .Table}}) []interface{} {
+func Connector{{$z}}(con *pgx.Conn) error {
+	con.ConnInfo.RegisterDataType(pgtype.DataType{
+		Value: &{{$a}}{},
+		Name:  {{printf "%q" $a}},
+		Oid:   24877,
+	})
+	return nil
+}
+
+func (src *Ar{{title .Table}}) AssignTo(dst interface{}) error {
+	return fmt.Errorf("cannot assign %v to %T", src, dst)
+}
+
+func (dst *Ar{{title .Table}}) Set(src interface{}) error {
+	return fmt.Errorf("cannot convert %v to Point", src)
+}
+
+func (dst *Ar{{title .Table}}) Get() interface{} {
+	return nil
+}
+
+func (dst *Ar{{title .Table}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
+	if src == nil {
+		//*dst = Weburl{Status: pgtype.Null}
+		//dst = nil
+		return nil
+	}
+	elementCount, rp, err := db.HelperA(ci, src)
+	if err != nil {
+		return err
+	}
+	if elementCount == 0 {
+		*dst = Ar{{title .Table}}{}
+		return nil
+	}
+	elements := make(Ar{{title .Table}}, elementCount)
+	for i := range elements {
+		d := Scanner{{title .Table}}I(&elements[i])
+
+		err = d.DecodeBinary(ci, db.HelperC(&rp, src))
+		if err != nil {
+			return err
+		}
+	}
+	*dst = elements
+	return nil
+}
+
+
+func Scanner{{title .Table}}I(struT *{{title  .Table}})  db.InterPgx  {
 
 	return []interface{}{
 		{{- range .Cols  }}
@@ -112,7 +167,7 @@ func EmptyParam{{title .Table}}() interface{}{
     return rt
 }
 
-func Scanner{{title .Table}}()( []interface{}, interface{}){
+func Scanner{{title .Table}}()(  db.InterPgx , interface{}){
 	struT := new({{title .Table}})
 
 return  Scanner{{title .Table}}I(struT), struT
@@ -120,7 +175,7 @@ return  Scanner{{title .Table}}I(struT), struT
 }
 
 
-func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
+func ROWInsert{{title .Table}}(inter interface{}) db.InterPgx {
 					{{if .Flagger}}
   rt := inter.( *{{title .Table}} )
 	{{end}}
@@ -135,7 +190,7 @@ func ROWInsert{{title .Table}}(inter interface{})[]interface{}{
 }
 
 
-func ROWQuery{{title .Table}}(inter interface{})[]interface{}{
+func ROWQuery{{title .Table}}(inter interface{}) db.InterPgx {
   rt := inter.( *{{title .Table}}Params )
 
   return []interface{}{

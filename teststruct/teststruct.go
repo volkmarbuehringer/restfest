@@ -51,16 +51,15 @@ func init() {
 		os.Exit(1)
 	}
 	connConfig.LogLevel = pgx.LogLevelWarn
+
+	var dbe pgx.Conn
 	if dbx, err = pgx.Connect(connConfig); err != nil {
 		log15.Crit("DB", "connect", err)
 		os.Exit(1)
 	}
-	dbx.ConnInfo.RegisterDataType(pgtype.DataType{
-		Value: &generteststruct.Weburl{},
-		Name:  "weburl",
-		Oid:   24878,
-	})
-	dbx.ConnInfo.RegisterDataType(pgtype.DataType{
+	fmt.Println(dbe.ConnInfo)
+	//fmt.Println(gaga.ConnInfo)
+	dbe.ConnInfo.RegisterDataType(pgtype.DataType{
 		Value: &generteststruct.Weburls{},
 		Name:  "weburls",
 		Oid:   24877,

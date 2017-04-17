@@ -14,7 +14,10 @@ func dbSequenzer(tab string) string {
 
 const transform_sql string = `
 case
-when data_type ='ARRAY' then '[]' else '' end||
+when data_type ='ARRAY' then
+case when ltrim(udt_name,'_') not in
+('int2','int4','int8') then 'Ar' else  '[]' end
+ else '' end||
 case  coalesce( case
 when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type)
 when   'int2' then
