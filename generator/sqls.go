@@ -79,7 +79,8 @@ with pk as (
 )
 select
 1 as flag, t.table_name,pk.column_name,
-'' as routine_name
+'' as routine_name,to_regclass(t.table_schema||'.'||t.table_name)::oid as ider,
+(select typarray from pg_type where typrelid =to_regclass(t.table_schema||'.'||t.table_name)::oid ) as iderar
 from
 information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
@@ -88,12 +89,15 @@ inner join pk on ( t.table_name = pk.table_name)
 union all
 select 2,c.table_name
 ,column_name
-,'' as routine
+,'' as routine, to_regclass(v.table_schema||'.'||v.table_name)::oid as ider,
+(select typarray from pg_type where typrelid =to_regclass(v.table_schema||'.'||v.table_name)::oid ) as iderar
 from information_schema.views v
 inner join information_schema.columns c on v.table_name = c.table_name and ordinal_position = 1
 where v.table_schema ='` + dbschema + `' and c.table_schema = '` + dbschema + `'
 union all
-sELECT 3,routines.type_udt_name,routine_name,specific_name
+sELECT 3,routines.type_udt_name,routine_name,specific_name,
+to_regclass(type_udt_name)::oid as ider,
+(select typarray from pg_type where typrelid =to_regclass(type_udt_name)::oid  ) as iderar
  FROM information_schema.routines
     WHERE routines.specific_schema='` + dbschema + `'
 		and data_type = 'USER-DEFINED'

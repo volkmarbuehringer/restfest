@@ -41,24 +41,24 @@ func Connector{{$z}}(con *pgx.Conn) error {
 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 		Value: &{{$a}}{},
 		Name:  {{printf "%q" $a}},
-		Oid:   24877,
+		Oid:   {{.OIDAr}},
 	})
 	return nil
 }
 
-func (src *Ar{{title .Table}}) AssignTo(dst interface{}) error {
+func (src *{{$a}}) AssignTo(dst interface{}) error {
 	return fmt.Errorf("cannot assign %v to %T", src, dst)
 }
 
-func (dst *Ar{{title .Table}}) Set(src interface{}) error {
+func (dst *{{$a}}) Set(src interface{}) error {
 	return fmt.Errorf("cannot convert %v to Point", src)
 }
 
-func (dst *Ar{{title .Table}}) Get() interface{} {
+func (dst *{{$a}}) Get() interface{} {
 	return nil
 }
 
-func (dst *Ar{{title .Table}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
+func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {
 		//*dst = Weburl{Status: pgtype.Null}
 		//dst = nil
@@ -69,7 +69,7 @@ func (dst *Ar{{title .Table}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) err
 		return err
 	}
 	if elementCount == 0 {
-		*dst = Ar{{title .Table}}{}
+		*dst = {{$a}}{}
 		return nil
 	}
 	elements := make(Ar{{title .Table}}, elementCount)
