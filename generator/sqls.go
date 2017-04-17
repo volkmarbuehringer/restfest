@@ -76,11 +76,17 @@ with pk as (
 	 constraint_type =
 	'PRIMARY KEY'
 	and tc.table_schema ='` + dbschema + `'
+), flagger as (
+	select distinct udt_name as name from information_schema.columns c  where data_type='USER-DEFINED'
+	and c.table_schema ='` + dbschema + `'
 )
+select flag,table_name,column_name,routine_name,coalesce(b.typelem,0) as ider,
+coalesce(a.typarray,0) as iderar,
+(select case when count(*) > 0 then true else false end from flagger where name = x.table_name) as tflag
+from(
 select
 1 as flag, t.table_name,pk.column_name,
-'' as routine_name,to_regclass(t.table_schema||'.'||t.table_name)::oid as ider,
-(select typarray from pg_type where typrelid =to_regclass(t.table_schema||'.'||t.table_name)::oid ) as iderar
+'' as routine_name,t.table_schema
 from
 information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
@@ -89,22 +95,22 @@ inner join pk on ( t.table_name = pk.table_name)
 union all
 select 2,c.table_name
 ,column_name
-,'' as routine, to_regclass(v.table_schema||'.'||v.table_name)::oid as ider,
-(select typarray from pg_type where typrelid =to_regclass(v.table_schema||'.'||v.table_name)::oid ) as iderar
+,'' as routine, v.table_schema
 from information_schema.views v
 inner join information_schema.columns c on v.table_name = c.table_name and ordinal_position = 1
 where v.table_schema ='` + dbschema + `' and c.table_schema = '` + dbschema + `'
 union all
-sELECT 3,routines.type_udt_name,routine_name,specific_name,
-to_regclass(type_udt_name)::oid as ider,
-(select typarray from pg_type where typrelid =to_regclass(type_udt_name)::oid  ) as iderar
+sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as table_schema
  FROM information_schema.routines
     WHERE routines.specific_schema='` + dbschema + `'
 		and data_type = 'USER-DEFINED'
 		and routine_type ='FUNCTION'
+	) x
+	left outer join pg_type a on a.typrelid =to_regclass(table_schema||'.'||table_name)::oid
+	left outer join pg_type b on  b.typname = '_'||table_name
 `
 
-var sqlallcols string = `select column_name,case when is_nullable = 'YES' then
+var sqlallcols string = `select column_name,case when is_nullable = 'YES' and data_type not in ('USER-DEFINED','ARRAY')then
 '*' else '' end||` + transform_sql + `as coltrans,
 column_name
 from information_schema.columns

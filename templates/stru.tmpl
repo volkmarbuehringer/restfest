@@ -13,8 +13,10 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
+			{{if .FlaggerUdt}}
 		"github.com/jackc/pgx/pgtype"
 		"github.com/jackc/pgx"
+		{{end}}
 )
 
 {{$z := title .Table -}}
@@ -37,11 +39,17 @@ type {{$z}} struct {
 
 type {{$a}} []{{$z}}
 
+			{{if .FlaggerUdt}}
 func Connector{{$z}}(con *pgx.Conn) error {
 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 		Value: &{{$a}}{},
 		Name:  {{printf "%q" $a}},
 		Oid:   {{.OIDAr}},
+	})
+	con.ConnInfo.RegisterDataType(pgtype.DataType{
+		Value: &{{$z}}{},
+		Name:  {{printf "%q" $z}},
+		Oid:   {{.OID}},
 	})
 	return nil
 }
@@ -58,18 +66,48 @@ func (dst *{{$a}}) Get() interface{} {
 	return nil
 }
 
+
+
+func (src *{{$z}}) AssignTo(dst interface{}) error {
+	return fmt.Errorf("cannot assign %v to %T", src, dst)
+}
+
+func (dst *{{$z}}) Set(src interface{}) error {
+	return fmt.Errorf("cannot convert %v to Point", src)
+}
+
+func (dst *{{$z}}) Get() interface{} {
+	return nil
+}
+
+func (dst *{{$z}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
+	if src == nil {
+			return nil
+	}
+	struT := new({{title .Table}})
+
+d:=  Scanner{{title .Table}}I(struT)
+
+	err := d.DecodeBinary(ci,src)
+	if err != nil {
+		return err
+	}
+	*dst = *struT
+	return nil
+}
+
 func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {
-		//*dst = Weburl{Status: pgtype.Null}
-		//dst = nil
 		return nil
 	}
 	elements := make({{$a}}, 0)
 	helperfun := helper{{$z}}(&elements)
 	err := db.Helper(ci, src, helperfun)
-
+ if err != nil {
+	 return err
+ }
 	*dst = elements
-	return err
+	return nil
 }
 
 func helper{{$z}}(result *{{$a}}) func() db.InterPgx {
@@ -81,6 +119,7 @@ func helper{{$z}}(result *{{$a}}) func() db.InterPgx {
 	}
 }
 
+{{end}}
 
 func Scanner{{$z}}I(struT *{{$z}})  db.InterPgx  {
 

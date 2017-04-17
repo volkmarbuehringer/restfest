@@ -19,6 +19,7 @@ type TabFlag struct {
 	OID       pgtype.Oid
 	OIDAr     pgtype.Oid
 	Flag      int
+	TFlag     bool
 	PK        string
 	Parameter string
 	Worker    bool
@@ -152,6 +153,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 			err = t.ExecuteTemplate(f, "stru.tmpl", struct {
 				Package        string
 				Flagger        bool
+				FlaggerUdt     bool
 				Table          string
 				OID            pgtype.Oid
 				OIDAr          pgtype.Oid
@@ -170,6 +172,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 			}{
 				os.Args[1],
 				flagger,
+				row.TFlag,
 				namer,
 				row.OID,
 				row.OIDAr,
@@ -212,11 +215,10 @@ func dbGen() (arr []*TabFlag, err error) {
 
 	for rows.Next() {
 		var row TabFlag
-		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.OID, &row.OIDAr); err != nil {
+		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.OID, &row.OIDAr, &row.TFlag); err != nil {
 			log15.Crit("DBFehler", "scan", err)
 			return
 		}
-
 		arr = append(arr, &row)
 
 	}
@@ -249,7 +251,7 @@ func Generator() error {
 	}
 
 	for _, row := range arr {
-		fmt.Println("tabelle", row.Table, row.Parameter, row.OID)
+		fmt.Println("tabelle", row.Table, row.Parameter, row.OID, row.OIDAr, row.TFlag)
 		if err = generateStru(t, row); err != nil {
 			return err
 		}
