@@ -58,6 +58,10 @@ func (fields *InterPgx) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	fieldCount := int(int32(binary.BigEndian.Uint32(src[rp:])))
 	rp += 4
 
+	if fieldCount != len(*fields) {
+		return fmt.Errorf("Mismatch number of fields %d %d", fieldCount, len(*fields))
+	}
+
 	for i := 0; i < fieldCount; i++ {
 		if len(src[rp:]) < 8 {
 			return fmt.Errorf("Record incomplete %v", src)
