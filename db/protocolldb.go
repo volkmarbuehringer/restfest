@@ -34,7 +34,7 @@ func HelperA(ci *pgtype.ConnInfo, src []byte) (count int32, rpp int, err error) 
 	for _, d := range arrayHeader.Dimensions[1:] {
 		elementCount *= d.Length
 	}
-	//fmt.Println("testarrrr", len(src), arrayHeader, rp)
+	fmt.Println("testarrrr", len(src), arrayHeader, elementCount, rp)
 
 	return elementCount, rp, nil
 
@@ -44,8 +44,7 @@ type InterPgx []interface{}
 
 func Helper(ci *pgtype.ConnInfo, src []byte, helper func() InterPgx) error {
 	if src == nil {
-		//*dst = Weburl{Status: pgtype.Null}
-		//dst = nil
+		fmt.Println("hier null")
 		return nil
 	}
 	elementCount, rp, err := HelperA(ci, src)
@@ -54,6 +53,7 @@ func Helper(ci *pgtype.ConnInfo, src []byte, helper func() InterPgx) error {
 	}
 	var i int32
 	for i = 0; i < elementCount; i++ {
+		fmt.Println("loop", i)
 		d := helper()
 
 		err = d.DecodeBinary(ci, HelperC(&rp, src))

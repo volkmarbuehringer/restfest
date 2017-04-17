@@ -77,7 +77,7 @@ with pk as (
 	'PRIMARY KEY'
 	and tc.table_schema ='` + dbschema + `'
 ), flagger as (
-	select distinct udt_name as name from information_schema.columns c  where data_type='USER-DEFINED'
+	select distinct ltrim(udt_name,'_') as name from information_schema.columns c  where data_type in ('USER-DEFINED','ARRAY')
 	and c.table_schema ='` + dbschema + `'
 )
 select flag,table_name,column_name,routine_name,coalesce(b.typelem,0) as ider,
