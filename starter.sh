@@ -4,5 +4,6 @@ export PGHOST=localhost
 export PGPORT=5432
 export PGDATABASE=postgres
 export PGAPPNAME=goofer
-go generate
-go run main/*
+expport PGSCHEMA=public
+go generate rester/*
+go run rester/*

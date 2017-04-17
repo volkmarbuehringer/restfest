@@ -29,6 +29,7 @@ db.ConnectorFunMap[{{$y}}]=gener{{$x}}.Connector{{$z}}
 {{end}}
 {{end}}
 db.FlagMap=map[string]int{ {{- range .Table }}	{{$y := printf "%q" .Table -}}{{$y}}:{{.Flag}},{{- end }} }
-		fmt.Printf("geladene Tabellen: %d\n", len(db.SQLFunMap))
+
 db.InitDB()
+	fmt.Printf("geladene Tabellen: %d\n", len(db.SQLFunMap))
 }

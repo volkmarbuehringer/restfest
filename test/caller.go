@@ -9,11 +9,15 @@ import
 	"log"
 	"net/http"
 	"os"
-	"restfest/db"
 	"time"
 
+	log15 "gopkg.in/inconshreveable/log15.v2"
+
+	"github.com/jackc/pgx"
 	httpstat "github.com/tcnksm/go-httpstat"
 )
+
+var dbx *pgx.Conn
 
 var zahler int = 0
 
@@ -33,7 +37,7 @@ func main() {
 	}
 
 	for i := 0; i < 1000; i++ {
-		rows, err := db.DBx.Query(fmt.Sprintf("SELECT %s from %s.%s", os.Args[2], os.Getenv("PGSCHEMA"), os.Args[1]))
+		rows, err := dbx.Query(fmt.Sprintf("SELECT %s from %s.%s", os.Args[2], os.Getenv("PGSCHEMA"), os.Args[1]))
 		checkErr(err)
 		// iterate over each row
 		for rows.Next() {
@@ -100,4 +104,19 @@ func timer(name string) func() {
 		d := time.Since(t)
 		log.Println(name, "took", d)
 	}
+}
+
+func init() {
+	connConfig, err := pgx.ParseEnvLibpq()
+	if err != nil {
+		log15.Crit("DB", "parse", err)
+		os.Exit(1)
+	}
+	connConfig.LogLevel = pgx.LogLevelWarn
+
+	if dbx, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
+
 }

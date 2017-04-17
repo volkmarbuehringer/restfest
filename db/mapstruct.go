@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/jackc/pgx"
@@ -30,8 +31,9 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 }
 
 func setTyp(con *pgx.Conn) error {
-	for _, f := range ConnectorFunMap {
+	for r, f := range ConnectorFunMap {
 		f(con)
+		fmt.Println("reigster", r)
 	}
 	return nil
 }
