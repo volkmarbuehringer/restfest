@@ -40,9 +40,11 @@ func HelperA(ci *pgtype.ConnInfo, src []byte) (count int32, rpp int, err error) 
 
 }
 
-func Helper(ci *pgtype.ConnInfo, src []byte, fields []interface{}) error {
+type InterPgx []interface{}
+
+func (fields *InterPgx) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {
-		//	*dst = Weburl{Status: pgtype.Null}
+		*fields = []interface{}{}
 		return nil
 	}
 
@@ -55,8 +57,6 @@ func Helper(ci *pgtype.ConnInfo, src []byte, fields []interface{}) error {
 	}
 	fieldCount := int(int32(binary.BigEndian.Uint32(src[rp:])))
 	rp += 4
-
-	//fields := make([]pgtype.Value, fieldCount)
 
 	for i := 0; i < fieldCount; i++ {
 		if len(src[rp:]) < 8 {
@@ -93,15 +93,13 @@ func Helper(ci *pgtype.ConnInfo, src []byte, fields []interface{}) error {
 		la := ga.Get()
 		if la != nil {
 
-			err := ga.AssignTo(fields[i])
+			err := ga.AssignTo((*fields)[i])
 
 			if err != nil {
-				fmt.Println(err)
 				return err
 			}
-
+			//	fmt.Println("feld", i, ga, (*fields)[i])
 		}
-		//	fmt.Println("field", i, fieldOid, stru)
 
 	}
 

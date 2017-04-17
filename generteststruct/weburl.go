@@ -47,18 +47,7 @@ func (dst *Weburl) Set(src interface{}) error {
 }
 
 func (dst *Weburl) Get() interface{} {
-	fmt.Println("get")
-	return 3
-	/*
-		switch dst.Status {
-		case pgtype.Present:
-			return dst
-		case pgtype.Null:
-			return nil
-		default:
-			return dst.Status
-		}
-	*/
+	return 0
 }
 
 func (src *Weburls) AssignTo(dst interface{}) error {
@@ -70,18 +59,7 @@ func (dst *Weburls) Set(src interface{}) error {
 }
 
 func (dst *Weburls) Get() interface{} {
-	fmt.Println("get")
-	return 3
-	/*
-		switch dst.Status {
-		case pgtype.Present:
-			return dst
-		case pgtype.Null:
-			return nil
-		default:
-			return dst.Status
-		}
-	*/
+	return nil
 }
 
 func (dst *Weburls) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
@@ -100,7 +78,9 @@ func (dst *Weburls) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	}
 	elements := make(Weburls, elementCount)
 	for i := range elements {
-		err = elements[i].DecodeBinary(ci, db.HelperC(&rp, src))
+		d := ScannerWeburlI(&elements[i])
+
+		err = d.DecodeBinary(ci, db.HelperC(&rp, src))
 		if err != nil {
 			return err
 		}
@@ -109,18 +89,7 @@ func (dst *Weburls) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	return nil
 }
 
-func (dst *Weburl) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
-	if src == nil {
-		//	*dst = Weburl{Status: pgtype.Null}
-		return nil
-	}
-
-	//fmt.Println("testtext1111", len(src))
-	return db.Helper(ci, src, ScannerWeburlI(dst))
-
-}
-
-func ScannerWeburlI(struT *Weburl) []interface{} {
+func ScannerWeburlI(struT *Weburl) db.InterPgx {
 
 	return []interface{}{
 		&struT.Id,
