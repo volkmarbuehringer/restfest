@@ -42,6 +42,30 @@ func HelperA(ci *pgtype.ConnInfo, src []byte) (count int32, rpp int, err error) 
 
 type InterPgx []interface{}
 
+func Helper(ci *pgtype.ConnInfo, src []byte, helper func() InterPgx) error {
+	if src == nil {
+		//*dst = Weburl{Status: pgtype.Null}
+		//dst = nil
+		return nil
+	}
+	elementCount, rp, err := HelperA(ci, src)
+	if err != nil {
+		return err
+	}
+	var i int32
+	for i = 0; i < elementCount; i++ {
+		d := helper()
+
+		err = d.DecodeBinary(ci, HelperC(&rp, src))
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func (fields *InterPgx) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {
 		*fields = []interface{}{}

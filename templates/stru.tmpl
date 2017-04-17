@@ -64,29 +64,25 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 		//dst = nil
 		return nil
 	}
-	elementCount, rp, err := db.HelperA(ci, src)
-	if err != nil {
-		return err
-	}
-	if elementCount == 0 {
-		*dst = {{$a}}{}
-		return nil
-	}
-	elements := make(Ar{{title .Table}}, elementCount)
-	for i := range elements {
-		d := Scanner{{title .Table}}I(&elements[i])
+	elements := make({{$a}}, 0)
+	helperfun := helper{{$z}}(&elements)
+	err := db.Helper(ci, src, helperfun)
 
-		err = d.DecodeBinary(ci, db.HelperC(&rp, src))
-		if err != nil {
-			return err
-		}
-	}
 	*dst = elements
-	return nil
+	return err
+}
+
+func helper{{$z}}(result *{{$a}}) func() db.InterPgx {
+	return func() db.InterPgx {
+		pos := len(*result)
+		*result = append(*result,{{$z}}{})
+
+		return Scanner{{$z}}I(&(*result)[pos])
+	}
 }
 
 
-func Scanner{{title .Table}}I(struT *{{title  .Table}})  db.InterPgx  {
+func Scanner{{$z}}I(struT *{{$z}})  db.InterPgx  {
 
 	return []interface{}{
 		{{- range .Cols  }}
@@ -97,7 +93,7 @@ func Scanner{{title .Table}}I(struT *{{title  .Table}})  db.InterPgx  {
 }
 
 
-func SQL{{title .Table}}(flag db.SQLOper)string{
+func SQL{{$z}}(flag db.SQLOper)string{
   x :=   {{printf "%q" (joiner .ColumnsT)}}
 
   switch flag{
@@ -151,7 +147,7 @@ func SQL{{title .Table}}(flag db.SQLOper)string{
 }
 
 
-func Empty{{title .Table}}() interface{}{
+func Empty{{$z}}() interface{}{
     return new({{title .Table}})
 }
 
