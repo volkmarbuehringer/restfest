@@ -28,7 +28,7 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 	"select %s from " + DBschema + ".%s ( %s )",
 	"select %s from " + DBschema + ".%s order by %s limit $1 offset $2",
 	`delete from ` + DBschema + `.%s where %s=$1 returning %s`,
-	"select %s from " + DBschema + ".%s",
+	"select %s from " + DBschema + ".%s limit $1 offset $2",
 }
 
 type oidmerker struct {
@@ -67,7 +67,7 @@ func setTyp(con *pgx.Conn) error {
 
 	for r, f := range ConnectorFunMap {
 		if fz, ok := mapper[r]; !ok {
-			//return fmt.Errorf("tab nicht gefunden %s", r)
+			return fmt.Errorf("tab nicht gefunden %s", r)
 		} else {
 
 			f(con, fz.oida, fz.oid)

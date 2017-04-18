@@ -42,6 +42,8 @@ when 'character varying' then 'string'
 when 'text' then 'string'
 when 'character' then
 'string'
+when 'json' then
+'string'
 when  'numeric'  then
 'string'
 when 'timestamp without time zone'
@@ -78,21 +80,30 @@ with pk as (
 	'PRIMARY KEY'
 	and tc.table_schema ='` + dbschema + `'
 ), flagger as (
-	select distinct ltrim(udt_name,'_') as name from information_schema.columns c  where data_type in ('USER-DEFINED','ARRAY')
+	select distinct substr(udt_name,2) as name from information_schema.columns c  where data_type in ('USER-DEFINED','ARRAY')
 	and c.table_schema ='` + dbschema + `'
+	and substr(udt_name,2) in (
+		select  t.typname
+		from pg_type t
+		where (
+			  t.typtype   not in('b', 'p', 'r')
+		    and t.typarray > 0
+			)
+		    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
+	)
 )
 select flag,table_name,column_name,routine_name,
-(select case when count(*) > 0 then true else false end from flagger where name = x.table_name) as tflag
+(select case when count(*) > 0 and flag <> 3 then true else false end from flagger where name = x.table_name) as tflag
 from(
 select
-1 as flag, t.table_name,pk.column_name,
+case when  t.table_name in ( 'weburl') then 4 else 1 end as flag,
+t.table_name,pk.column_name,
 '' as routine_name,t.table_schema
 from
 information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
  where t.table_schema ='` + dbschema + `'
-   and t.table_name not in ( 'logger')
-union all
+   union all
 select 2,c.table_name
 ,column_name
 ,'' as routine, v.table_schema

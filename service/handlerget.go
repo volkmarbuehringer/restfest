@@ -22,9 +22,12 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var sqler db.SQLOper
-	if db.FlagMap[tab] == 3 {
+	switch db.FlagMap[tab] {
+	case 3:
 		sqler = db.GenFunction
-	} else {
+	case 4:
+		sqler = db.GenSelectAll1
+	default:
 		sqler = db.GenSelectAll
 	}
 	inter, err := readRows(tab, sqler, params)
