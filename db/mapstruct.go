@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/pgtype"
 )
 
 type SQLOper int
@@ -30,10 +31,49 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 	"select %s from " + DBschema + ".%s",
 }
 
+type oidmerker struct {
+	oida pgtype.Oid
+	oid  pgtype.Oid
+}
+
+var dbschema = os.Getenv("PGSCHEMA")
+
 func setTyp(con *pgx.Conn) error {
+
+	rower, err := con.Query(`select t.oid, t.typname,t.typarray
+	from pg_type t
+	where (
+		  t.typtype   not in('b', 'p', 'r')
+	    and t.typarray > 0
+		)
+	    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
+	`)
+	if err != nil {
+		return err
+	}
+
+	mapper := make(map[string]oidmerker)
+
+	defer rower.Close()
+	for rower.Next() {
+		var oida, oid pgtype.Oid
+		var name string
+		err := rower.Scan(&oid, &name, &oida)
+		if err != nil {
+			return err
+		}
+		mapper[name] = oidmerker{oida, oid}
+	}
+
 	for r, f := range ConnectorFunMap {
-		f(con)
-		fmt.Println("reigster", r)
+		if fz, ok := mapper[r]; !ok {
+			//return fmt.Errorf("tab nicht gefunden %s", r)
+		} else {
+
+			f(con, fz.oida, fz.oid)
+			fmt.Println("reigster", r)
+		}
+
 	}
 	return nil
 }
@@ -52,6 +92,6 @@ var ParamFunMap = map[string]func() interface{}{}
 
 var ScannerFunMap = map[string]func() (InterPgx, interface{}){}
 
-var ConnectorFunMap = map[string]func(*pgx.Conn) error{}
+var ConnectorFunMap = map[string]func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error{}
 
 var FlagMap = map[string]int{}

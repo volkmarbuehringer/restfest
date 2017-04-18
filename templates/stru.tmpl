@@ -40,44 +40,61 @@ type {{$z}} struct {
 type {{$a}} []{{$z}}
 
 			{{if .FlaggerUdt}}
-func Connector{{$z}}(con *pgx.Conn) error {
+func Connector{{$z}}(con *pgx.Conn, oida pgtype.Oid,oid pgtype.Oid) error {
 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 		Value: &{{$a}}{},
 		Name:  {{printf "%q" $a}},
-		Oid:   {{.OIDAr}},
+		Oid:  oida,
 	})
 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 		Value: &{{$z}}{},
 		Name:  {{printf "%q" $z}},
-		Oid:   {{.OID}},
+		Oid:  oid,
 	})
 	return nil
 }
 
 func (src *{{$a}}) AssignTo(dst interface{}) error {
-	return fmt.Errorf("cannot assign %v to %T", src, dst)
+
+	if src != nil {
+		ttt, ok := dst.(*{{$a}})
+		if !ok {
+				return fmt.Errorf("cannot assign %v to %T", src, dst)
+		}
+		*ttt = *src
+	}
+	return nil
 }
 
 func (dst *{{$a}}) Set(src interface{}) error {
-	return fmt.Errorf("cannot convert %v to Point", src)
+	return fmt.Errorf("cannot convert %v to {{$a}}", src)
 }
 
 func (dst *{{$a}}) Get() interface{} {
-	return nil
+	return dst
 }
+
+
 
 
 
 func (src *{{$z}}) AssignTo(dst interface{}) error {
-	return fmt.Errorf("cannot assign %v to %T", src, dst)
+	if src != nil {
+		ttt, ok := dst.(*{{$z}})
+		if !ok {
+				return fmt.Errorf("cannot assign %v to %T", src, dst)
+		}
+		*ttt = *src
+	}
+	return nil
 }
 
 func (dst *{{$z}}) Set(src interface{}) error {
-	return fmt.Errorf("cannot convert %v to Point", src)
+	return fmt.Errorf("cannot convert %v to {{$z}}", src)
 }
 
 func (dst *{{$z}}) Get() interface{} {
-	return nil
+return dst
 }
 
 func (dst *{{$z}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {

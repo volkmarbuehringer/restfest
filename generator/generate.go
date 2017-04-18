@@ -10,14 +10,11 @@ import (
 	"time"
 
 	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgtype"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
 type TabFlag struct {
 	Table     string
-	OID       pgtype.Oid
-	OIDAr     pgtype.Oid
 	Flag      int
 	TFlag     bool
 	PK        string
@@ -155,8 +152,6 @@ func generateStru(t *template.Template, row *TabFlag) error {
 				Flagger        bool
 				FlaggerUdt     bool
 				Table          string
-				OID            pgtype.Oid
-				OIDAr          pgtype.Oid
 				PK             string
 				Timestamp      time.Time
 				PKBind         string
@@ -174,8 +169,6 @@ func generateStru(t *template.Template, row *TabFlag) error {
 				flagger,
 				row.TFlag,
 				namer,
-				row.OID,
-				row.OIDAr,
 				row.PK,
 				time.Now(),
 				pkBind,
@@ -215,7 +208,7 @@ func dbGen() (arr []*TabFlag, err error) {
 
 	for rows.Next() {
 		var row TabFlag
-		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.OID, &row.OIDAr, &row.TFlag); err != nil {
+		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.TFlag); err != nil {
 			log15.Crit("DBFehler", "scan", err)
 			return
 		}
@@ -251,7 +244,7 @@ func Generator() error {
 	}
 
 	for _, row := range arr {
-		fmt.Println("tabelle", row.Table, row.Parameter, row.OID, row.OIDAr, row.TFlag)
+		fmt.Println("tabelle", row.Table, row.Parameter, row.TFlag)
 		if err = generateStru(t, row); err != nil {
 			return err
 		}

@@ -50,7 +50,8 @@ when 'timestamp with time zone' then 'time.Time'
 when 'date' then 'time.Time'
 when  'uuid' then 'string'
 when  'jsonb' then 'string'
-else  initcap(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type))
+else  upper(substr(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type),1,1))||
+substr(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type),2)
  end `
 
 var sqlfunctionparams string = `sELECT parameter_name,'*'||` + transform_sql + ` as coltrans
@@ -80,8 +81,7 @@ with pk as (
 	select distinct ltrim(udt_name,'_') as name from information_schema.columns c  where data_type in ('USER-DEFINED','ARRAY')
 	and c.table_schema ='` + dbschema + `'
 )
-select flag,table_name,column_name,routine_name,coalesce(b.typelem,0) as ider,
-coalesce(a.typarray,0) as iderar,
+select flag,table_name,column_name,routine_name,
 (select case when count(*) > 0 then true else false end from flagger where name = x.table_name) as tflag
 from(
 select
@@ -106,8 +106,9 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as t
 		and data_type = 'USER-DEFINED'
 		and routine_type ='FUNCTION'
 	) x
-	left outer join pg_type a on a.typrelid =to_regclass(table_schema||'.'||table_name)::oid
-	left outer join pg_type b on  b.typname = '_'||table_name
+	where table_name not like 'hst%' and table_name not like '%hst'
+	order by table_name
+	limit 400
 `
 
 var sqlallcols string = `select column_name,case when is_nullable = 'YES' and data_type not in ('USER-DEFINED','ARRAY')then
