@@ -37,10 +37,12 @@ type oidmerker struct {
 }
 
 var dbschema = os.Getenv("PGSCHEMA")
+var mapper = map[string]oidmerker{}
 
 func setTyp(con *pgx.Conn) error {
 
-	rower, err := con.Query(`select t.oid, t.typname,t.typarray
+	if len(mapper) == 0 {
+		rower, err := con.Query(`select t.oid, t.typname,t.typarray
 	from pg_type t
 	where (
 		  t.typtype   not in('b', 'p', 'r')
@@ -48,21 +50,24 @@ func setTyp(con *pgx.Conn) error {
 		)
 	    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
 	`)
-	if err != nil {
-		return err
-	}
-
-	mapper := make(map[string]oidmerker)
-
-	defer rower.Close()
-	for rower.Next() {
-		var oida, oid pgtype.Oid
-		var name string
-		err := rower.Scan(&oid, &name, &oida)
 		if err != nil {
 			return err
 		}
-		mapper[name] = oidmerker{oida, oid}
+
+		mapper = make(map[string]oidmerker)
+
+		defer rower.Close()
+		for rower.Next() {
+			var oida, oid pgtype.Oid
+			var name string
+			err := rower.Scan(&oid, &name, &oida)
+			if err != nil {
+				return err
+			}
+			mapper[name] = oidmerker{oida, oid}
+			fmt.Println("reigster", name)
+		}
+
 	}
 
 	for r, f := range ConnectorFunMap {
@@ -71,7 +76,7 @@ func setTyp(con *pgx.Conn) error {
 		} else {
 
 			f(con, fz.oida, fz.oid)
-			fmt.Println("reigster", r)
+
 		}
 
 	}

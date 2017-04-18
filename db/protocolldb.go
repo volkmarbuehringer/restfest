@@ -7,39 +7,6 @@ import (
 	"github.com/jackc/pgx/pgtype"
 )
 
-func HelperC(rp *int, src []byte) []byte {
-	elemLen := int(int32(binary.BigEndian.Uint32(src[*rp:])))
-	*rp += 4
-	var elemSrc []byte
-	if elemLen >= 0 {
-		elemSrc = src[*rp : *rp+elemLen]
-		*rp += elemLen
-	}
-	return elemSrc
-}
-
-func HelperA(ci *pgtype.ConnInfo, src []byte) (count int32, rpp int, err error) {
-	var arrayHeader pgtype.ArrayHeader
-	rp, err := arrayHeader.DecodeBinary(ci, src)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if len(arrayHeader.Dimensions) == 0 {
-
-		return 0, rp, nil
-	}
-
-	elementCount := arrayHeader.Dimensions[0].Length
-	for _, d := range arrayHeader.Dimensions[1:] {
-		elementCount *= d.Length
-	}
-	//fmt.Println("testarrrr", len(src), arrayHeader, elementCount, rp)
-
-	return elementCount, rp, nil
-
-}
-
 type InterPgx []interface{}
 
 func Helper(ci *pgtype.ConnInfo, src []byte, helper func() InterPgx) error {
@@ -47,15 +14,38 @@ func Helper(ci *pgtype.ConnInfo, src []byte, helper func() InterPgx) error {
 		//fmt.Println("hier null")
 		return nil
 	}
-	elementCount, rp, err := HelperA(ci, src)
+
+	var arrayHeader pgtype.ArrayHeader
+	rp, err := arrayHeader.DecodeBinary(ci, src)
 	if err != nil {
 		return err
 	}
+	var elementCount int32
+	if len(arrayHeader.Dimensions) == 0 {
+
+		elementCount = 0
+	} else {
+		elementCount = arrayHeader.Dimensions[0].Length
+		for _, d := range arrayHeader.Dimensions[1:] {
+			elementCount *= d.Length
+		}
+	}
+
+	//fmt.Println("testarrrr", len(src), arrayHeader, elementCount, rp)
+
 	var i int32
 	for i = 0; i < elementCount; i++ {
 		d := helper()
 
-		err = d.DecodeBinary(ci, HelperC(&rp, src))
+		elemLen := int(int32(binary.BigEndian.Uint32(src[rp:])))
+		rp += 4
+		var elemSrc []byte
+		if elemLen >= 0 {
+			elemSrc = src[rp : rp+elemLen]
+			rp += elemLen
+		}
+
+		err = d.DecodeBinary(ci, elemSrc)
 		if err != nil {
 			return err
 		}
