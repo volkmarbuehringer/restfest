@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -26,9 +25,16 @@ var db *pgx.Conn
 var gendir string = "../" + "gener" + os.Args[1]
 var tflag bool
 
-func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
+func generateMap(t *template.Template, arr []*TabFlag) error {
+	f1, err := os.Create("mapper.tmp")
+	if err != nil {
+		log15.Crit("DBFehler", "create", err)
+		return err
+	}
+
+	defer f1.Close()
 	if len(arr) > 0 {
-		if err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
+		if err := t.ExecuteTemplate(f1, "mapper.tmpl", struct {
 			Package   string
 			Table     []*TabFlag
 			Timestamp time.Time
@@ -41,7 +47,14 @@ func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	return nil
 }
 
-func generateMapTyp(t *template.Template, f io.Writer, arr []*TabFlag) error {
+func generateMapTyp(t *template.Template, arr []*TabFlag) error {
+	f, err := os.Create("mappertyp.tmp")
+	if err != nil {
+		log15.Crit("DBFehler", "create", err)
+		return err
+	}
+
+	defer f.Close()
 	if len(arr) > 0 {
 		if err := t.ExecuteTemplate(f, "mappertyp.tmpl", struct {
 			Package   string
@@ -275,25 +288,21 @@ func Generator() error {
 	}
 	if os.Args[2] != "1" {
 
-		f1, err1 := os.Create("mapper.go")
-		if err1 != nil {
-			log15.Crit("DBFehler", "create", err1)
+		if err := generateMap(t, arr); err != nil {
 			return err
 		}
-
-		defer f1.Close()
-		generateMap(t, f1, arr)
-
+		if err = os.Rename("mapper.tmp", "mapper.go"); err != nil {
+			return err
+		}
 	}
 	if tflag {
-		f2, err1 := os.Create("mappertyp.go")
-		if err1 != nil {
-			log15.Crit("DBFehler", "create", err1)
+
+		if err := generateMapTyp(t, arr); err != nil {
 			return err
 		}
-
-		defer f2.Close()
-		generateMapTyp(t, f2, arr)
+		if err = os.Rename("mappertyp.tmp", "mappertyp.go"); err != nil {
+			return err
+		}
 	}
 	return nil
 }
