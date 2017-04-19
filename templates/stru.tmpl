@@ -118,7 +118,16 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 		return nil
 	}
 	elements := make({{$a}}, 0)
-	helperfun := helper{{$z}}(&elements)
+	funcer := func (result *{{$a}}) func() db.InterPgx {
+		return func() db.InterPgx {
+			pos := len(*result)
+			*result = append(*result,{{$z}}{})
+
+			return Scanner{{$z}}I(&(*result)[pos])
+		}
+	}
+
+	helperfun := funcer(&elements)
 	err := db.Helper(ci, src, helperfun)
  if err != nil {
 	 return err
@@ -127,14 +136,6 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	return nil
 }
 
-func helper{{$z}}(result *{{$a}}) func() db.InterPgx {
-	return func() db.InterPgx {
-		pos := len(*result)
-		*result = append(*result,{{$z}}{})
-
-		return Scanner{{$z}}I(&(*result)[pos])
-	}
-}
 
 {{end}}
 
