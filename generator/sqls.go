@@ -138,7 +138,7 @@ select c.column_name,c.ordinal_position, c.table_name,c.is_nullable,c.data_type,
 from information_schema.columns c
 where c.table_schema = '` + dbschema + `' and c.column_name not like '$%'
 union all
-select a.attribute_name,a.ordinal_position,a.udt_name as table_name,a.is_nullable,a.data_type,'' as udt_name
+select a.attribute_name,a.ordinal_position,a.udt_name as table_name,a.is_nullable,a.data_type,attribute_udt_name as udt_name
 from information_schema.attributes a
  where  a.udt_schema = '` + dbschema + `'
  ) x
