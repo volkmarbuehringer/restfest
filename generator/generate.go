@@ -24,10 +24,26 @@ type TabFlag struct {
 
 var db *pgx.Conn
 var gendir string = "../" + "gener" + os.Args[1]
+var tflag bool
 
 func generateMap(t *template.Template, f io.Writer, arr []*TabFlag) error {
 	if len(arr) > 0 {
 		if err := t.ExecuteTemplate(f, "mapper.tmpl", struct {
+			Package   string
+			Table     []*TabFlag
+			Timestamp time.Time
+		}{os.Args[1], arr, time.Now()}); err != nil {
+			log15.Crit("DBFehler", "map", err)
+			return err
+		}
+
+	}
+	return nil
+}
+
+func generateMapTyp(t *template.Template, f io.Writer, arr []*TabFlag) error {
+	if len(arr) > 0 {
+		if err := t.ExecuteTemplate(f, "mappertyp.tmpl", struct {
 			Package   string
 			Table     []*TabFlag
 			Timestamp time.Time
@@ -212,6 +228,9 @@ func dbGen() (arr []*TabFlag, err error) {
 			log15.Crit("DBFehler", "scan", err)
 			return
 		}
+		if row.TFlag {
+			tflag = true
+		}
 		arr = append(arr, &row)
 
 	}
@@ -231,6 +250,7 @@ func Generator() error {
 	os.RemoveAll(gendir)
 	os.Mkdir(gendir, 0777)
 	os.Remove("mapper.go")
+	os.Remove("mappertyp.go")
 	funcMap := template.FuncMap{
 		// The name "title" is what the function will be called in the template text.
 		"title":  strings.Title,
@@ -263,6 +283,17 @@ func Generator() error {
 
 		defer f1.Close()
 		generateMap(t, f1, arr)
+
+	}
+	if tflag {
+		f2, err1 := os.Create("mappertyp.go")
+		if err1 != nil {
+			log15.Crit("DBFehler", "create", err1)
+			return err
+		}
+
+		defer f2.Close()
+		generateMapTyp(t, f2, arr)
 	}
 	return nil
 }

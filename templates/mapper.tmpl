@@ -9,7 +9,6 @@ package main
 import (
 "restfest/gener{{.Package}}"
 "restfest/db"
-"fmt"
 )
 
 
@@ -25,13 +24,9 @@ db.ROWQueryFunMap[{{$y}}]= gener{{$x}}.ROWQuery{{$z}}
 db.EmptyFunMap[{{$y}}]=gener{{$x}}.Empty{{$z}}
 db.ParamFunMap[{{$y}}]=gener{{$x}}.EmptyParam{{$z}}
 db.ScannerFunMap[{{$y}}]=gener{{$x}}.Scanner{{$z}}
-{{if .TFlag  }}
-db.ConnectorFunMap[{{$y}}]=gener{{$x}}.Connector{{$z}}
-{{end}}
+
 {{end}}
 {{end}}
 db.FlagMap=map[string]int{ {{- range .Table }}	{{$y := printf "%q" .Table -}}{{$y}}:{{.Flag}},{{- end }} }
 
-db.InitDB()
-	fmt.Printf("geladene Tabellen: %d\n", len(db.SQLFunMap))
 }

@@ -39,17 +39,17 @@ type oidmerker struct {
 var dbschema = os.Getenv("PGSCHEMA")
 var mapper = map[string]oidmerker{}
 
-func setTyp(con *pgx.Conn) error {
+func LoadTypMap(con *pgx.Conn) error {
 
 	if len(mapper) == 0 {
 		rower, err := con.Query(`select t.oid, t.typname,t.typarray
-	from pg_type t
-	where (
-		  t.typtype   not in('b', 'p', 'r')
-	    and t.typarray > 0
-		)
-	    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
-	`)
+		from pg_type t
+		where (
+				t.typtype   not in('b', 'p', 'r')
+				and t.typarray > 0
+			)
+				and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
+		`)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,18 @@ func setTyp(con *pgx.Conn) error {
 		}
 
 	}
+	return nil
+}
 
+func init() {
+
+}
+
+func setTyp(con *pgx.Conn) error {
+
+	if err := LoadTypMap(con); err != nil {
+		return err
+	}
 	for r, f := range ConnectorFunMap {
 		if fz, ok := mapper[r]; !ok {
 			return fmt.Errorf("tab nicht gefunden %s", r)
@@ -84,6 +95,7 @@ func setTyp(con *pgx.Conn) error {
 }
 
 type MapperFun1 func(interface{}) InterPgx
+type MapperFun2 func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error
 
 var SQLFunMap = map[string]func(SQLOper) string{}
 
@@ -97,6 +109,6 @@ var ParamFunMap = map[string]func() interface{}{}
 
 var ScannerFunMap = map[string]func() (InterPgx, interface{}){}
 
-var ConnectorFunMap = map[string]func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error{}
+var ConnectorFunMap = map[string]MapperFun2{}
 
 var FlagMap = map[string]int{}
