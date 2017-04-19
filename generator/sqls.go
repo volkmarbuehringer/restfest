@@ -103,6 +103,11 @@ from
 information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
  where t.table_schema ='` + dbschema + `'
+ union all
+ select 2,t.user_defined_type_name,attribute_name  , '' as routine,t.user_defined_type_schema
+ from information_schema.user_defined_types t
+inner join information_schema.attributes on t.user_defined_type_name=udt_name   and ordinal_position = 1
+ where t.user_defined_type_schema ='` + dbschema + `' and udt_schema = '` + dbschema + `'
    union all
 select 2,c.table_name
 ,column_name
@@ -122,8 +127,20 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as t
 	limit 400
 `
 
-var sqlallcols string = `select column_name,case when is_nullable = 'YES' and data_type not in ('USER-DEFINED','ARRAY')then
-'*' else '' end||` + transform_sql + `as coltrans,
-column_name
-from information_schema.columns
-where table_name =$1 and table_schema = '` + dbschema + `' and column_name not like '$%' order by  ordinal_position `
+var sqlallcols string = `
+select
+x.column_name,
+case when x.is_nullable = 'YES' and x.data_type not in ('USER-DEFINED','ARRAY')then '*' else '' end||` + transform_sql + `as coltrans,
+x.column_name
+from
+(
+select c.column_name,c.ordinal_position, c.table_name,c.is_nullable,c.data_type, c.udt_name
+from information_schema.columns c
+where c.table_schema = '` + dbschema + `' and c.column_name not like '$%'
+union all
+select a.attribute_name,a.ordinal_position,a.udt_name as table_name,a.is_nullable,a.data_type,'' as udt_name
+from information_schema.attributes a
+ where  a.udt_schema = '` + dbschema + `'
+ ) x
+ where x.table_name =$1
+order by  x.ordinal_position`
