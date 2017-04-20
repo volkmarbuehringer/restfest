@@ -14,19 +14,21 @@ import (
 
 func init(){
 	{{$x := .Package -}}
-	{{- range .Table  }}
-		{{$y := printf "%q" .Table -}}
-				{{$z := title .Table -}}
-	{{if .Worker}}
-db.SQLFunMap[{{$y}}]= gener{{$x}}.SQL{{$z}}
-db.ROWInsertFunMap[{{$y}}]= gener{{$x}}.ROWInsert{{$z}}
-db.ROWQueryFunMap[{{$y}}]= gener{{$x}}.ROWQuery{{$z}}
-db.EmptyFunMap[{{$y}}]=gener{{$x}}.Empty{{$z}}
-db.ParamFunMap[{{$y}}]=gener{{$x}}.EmptyParam{{$z}}
-db.ScannerFunMap[{{$y}}]=gener{{$x}}.Scanner{{$z}}
 
-{{end}}
-{{end}}
-db.FlagMap=map[string]int{ {{- range .Table }}	{{$y := printf "%q" .Table -}}{{$y}}:{{.Flag}},{{- end }} }
+db.FunMap=map[string]db.TFunMap{
+	{{- range .Table }}{{if ne .Flag 5}}
+	{{if .Worker}}
+	{{$y := printf "%q" .Table -}}{{$y}}:{
+			{{$z := title .Table -}}
+		gener{{$x}}.SQL{{$z}},
+	gener{{$x}}.ROWInsert{{$z}},
+		gener{{$x}}.ROWQuery{{$z}},
+		gener{{$x}}.Empty{{$z}},
+		gener{{$x}}.EmptyParam{{$z}},
+		gener{{$x}}.Scanner{{$z}},
+		{{.Flag}}, },
+		{{- end }}
+	{{- end }}{{- end }}
+}
 
 }
