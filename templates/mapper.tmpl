@@ -9,6 +9,7 @@ package main
 import (
 "restfest/gener{{.Package}}"
 "restfest/db"
+
 )
 
 
@@ -18,10 +19,8 @@ func init(){
 db.FunMap=map[string]db.TFunMap{
 	{{- range .Table }}{{if ne .Flag 5}}
 	{{if .Worker}}
-	{{$y := printf "%q" .Table -}}{{$y}}:{
-			{{$z := title .Table -}}
-		gener{{$x}}.SQL{{$z}},
-	gener{{$x}}.ROWInsert{{$z}},
+	{{$y := printf "%q" .Table -}}{{$y}}:{		{{$z := title .Table -}} 		gener{{$x}}.SQL{{$z}},
+  	gener{{$x}}.ROWInsert{{$z}},
 		gener{{$x}}.ROWQuery{{$z}},
 		gener{{$x}}.Empty{{$z}},
 		gener{{$x}}.EmptyParam{{$z}},

@@ -13,8 +13,9 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
+
 			{{if .FlaggerUdt}}
-		"github.com/jackc/pgx/pgtype"
+			"github.com/jackc/pgx/pgtype"
 		"github.com/jackc/pgx"
 		{{end}}
 )
@@ -22,7 +23,7 @@ import (
 {{$z := title .Table -}}
 {{$a := (title .Table) | printf "%s%s" "Ar" -}}
 
-var dummy{{$z}} time.Time
+type dummy{{$z}} time.Time
 
 type {{$z}}Params struct {
 	  {{- range .Parameters  }}

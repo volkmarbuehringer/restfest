@@ -38,6 +38,10 @@ when 'double precision' then
 'float64'
 when 'real' then
 'float64'
+when 'json' then
+'map[string]interface{}'
+when 'jsonb' then
+'map[string]interface{}'
 when 'character varying' then 'string'
 when 'text' then 'string'
 when 'character' then
