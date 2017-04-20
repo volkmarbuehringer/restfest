@@ -97,18 +97,16 @@ func setTyp(con *pgx.Conn) error {
 type MapperFun1 func(interface{}) InterPgx
 type MapperFun2 func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error
 
-var SQLFunMap = map[string]func(SQLOper) string{}
+type TFunMap struct {
+	SQLFun       func(SQLOper) string
+	ROWInsertFun MapperFun1
+	ROWQueryFun  MapperFun1
+	EmptyFun     func() interface{}
+	ParamFun     func() interface{}
+	ScannerFun   func() (InterPgx, interface{})
+	Flag         int
+}
 
-var ROWInsertFunMap = map[string]MapperFun1{}
-
-var ROWQueryFunMap = map[string]MapperFun1{}
-
-var EmptyFunMap = map[string]func() interface{}{}
-
-var ParamFunMap = map[string]func() interface{}{}
-
-var ScannerFunMap = map[string]func() (InterPgx, interface{}){}
+var FunMap = map[string]TFunMap{}
 
 var ConnectorFunMap = map[string]MapperFun2{}
-
-var FlagMap = map[string]int{}
