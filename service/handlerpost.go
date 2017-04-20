@@ -11,21 +11,16 @@ import (
 
 func poster(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	tab := vars["tab"]
 
-	json, err := prepLesen(tab, w, r)
+	var stmt *pgx.PreparedStatement
+	stmt, tmap, err := prepare(vars["tab"], -1)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "post", err)
 		return
 	}
-	var stmt *pgx.PreparedStatement
 
-	if db.FlagMap[tab] == 3 {
-		stmt, err = prepare(tab, db.GenFunction)
-	} else {
-		stmt, err = prepare(tab, db.GenInsert)
-	}
+	json, err := prepLesen(tmap, w, r)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "post", err)
@@ -33,14 +28,14 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input []interface{}
-	if db.FlagMap[tab] == 3 {
-		input = db.ROWQueryFunMap[tab](json)
+	if tmap.Flag == 3 {
+		input = tmap.ROWQueryFun(json)
 	} else {
-		input = db.ROWInsertFunMap[tab](json)
+		input = tmap.ROWInsertFun(json)
 	}
 	rows := db.DBx.QueryRow(stmt.Name, input...)
 
-	inter, err := row1Scanner(tab, rows)
+	inter, err := row1Scanner(tmap, rows)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "post", err)
