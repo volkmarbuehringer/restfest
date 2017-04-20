@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 	"restfest/db"
 	"strconv"
@@ -14,7 +15,7 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tab := vars["tab"]
 
-	params, err := prepParam(tab, w, r)
+	params, funMap, err := prepParam(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "getall", err)
@@ -22,13 +23,18 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var sqler db.SQLOper
-	switch db.FlagMap[tab] {
+	switch funMap.Flag {
 	case 3:
 		sqler = db.GenFunction
 	case 4:
 		sqler = db.GenSelectAll1
-	default:
+	case 1, 2:
 		sqler = db.GenSelectAll
+	default:
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		senderErr(w, err)
+		return
+
 	}
 	inter, err := readRows(tab, sqler, params)
 	if err != nil {
@@ -44,10 +50,9 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	tab := vars["tab"]
 	id, _ := strconv.Atoi(vars["id"])
 
-	if inter, err := readRow(tab, id); err != nil {
+	if inter, err := readRow(vars["tab"], id); err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "getall", err)
 		return
