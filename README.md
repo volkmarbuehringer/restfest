@@ -3,7 +3,16 @@ rest services with postgresql database, boiler code is generated with go generat
 
 - Works with Postgresql-Database
 - only standard-Libraries - no SQLX
+- works now with pgx-Driver version 3 (yet unreleased )
 - generates Rest-Services for every Table in PG-Schema with go generate
+
+- Uses Tables, Views, Types and Functions in Postgres as source for struct-generation
+- with pgx now support of nested structs and arrays
+
+you can use array_agg and nested types in Postgres which are supported in the generated structs
+
+with the extendable type interface of pgx can the nested and aggregated data in Postges be scanned into the go-structs and then displayed as json or used programatically
+
 
 Typesafe database-Code with generated structues,sql and scanners:
 
