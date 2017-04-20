@@ -17,15 +17,16 @@ import (
 
 var decoder = schema.NewDecoder()
 
-func prepLesen1(tab string, w http.ResponseWriter, r *http.Request, defaults interface{}) (json interface{}, err error) {
+func prepLesen1(w http.ResponseWriter, r *http.Request, defaults interface{}) (json interface{}, err error) {
 
 	json, err = leser1(w, r, defaults)
 
 	return
 }
 
-func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
-	if fun1, ok := db.ParamFunMap[tab]; !ok {
+func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, fun1 db.TFunMap, err error) {
+	var ok bool
+	if fun1, ok = db.FunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {
@@ -36,7 +37,7 @@ func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json interfa
 			return
 		}
 
-		json = fun1()
+		json = fun1.ParamFun()
 		err = decoder.Decode(json, r.Form)
 
 	}
@@ -44,16 +45,11 @@ func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json interfa
 	return
 }
 
-func prepLesen(tab string, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
-	if flag, ok := db.FlagMap[tab]; !ok {
-		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-		return
-	} else if flag == 3 {
-		fun1 := db.ParamFunMap[tab]
-		json, err = leser1(w, r, fun1())
+func prepLesen(flag db.TFunMap, w http.ResponseWriter, r *http.Request) (json interface{}, err error) {
+	if flag.Flag == 3 {
+		json, err = leser1(w, r, flag.ParamFun())
 	} else {
-		fun1 := db.EmptyFunMap[tab]
-		json, err = leser1(w, r, fun1())
+		json, err = leser1(w, r, flag.EmptyFun())
 	}
 
 	return
