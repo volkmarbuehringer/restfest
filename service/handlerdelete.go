@@ -12,10 +12,9 @@ import (
 
 func deleter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	tab := vars["tab"]
 	id, _ := strconv.Atoi(vars["id"])
 
-	stmt, err := prepare(tab, db.GenDelete)
+	stmt, funMap, err := prepare(vars["tab"], db.GenDelete)
 
 	if err != nil {
 		senderErr(w, err)
@@ -25,7 +24,7 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 
 	rows := db.DBx.QueryRow(stmt.Name, id)
 
-	inter, err := row1Scanner(tab, rows)
+	inter, err := row1Scanner(funMap, rows)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "delete", err)
