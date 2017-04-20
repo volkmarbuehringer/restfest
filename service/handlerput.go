@@ -13,11 +13,10 @@ import (
 
 func putter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	tab := vars["tab"]
 	id, _ := strconv.Atoi(vars["id"])
 
-	if sqlFun, ok := db.SQLFunMap[tab]; !ok {
-		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+	if sqlFun, ok := db.FunMap[vars["tab"]]; !ok {
+		err := fmt.Errorf("Tabelle nicht gefunden: %s", vars["tab"])
 		senderErr(w, err)
 		log15.Error("DBFehler", " put", err)
 		return
@@ -29,29 +28,29 @@ func putter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer tx.Rollback()
-		rows := tx.QueryRow(sqlFun(db.GenSelectID)+" for update", id)
+		rows := tx.QueryRow(sqlFun.SQLFun(db.GenSelectID)+" for update", id)
 		var inter interface{}
-		inter, err = row1Scanner(tab, rows)
+		inter, err = row1Scanner(sqlFun, rows)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "prep put", err)
 			return
 		}
 
-		json, err := prepLesen1(tab, w, r, inter)
+		json, err := prepLesen1(w, r, inter)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "put", err)
 			return
 		}
 
-		x := db.ROWInsertFunMap[tab](json)
+		x := sqlFun.ROWInsertFun(json)
 		x = append(x, id)
 
 		fmt.Println(x)
-		rows = tx.QueryRow(sqlFun(db.GenUpdate), x...)
+		rows = tx.QueryRow(sqlFun.SQLFun(db.GenUpdate), x...)
 
-		inter, err = row1Scanner(tab, rows)
+		inter, err = row1Scanner(sqlFun, rows)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "update", err)
