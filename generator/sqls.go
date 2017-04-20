@@ -104,7 +104,7 @@ information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
  where t.table_schema ='` + dbschema + `'
  union all
- select 2,t.user_defined_type_name,attribute_name  , '' as routine,t.user_defined_type_schema
+ select 5,t.user_defined_type_name,attribute_name  , '' as routine,t.user_defined_type_schema
  from information_schema.user_defined_types t
 inner join information_schema.attributes on t.user_defined_type_name=udt_name   and ordinal_position = 1
  where t.user_defined_type_schema ='` + dbschema + `' and udt_schema = '` + dbschema + `'
