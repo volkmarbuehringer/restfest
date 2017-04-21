@@ -10,9 +10,10 @@ import (
 
 var preparedStmt = map[string]*pgx.PreparedStatement{}
 
-func row1Scanner(funMap db.TFunMap, rows *pgx.Row) (stru interface{}, err error) {
-	var arr []interface{}
-	arr, stru = funMap.ScannerFun()
+func row1Scanner(funMap db.TFunMap, rows *pgx.Row) (stru db.PgxGener, err error) {
+	stru = funMap.EmptyFun()
+
+	arr := stru.Scanner()
 	if err = rows.Scan(arr...); err != nil {
 
 		return
@@ -21,20 +22,23 @@ func row1Scanner(funMap db.TFunMap, rows *pgx.Row) (stru interface{}, err error)
 
 }
 
-func rowScanner(funMap db.TFunMap, rows *pgx.Rows) (stru interface{}, err error) {
-	t := make([]interface{}, 0)
+func rowScanner(funMap db.TFunMap, rows *pgx.Rows) (stru []db.PgxGener, err error) {
+	t := make([]db.PgxGener, 0)
+
+	var x db.PgxGener
 
 	for rows.Next() {
 		if err = rows.Err(); err != nil {
 			return
 		}
-		arr, ts := funMap.ScannerFun()
+		x = funMap.EmptyFun()
+		arr := x.Scanner()
 		if err = rows.Scan(arr...); err != nil {
 			return
 		}
-		t = append(t, ts)
+		t = append(t, x)
 	}
-	stru = &t
+	stru = t
 	return
 }
 
@@ -68,7 +72,7 @@ func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, sqlFun d
 	return
 }
 
-func readRow(tab string, id int) (inter interface{}, err error) {
+func readRow(tab string, id int) (inter db.PgxGener, err error) {
 	if stmt, funMap, err1 := prepare(tab, db.GenSelectID); err1 != nil {
 
 		return nil, err1
@@ -82,14 +86,14 @@ func readRow(tab string, id int) (inter interface{}, err error) {
 	return
 }
 
-func readRows(tab string, sqler db.SQLOper, params interface{}) (inter interface{}, err error) {
+func readRows(tab string, sqler db.SQLOper, params db.PgxGenerIns) (inter []db.PgxGener, err error) {
 	var stmt *pgx.PreparedStatement
 	var sqlFun db.TFunMap
 	if stmt, sqlFun, err = prepare(tab, sqler); err != nil {
 
 		return
 	}
-	rows, err := db.DBx.Query(stmt.Name, sqlFun.ROWQueryFun(params)...)
+	rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
 	if err != nil {
 
 		return nil, err

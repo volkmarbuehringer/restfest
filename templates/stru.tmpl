@@ -40,6 +40,37 @@ type {{$z}} struct {
 
 type {{$a}} []{{$z}}
 
+func (x *{{$z}}) Scanner() db.InterPgx {
+	return []interface{}{
+		{{- range .Cols  }}
+				&x.{{title .Column}},
+				{{- end }}
+			}
+
+}
+
+func (rt *{{$z}})ROWInsert() db.InterPgx {
+	  return []interface{}{
+				{{if .Flagger}}
+	{{- range .BindsVarInsert  }}
+	&rt.{{title .}},
+	{{- end }}
+{{end}}
+  }
+}
+
+
+func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
+
+  return []interface{}{
+		{{- range .Parameters }}
+		&rt.{{title .Column}},
+		{{- end }}
+}
+
+}
+
+
 			{{if .FlaggerUdt}}
 func Connector{{$z}}(con *pgx.Conn, oida pgtype.Oid,oid pgtype.Oid) error {
 	con.ConnInfo.RegisterDataType(pgtype.DataType{
@@ -102,9 +133,10 @@ func (dst *{{$z}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {
 			return nil
 	}
+
 	struT := new({{title .Table}})
 
-d:=  Scanner{{title .Table}}I(struT)
+d:=  struT.Scanner()
 
 	err := d.DecodeBinary(ci,src)
 	if err != nil {
@@ -123,8 +155,7 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 		return func() db.InterPgx {
 			pos := len(*result)
 			*result = append(*result,{{$z}}{})
-
-			return Scanner{{$z}}I(&(*result)[pos])
+			return (*result)[pos].Scanner()
 		}
 	}
 
@@ -139,16 +170,6 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 
 
 {{end}}
-
-func Scanner{{$z}}I(struT *{{$z}})  db.InterPgx  {
-
-	return []interface{}{
-		{{- range .Cols  }}
-				&struT.{{title .Column}},
-				{{- end }}
-			}
-
-}
 
 
 func SQL{{$z}}(flag db.SQLOper)string{
@@ -205,12 +226,15 @@ func SQL{{$z}}(flag db.SQLOper)string{
 }
 
 
-func Empty{{$z}}() interface{}{
+func Empty{{$z}}() db.PgxGener{
     return new({{title .Table}})
 }
 
+func EmptyIns{{$z}}() db.PgxGenerIns{
+    return new({{title .Table}})
+}
 
-func EmptyParam{{title .Table}}() interface{}{
+func EmptyParam{{title .Table}}() db.PgxGenerIns{
 
  rt := new({{title .Table}}Params)
 
@@ -219,38 +243,4 @@ func EmptyParam{{title .Table}}() interface{}{
 	{{end}}
 
     return rt
-}
-
-func Scanner{{title .Table}}()(  db.InterPgx , interface{}){
-	struT := new({{title .Table}})
-
-return  Scanner{{title .Table}}I(struT), struT
-
-}
-
-
-func ROWInsert{{title .Table}}(inter interface{}) db.InterPgx {
-					{{if .Flagger}}
-  rt := inter.( *{{title .Table}} )
-	{{end}}
-  return []interface{}{
-				{{if .Flagger}}
-	{{- range .BindsVarInsert  }}
-	&rt.{{title .}},
-	{{- end }}
-{{end}}
-  }
-
-}
-
-
-func ROWQuery{{title .Table}}(inter interface{}) db.InterPgx {
-  rt := inter.( *{{title .Table}}Params )
-
-  return []interface{}{
-		{{- range .Parameters }}
-		&rt.{{title .Column}},
-		{{- end }}
-}
-
 }

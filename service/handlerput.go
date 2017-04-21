@@ -29,22 +29,22 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		}
 		defer tx.Rollback()
 		rows := tx.QueryRow(sqlFun.SQLFun(db.GenSelectID)+" for update", id)
-		var inter interface{}
-		inter, err = row1Scanner(sqlFun, rows)
+
+		inter, err := row1Scanner(sqlFun, rows)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "prep put", err)
 			return
 		}
 
-		json, err := prepLesen1(w, r, inter)
+		json, err := leser1(w, r, inter)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "put", err)
 			return
 		}
 
-		x := sqlFun.ROWInsertFun(json)
+		x := json.ROWInsert()
 		x = append(x, id)
 
 		fmt.Println(x)

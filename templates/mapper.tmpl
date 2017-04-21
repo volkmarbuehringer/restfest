@@ -20,11 +20,9 @@ db.FunMap=map[string]db.TFunMap{
 	{{- range .Table }}{{if ne .Flag 5}}
 	{{if .Worker}}
 	{{$y := printf "%q" .Table -}}{{$y}}:{		{{$z := title .Table -}} 		gener{{$x}}.SQL{{$z}},
-  	gener{{$x}}.ROWInsert{{$z}},
-		gener{{$x}}.ROWQuery{{$z}},
 		gener{{$x}}.Empty{{$z}},
+				gener{{$x}}.EmptyIns{{$z}},
 		gener{{$x}}.EmptyParam{{$z}},
-		gener{{$x}}.Scanner{{$z}},
 		{{.Flag}}, },
 		{{- end }}
 	{{- end }}{{- end }}

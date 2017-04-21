@@ -26,13 +26,8 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		log15.Error("DBFehler", "post", err)
 		return
 	}
+	input := json.ROWInsert()
 
-	var input []interface{}
-	if tmap.Flag == 3 {
-		input = tmap.ROWQueryFun(json)
-	} else {
-		input = tmap.ROWInsertFun(json)
-	}
 	rows := db.DBx.QueryRow(stmt.Name, input...)
 
 	inter, err := row1Scanner(tmap, rows)

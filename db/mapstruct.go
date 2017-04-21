@@ -10,6 +10,15 @@ import (
 
 type SQLOper int
 
+type PgxGener interface {
+	Scanner() InterPgx
+	ROWInsert() InterPgx
+}
+
+type PgxGenerIns interface {
+	ROWInsert() InterPgx
+}
+
 const (
 	GenSelectID SQLOper = iota
 	GenInsert
@@ -94,17 +103,14 @@ func setTyp(con *pgx.Conn) error {
 	return nil
 }
 
-type MapperFun1 func(interface{}) InterPgx
 type MapperFun2 func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error
 
 type TFunMap struct {
-	SQLFun       func(SQLOper) string
-	ROWInsertFun MapperFun1
-	ROWQueryFun  MapperFun1
-	EmptyFun     func() interface{}
-	ParamFun     func() interface{}
-	ScannerFun   func() (InterPgx, interface{})
-	Flag         int
+	SQLFun      func(SQLOper) string
+	EmptyFun    func() PgxGener
+	EmptyInsFun func() PgxGenerIns
+	ParamFun    func() PgxGenerIns
+	Flag        int
 }
 
 var FunMap = map[string]TFunMap{}
