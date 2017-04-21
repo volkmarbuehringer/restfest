@@ -40,7 +40,7 @@ type {{$z}} struct {
 type {{$a}} []{{$z}}
 
 func (x *{{$z}}) Scanner() db.InterPgx {
-	return []interface{}{
+	return db.InterPgx{
 		{{- range .Cols  }}
 				&x.{{title .Column}},
 				{{- end }}
@@ -49,19 +49,16 @@ func (x *{{$z}}) Scanner() db.InterPgx {
 }
 
 func (rt *{{$z}})ROWInsert() db.InterPgx {
-	  return []interface{}{
-				{{if .Flagger}}
-	{{- range .BindsVarInsert  }}
-	&rt.{{title .}},
-	{{- end }}
-{{end}}
+	  return db.InterPgx{
+		{{if .Flagger}}
+	    {{- range .BindsVarInsert  }}	&rt.{{title .}},	{{- end }}
+    {{end}}
   }
 }
 
 
 func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
-
-  return []interface{}{
+  return db.InterPgx{
 		{{- range .Parameters }}
 		&rt.{{title .Column}},
 		{{- end }}
