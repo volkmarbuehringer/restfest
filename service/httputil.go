@@ -17,25 +17,13 @@ import (
 
 var decoder = schema.NewDecoder()
 
-func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json db.PgxGenerIns, fun1 db.TFunMap, sqler db.SQLOper, err error) {
+func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json db.PgxGenerIns, fun1 db.TFunMap, err error) {
 	var ok bool
 	if fun1, ok = db.FunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
 	} else {
 
-		switch fun1.Flag {
-		case 3:
-			sqler = db.GenFunction
-		case 4:
-			sqler = db.GenSelectAll1
-		case 1, 2:
-			sqler = db.GenSelectAll
-		default:
-			err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-			return
-
-		}
 		err = r.ParseForm()
 
 		if err != nil {

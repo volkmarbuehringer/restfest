@@ -5,14 +5,12 @@ import (
 	"restfest/db"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx"
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func poster(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	var stmt *pgx.PreparedStatement
 	stmt, tmap, err := prepare(vars["tab"], -1)
 	if err != nil {
 		senderErr(w, err)

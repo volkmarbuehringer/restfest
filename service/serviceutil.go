@@ -50,13 +50,26 @@ func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, sqlFun d
 		return
 	}
 
-	if flag < 0 {
+	switch flag {
+	case -1:
 		if sqlFun.Flag == 3 {
 			flag = db.GenFunction
 		} else {
 			flag = db.GenInsert
 		}
+	case -2:
+		switch sqlFun.Flag {
+		case 3:
+			flag = db.GenFunction
+		case 4:
+			flag = db.GenSelectAll1
+		case 1, 2:
+			flag = db.GenSelectAll
+		default:
+			err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+			return
 
+		}
 	}
 
 	sucher := tab + strconv.Itoa(int(flag))
@@ -86,10 +99,10 @@ func readRow(tab string, id int) (inter db.PgxGener, err error) {
 	return
 }
 
-func readRows(tab string, sqler db.SQLOper, params db.PgxGenerIns) (inter []db.PgxGener, err error) {
+func readRows(tab string, params db.PgxGenerIns) (inter []db.PgxGener, err error) {
 	var stmt *pgx.PreparedStatement
 	var sqlFun db.TFunMap
-	if stmt, sqlFun, err = prepare(tab, sqler); err != nil {
+	if stmt, sqlFun, err = prepare(tab, -2); err != nil {
 
 		return
 	}

@@ -19,6 +19,7 @@ type TabFlag struct {
 	PK        string
 	Parameter string
 	Worker    bool
+	Flagger   bool
 }
 
 var db *pgx.Conn
@@ -86,6 +87,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 	} else {
 		profB = []Prof{Prof{"length", "int", ""}, Prof{"offset", "int", ""}}
 		flagger = true
+		row.Flagger = true
 	}
 	if rows, err := db.Query(sqlallcols, row.Table); err != nil {
 		log15.Crit("DBFehler", "query", err)

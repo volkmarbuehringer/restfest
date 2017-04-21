@@ -9,6 +9,8 @@ package main
 import (
 "restfest/gener{{.Package}}"
 "restfest/db"
+"github.com/jackc/pgx"
+"github.com/jackc/pgx/pgtype"
 "fmt"
 )
 
@@ -17,7 +19,23 @@ func init(){
 	{{$x := .Package -}}
 
 db.ConnectorFunMap=map[string]db.MapperFun2{
-	 {{- range .Table }}{{if .TFlag  }}{{printf "%q" .Table -}}:gener{{$x}}.Connector{{ title .Table}} ,{{end}}{{- end }}
+	 {{- range .Table }}{{if .TFlag  }}
+	  	 {{$a := (title .Table) | printf "%s%s.%s%s" "gener" $x "Ar" -}}
+   {{$z := (title .Table) | printf "%s%s.%s" "gener" $x }}
+	 {{printf "%q" .Table -}}: func (con *pgx.Conn, oida pgtype.Oid,oid pgtype.Oid) error {
+	 	con.ConnInfo.RegisterDataType(pgtype.DataType{
+	 		Value: &{{$a}}{},
+	 		Name:  {{printf "%q" $a}},
+	 		Oid:  oida,
+	 	})
+	 	con.ConnInfo.RegisterDataType(pgtype.DataType{
+	 		Value: &{{$z}}{},
+	 		Name:  {{printf "%q" $z}},
+	 		Oid:  oid,
+	 	})
+	 	return nil
+	 } ,
+	 {{end}}{{- end }}
 }
 
 

@@ -16,7 +16,6 @@ import (
 
 			{{if .FlaggerUdt}}
 			"github.com/jackc/pgx/pgtype"
-		"github.com/jackc/pgx"
 		{{end}}
 )
 
@@ -72,19 +71,7 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 
 
 			{{if .FlaggerUdt}}
-func Connector{{$z}}(con *pgx.Conn, oida pgtype.Oid,oid pgtype.Oid) error {
-	con.ConnInfo.RegisterDataType(pgtype.DataType{
-		Value: &{{$a}}{},
-		Name:  {{printf "%q" $a}},
-		Oid:  oida,
-	})
-	con.ConnInfo.RegisterDataType(pgtype.DataType{
-		Value: &{{$z}}{},
-		Name:  {{printf "%q" $z}},
-		Oid:  oid,
-	})
-	return nil
-}
+
 
 func (src *{{$a}}) AssignTo(dst interface{}) error {
 
@@ -223,24 +210,4 @@ func SQL{{$z}}(flag db.SQLOper)string{
 
 	return ""
 
-}
-
-
-func Empty{{$z}}() db.PgxGener{
-    return new({{title .Table}})
-}
-
-func EmptyIns{{$z}}() db.PgxGenerIns{
-    return new({{title .Table}})
-}
-
-func EmptyParam{{title .Table}}() db.PgxGenerIns{
-
- rt := new({{title .Table}}Params)
-
-	{{if .Flagger}}
-		rt.Length=100
-	{{end}}
-
-    return rt
 }

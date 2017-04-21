@@ -12,14 +12,14 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 
 	tab := mux.Vars(r)["tab"]
 
-	params, _, sqler, err := prepParam(tab, w, r)
+	params, _, err := prepParam(tab, w, r)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "getall", err)
 		return
 	}
 
-	inter, err := readRows(tab, sqler, params)
+	inter, err := readRows(tab, params)
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "getall", err)
