@@ -13,8 +13,7 @@ var preparedStmt = map[string]*pgx.PreparedStatement{}
 func row1Scanner(funMap db.TFunMap, rows *pgx.Row) (stru db.PgxGener, err error) {
 	stru = funMap.EmptyFun()
 
-	arr := stru.Scanner()
-	if err = rows.Scan(arr...); err != nil {
+	if err = rows.Scan(stru.Scanner()...); err != nil {
 
 		return
 	}
@@ -22,23 +21,19 @@ func row1Scanner(funMap db.TFunMap, rows *pgx.Row) (stru db.PgxGener, err error)
 
 }
 
-func rowScanner(funMap db.TFunMap, rows *pgx.Rows) (stru []db.PgxGener, err error) {
-	t := make([]db.PgxGener, 0)
-
-	var x db.PgxGener
+func rowScanner(funMap db.TFunMap, rows *pgx.Rows) (t []db.PgxGener, err error) {
+	t = make([]db.PgxGener, 0)
 
 	for rows.Next() {
 		if err = rows.Err(); err != nil {
 			return
 		}
-		x = funMap.EmptyFun()
-		arr := x.Scanner()
-		if err = rows.Scan(arr...); err != nil {
+		x := funMap.EmptyFun()
+		if err = rows.Scan(x.Scanner()...); err != nil {
 			return
 		}
 		t = append(t, x)
 	}
-	stru = t
 	return
 }
 

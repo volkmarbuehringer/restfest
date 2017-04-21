@@ -40,10 +40,11 @@ func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json db.PgxG
 
 func prepLesen(flag db.TFunMap, w http.ResponseWriter, r *http.Request) (json db.PgxGenerIns, err error) {
 	if flag.Flag == 3 {
-		json, err = leser1(w, r, flag.ParamFun())
+		json = flag.ParamFun()
 	} else {
-		json, err = leser1(w, r, flag.EmptyInsFun())
+		json = flag.EmptyInsFun()
 	}
+	err = leser1(w, r, json)
 
 	return
 }
@@ -80,14 +81,14 @@ func formReaderS(r *http.Request, name string, defaulter string) string {
 	return defaulter
 }
 
-func leser1(w http.ResponseWriter, r *http.Request, todo db.PgxGenerIns) (db.PgxGenerIns, error) {
+func leser1(w http.ResponseWriter, r *http.Request, todo db.PgxGenerIns) error {
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if err = r.Body.Close(); err != nil {
-		return nil, err
+		return err
 	}
 	if err = json.Unmarshal(body, todo); err != nil {
 		/*
@@ -97,11 +98,12 @@ func leser1(w http.ResponseWriter, r *http.Request, todo db.PgxGenerIns) (db.Pgx
 				return nil, err
 			}
 		*/
-		return nil, err
+		return err
 	}
-	return todo, err
+	return err
 }
 
+/*
 func leser(w http.ResponseWriter, r *http.Request) (todo map[string]interface{}, err error) {
 
 	todo = make(map[string]interface{})
@@ -114,18 +116,12 @@ func leser(w http.ResponseWriter, r *http.Request) (todo map[string]interface{},
 		return
 	}
 	if err = json.Unmarshal(body, &todo); err != nil {
-		/*
-			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			w.WriteHeader(422) // unprocessable entity
-			if err = json.NewEncoder(w).Encode(err); err != nil {
-				return
-			}
-		*/
+
 		return nil, err
 	}
 	return
 }
-
+*/
 func sender(w http.ResponseWriter, todos interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

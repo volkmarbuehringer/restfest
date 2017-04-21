@@ -37,15 +37,14 @@ func putter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		json, err := leser1(w, r, inter)
+		err = leser1(w, r, inter)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "put", err)
 			return
 		}
 
-		x := json.ROWInsert()
-		x = append(x, id)
+		x := append(inter.ROWInsert(), id)
 
 		fmt.Println(x)
 		rows = tx.QueryRow(sqlFun.SQLFun(db.GenUpdate), x...)
