@@ -10,6 +10,9 @@ import (
 
 type SQLOper int
 
+type PgxGenerAr interface {
+	Scanner(*pgx.Rows) error
+}
 type PgxGener interface {
 	Scanner() InterPgx
 	ROWInsert() InterPgx
@@ -110,6 +113,7 @@ type TFunMap struct {
 	EmptyFun    func() PgxGener
 	EmptyInsFun func() PgxGenerIns
 	ParamFun    func() PgxGenerIns
+	EmptyArray  func() PgxGenerAr
 	Flag        int
 }
 

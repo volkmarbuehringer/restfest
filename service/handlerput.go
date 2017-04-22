@@ -30,7 +30,10 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		defer tx.Rollback()
 		rows := tx.QueryRow(sqlFun.SQLFun(db.GenSelectID)+" for update", id)
 
-		inter, err := row1Scanner(sqlFun, rows)
+		inter := sqlFun.EmptyFun()
+
+		err = rows.Scan(inter.Scanner()...)
+
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "prep put", err)
@@ -48,8 +51,8 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println(x)
 		rows = tx.QueryRow(sqlFun.SQLFun(db.GenUpdate), x...)
+		err = rows.Scan(inter.Scanner()...)
 
-		inter, err = row1Scanner(sqlFun, rows)
 		if err != nil {
 			senderErr(w, err)
 			log15.Error("DBFehler", "update", err)

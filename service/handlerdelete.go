@@ -24,7 +24,10 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 
 	rows := db.DBx.QueryRow(stmt.Name, id)
 
-	inter, err := row1Scanner(funMap, rows)
+	inter := funMap.EmptyFun()
+
+	err = rows.Scan(inter.Scanner()...)
+
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "delete", err)

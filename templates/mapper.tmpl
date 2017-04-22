@@ -33,7 +33,10 @@ db.FunMap=map[string]db.TFunMap{
 			{{end}}
 		    return rt
 		},
-
+		func () db.PgxGenerAr {
+		    x:=make(gener{{$x}}.Ar{{title .Table}},0)
+				return &x
+		},
 		{{.Flag}}, },
 		{{- end }}
 	{{- end }}{{- end }}

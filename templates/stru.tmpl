@@ -13,7 +13,7 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
-
+	"github.com/jackc/pgx"
 			{{if .FlaggerUdt}}
 			"github.com/jackc/pgx/pgtype"
 		{{end}}
@@ -64,6 +64,21 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 		{{- end }}
 }
 
+}
+
+
+func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
+	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		x := new( {{$z}})
+		if err := rows.Scan(x.Scanner()...); err != nil {
+			return err
+		}
+		*dst = append(*dst, *x)
+	}
+	return nil
 }
 
 
@@ -129,6 +144,8 @@ d:=  struT.Scanner()
 	*dst = *struT
 	return nil
 }
+
+
 
 func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 	if src == nil {

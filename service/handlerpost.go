@@ -28,7 +28,10 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 	rows := db.DBx.QueryRow(stmt.Name, input...)
 
-	inter, err := row1Scanner(tmap, rows)
+	inter := tmap.EmptyFun()
+
+	err = rows.Scan(inter.Scanner()...)
+
 	if err != nil {
 		senderErr(w, err)
 		log15.Error("DBFehler", "post", err)
