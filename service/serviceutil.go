@@ -59,11 +59,11 @@ func readRow(tab string, id int) (inter db.PgxGener, err error) {
 		return nil, err1
 	} else {
 
-		rows := db.DBx.QueryRow(stmt.Name, id)
+		row := db.DBx.QueryRow(stmt.Name, id)
 
 		inter = funMap.EmptyFun()
 
-		err = rows.Scan(inter.Scanner()...)
+		err = row.Scan(inter.Scanner()...)
 
 	}
 	return

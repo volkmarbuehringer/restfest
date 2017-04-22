@@ -7,7 +7,6 @@ import (
 	"restfest/generteststruct"
 
 	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgtype"
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
@@ -17,28 +16,33 @@ var dbx *pgx.Conn
 
 func main() {
 
-	rows, err := dbx.Query(generteststruct.SQLGuges1(db.GenSelectAll1))
+	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return
 	}
-	defer rows.Close()
+	mapper := make(generteststruct.MapWeburl)
+	mapper.Scanner(rows)
 
-	for anz := 0; rows.Next(); anz++ {
-		stru := new(generteststruct.Guges1)
-		arrr := generteststruct.ScannerGuges1I(stru)
-		if err = rows.Scan(arrr...); err != nil {
-			log15.Crit("DBFehler", "scan", err)
-			return
-		}
-		fmt.Println("guer da", anz, len(stru.Agger), *stru.Texter, *stru.Texter2, *stru.Zahler, *stru.Zahler2)
-		for i, w := range stru.Agger {
-			if w.Url != nil {
-				println(i, *w.Url)
-			}
+	for r, m := range mapper {
+		if m.Url != nil {
+			fmt.Println(r, *m.Url)
 		}
 
 	}
+	defer rows.Close()
+	/*
+		stru := new(generteststruct.Weburl)
+		for anz := 0; rows.Next(); anz++ {
+
+			if err = rows.Scan(stru.Scanner()...); err != nil {
+				log15.Crit("DBFehler", "scan", err)
+				return
+			}
+			fmt.Println(anz, stru)
+
+		}
+	*/
 	defer dbx.Close()
 
 	os.Exit(0)
@@ -59,10 +63,10 @@ func init() {
 	}
 	fmt.Println(dbe.ConnInfo)
 	//fmt.Println(gaga.ConnInfo)
-	dbe.ConnInfo.RegisterDataType(pgtype.DataType{
-		Value: &generteststruct.Weburls{},
-		Name:  "weburls",
-		Oid:   24877,
-	})
 
+	err = db.SetTyp(dbx)
+	if err != nil {
+		log15.Crit("DB", "parse", err)
+		os.Exit(1)
+	}
 }

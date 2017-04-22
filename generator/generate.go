@@ -17,6 +17,8 @@ type TabFlag struct {
 	Flag      int
 	TFlag     bool
 	PK        string
+	PKType    string
+	PKPtr     string
 	Parameter string
 	Worker    bool
 	Flagger   bool
@@ -120,6 +122,14 @@ func generateStru(t *template.Template, row *TabFlag) error {
 					ColumnsInsert = append(ColumnsInsert, prof.Column)
 					BindsInsert = append(BindsInsert, g)
 				}
+
+				if prof.ColumnTrans[0:1] == "*" {
+					row.PKType = prof.ColumnTrans[1:]
+					row.PKPtr = "*"
+				} else {
+					row.PKType = prof.ColumnTrans
+					row.PKPtr = ""
+				}
 			case strings.Contains(prof.Column, "_cr_date"):
 				ColumnsInsert = append(ColumnsInsert, prof.Column)
 				BindsInsert = append(BindsInsert, dbTimestamp)
@@ -184,6 +194,8 @@ func generateStru(t *template.Template, row *TabFlag) error {
 				FlaggerUdt     bool
 				Table          string
 				PK             string
+				PKType         string
+				PKPtr          string
 				Timestamp      time.Time
 				PKBind         string
 				Cols           []Prof
@@ -201,6 +213,8 @@ func generateStru(t *template.Template, row *TabFlag) error {
 				row.TFlag,
 				namer,
 				row.PK,
+				row.PKType,
+				row.PKPtr,
 				time.Now(),
 				pkBind,
 				profA,

@@ -39,6 +39,7 @@ type {{$z}} struct {
 
 type {{$a}} []{{$z}}
 
+
 func (x *{{$z}}) Scanner() db.InterPgx {
 	return db.InterPgx{
 		{{- range .Cols  }}
@@ -65,7 +66,24 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 }
 
 }
+				{{if .Flagger}}
+				type Map{{$z}} map[{{.PKType}}]{{$z}}
+func (dst *Map{{$z}}) Scanner( rows *pgx.Rows) error {
 
+	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		x := new( {{$z}})
+		if err := rows.Scan(x.Scanner()...); err != nil {
+			return err
+		}
+		(*dst)[{{.PKPtr}}x.{{title .PK}}] = *x
+	}
+
+	return nil
+}
+	{{end}}
 
 func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
 	for rows.Next() {

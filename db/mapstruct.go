@@ -13,6 +13,9 @@ type SQLOper int
 type PgxGenerAr interface {
 	Scanner(*pgx.Rows) error
 }
+type PgxGenerMap interface {
+	Scanner(*pgx.Rows) error
+}
 type PgxGener interface {
 	Scanner() InterPgx
 	ROWInsert() InterPgx
@@ -88,7 +91,7 @@ func init() {
 
 }
 
-func setTyp(con *pgx.Conn) error {
+func SetTyp(con *pgx.Conn) error {
 
 	if err := LoadTypMap(con); err != nil {
 		return err
