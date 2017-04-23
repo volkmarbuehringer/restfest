@@ -7,14 +7,37 @@ import (
 	"os"
 	"restfest/db"
 	"restfest/generteststruct"
+
+	"github.com/jackc/pgx"
 )
 
-type copyCsv struct {
-	ptr      []string
-	rows     *csv.Reader
+type baseCopy struct {
 	err      error
 	inter    db.InterPgx
 	structer generteststruct.Weburl
+}
+
+type copyCsv struct {
+	ptr  []string
+	rows *csv.Reader
+	baseCopy
+}
+
+func (t *baseCopy) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource) error {
+
+	t.inter = t.structer.Scanner()
+
+	fmt.Println("vor copy", tab)
+	copyCount, err := con.CopyFrom(
+		[]string{tab},
+		t.structer.Columns(),
+		tt)
+
+	fmt.Println("fertig", copyCount, err)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t *copyCsv) Next() bool {
@@ -43,15 +66,14 @@ func (t *copyCsv) Next() bool {
 
 	return true
 }
-func (t *copyCsv) Values() ([]interface{}, error) {
+func (t *baseCopy) Values() ([]interface{}, error) {
 	return t.inter, t.err
 }
-func (t *copyCsv) Err() error {
+func (t baseCopy) Err() error {
 	if t.err != io.EOF {
 		return t.err
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func csvread() error {
@@ -62,27 +84,16 @@ func csvread() error {
 
 	r := csv.NewReader(f1)
 
-	record, err := r.Read()
+	_, err = r.Read()
 	if err != nil {
 		return err
 	}
 
 	iterator := copyCsv{
 		rows:     r,
-		structer: generteststruct.Weburl{},
+		baseCopy: baseCopy{structer: generteststruct.Weburl{}},
 	}
 
-	iterator.inter = iterator.structer.Scanner()
-
-	fmt.Println("vor copy", record)
-	copyCount, err := dbx1.CopyFrom(
-		[]string{"zielweburl"},
-		iterator.structer.Columns(),
-		&iterator)
-
-	fmt.Println("fertig", copyCount, err)
-	if err != nil {
-		return err
-	}
+	iterator.StartCopy("zielweburl", dbx1, &iterator)
 	return nil
 }

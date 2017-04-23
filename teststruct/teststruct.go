@@ -16,6 +16,7 @@ import (
 
 var dbx *pgx.Conn
 var dbx1 *pgx.Conn
+var dbx2 *pgx.Conn
 
 func mapper() error {
 	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
@@ -41,17 +42,15 @@ func main() {
 
 	defer dbx.Close()
 	defer dbx1.Close()
+	defer dbx2.Close()
+
 	start := time.Now()
+
 	if err := csvread(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("read flatfile", time.Since(start))
-	start = time.Now()
-	if err := copyer(); err != nil {
-		log.Fatal(err)
-	}
+	fmt.Println("copy flatfile", time.Since(start))
 
-	fmt.Println("copy table", time.Since(start))
 	start = time.Now()
 	if err := mapper(); err != nil {
 		log.Fatal(err)
@@ -62,6 +61,14 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("read flatfile", time.Since(start))
+
+	start = time.Now()
+
+	if err := copyer(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("copy table", time.Since(start))
 	os.Exit(0)
 }
 
@@ -79,6 +86,10 @@ func init() {
 	}
 	//	fmt.Println(dbx.ConnInfo)
 	if dbx1, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
+	if dbx2, err = pgx.Connect(connConfig); err != nil {
 		log15.Crit("DB", "connect", err)
 		os.Exit(1)
 	}

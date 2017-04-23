@@ -10,12 +10,12 @@ import (
 )
 
 type weburlScan struct {
-	ptr   generteststruct.Weburl
-	rows  *pgx.Rows
-	inter db.InterPgx
+	rows *pgx.Rows
+	baseCopy
 }
 
 func (t *weburlScan) Next() bool {
+
 	var ok bool
 	for {
 		ok = t.rows.Next()
@@ -23,19 +23,18 @@ func (t *weburlScan) Next() bool {
 			break
 		}
 		t.rows.Scan(t.inter...)
-		if t.ptr.Url != nil {
-			fmt.Println(*t.ptr.Url)
+		if t.structer.Url != nil {
+			fmt.Println(*t.structer.Url)
 			break
 		}
 	}
+	t.err = t.rows.Err()
+	if t.err != nil {
+		return false
+	}
 	return ok
 }
-func (t *weburlScan) Values() ([]interface{}, error) {
-	return t.inter, t.rows.Err()
-}
-func (t *weburlScan) Err() error {
-	return t.rows.Err()
-}
+
 func copyer() error {
 	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
 	if err != nil {
@@ -45,16 +44,10 @@ func copyer() error {
 	defer rows.Close()
 
 	iterator := weburlScan{
-		ptr:  generteststruct.Weburl{},
-		rows: rows,
+		baseCopy: baseCopy{structer: generteststruct.Weburl{}},
+		rows:     rows,
 	}
-	iterator.inter = iterator.ptr.Scanner()
-	fmt.Println("vor copy")
-	copyCount, err := dbx1.CopyFrom(
-		[]string{"zielweburl"},
-		iterator.ptr.Columns(),
-		&iterator)
 
-	fmt.Println("fertig", copyCount, err)
-	return err
+	return iterator.StartCopy("zielweburl", dbx2, &iterator)
+
 }
