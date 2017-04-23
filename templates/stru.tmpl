@@ -47,7 +47,14 @@ func (t {{$z}}) Columns() []string {
 			}
 }
 
+func (x *{{$z}}) ScannerV() db.InterPgx {
+	return db.InterPgx{
+		{{- range .Cols  }}
+				x.{{title .Column}},
+				{{- end }}
+			}
 
+}
 
 
 func (x *{{$z}}) Scanner() db.InterPgx {

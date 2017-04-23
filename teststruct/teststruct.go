@@ -20,6 +20,14 @@ var dbx *pgx.Conn
 var dbx1 *pgx.Conn
 
 func fetcher() {
+
+	f1, err := os.Create("flat.csv")
+	if err != nil {
+		log15.Crit("DBFehler", "create", err)
+		log.Fatal(err)
+	}
+	w := csv.NewWriter(f1)
+
 	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
@@ -28,15 +36,27 @@ func fetcher() {
 	defer rows.Close()
 	stru := new(generteststruct.Weburl)
 	for anz := 0; rows.Next(); anz++ {
-
-		if err = rows.Scan(stru.Scanner()...); err != nil {
+		arrp := stru.Scanner()
+		if err = rows.Scan(arrp...); err != nil {
 			log15.Crit("DBFehler", "scan", err)
 			return
 		}
-		fmt.Println(anz, stru)
 
+		record, err := stru.ScannerV().ConvertItoS()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := w.Write(record); err != nil {
+			log.Fatalln("error writing record to csv:", err)
+		}
 	}
+	// Write any buffered data to the underlying writer (standard output).
+	w.Flush()
 
+	if err := w.Error(); err != nil {
+		log.Fatal(err)
+	}
 }
 func mapper() {
 	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
@@ -181,9 +201,9 @@ func copyer() {
 }
 func main() {
 
-	csvread()
+	//csvread()
 
-	copyer()
+	//copyer()
 	mapper()
 	fetcher()
 	defer dbx.Close()
