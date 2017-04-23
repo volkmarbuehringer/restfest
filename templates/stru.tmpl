@@ -43,27 +43,10 @@ type {{$a}} []{{$z}}
 
 func (t {{$z}}) Columns() []string {
 	return []string{
-		 {{- range .ColumnsInsert  }}	 {{printf "%q" .}} ,	{{- end }}
+		 {{- range .Cols }}	 {{printf "%q" .Column}} ,	{{- end }}
 			}
 }
 
-func (x *{{$z}}) ScannerV() db.InterPgx {
-	return db.InterPgx{
-		{{- range .Cols  }}
-				x.{{title .Column}},
-				{{- end }}
-			}
-
-}
-
-func (x *{{$z}}) ScannerVI() db.InterPgx {
-	return db.InterPgx{
-		{{- range .ColumnsInsert  }}
-				x.{{title .}},
-				{{- end }}
-			}
-
-}
 
 func (x *{{$z}}) Scanner() db.InterPgx {
 	return db.InterPgx{

@@ -34,14 +34,18 @@ func fetcher() {
 	}
 	defer rows.Close()
 	stru := new(generteststruct.Weburl)
+	arrp := stru.Scanner()
 	for anz := 0; rows.Next(); anz++ {
-		arrp := stru.Scanner()
+
 		if err = rows.Scan(arrp...); err != nil {
 			log15.Crit("DBFehler", "scan", err)
 			return
 		}
+		if stru.Url != nil {
+			fmt.Println(*stru.Url)
+		}
 
-		record, err := stru.ScannerV().ConvertItoS()
+		record, err := arrp.ConvertItoS()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -77,25 +81,11 @@ func mapper() {
 }
 
 func csvread() {
-	f1, err := os.Open("/home/walter/Downloads/test.csv")
+	f1, err := os.Open("flat.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*
-		r := csv.NewReader(f1)
 
-		for {
-			record, err := r.Read()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Println(record)
-		}
-	*/
 	r := csv.NewReader(f1)
 
 	record, err := r.Read()
@@ -103,16 +93,17 @@ func csvread() {
 		log.Fatal(err)
 	}
 
-	x := new(generteststruct.Csvtest)
 	iterator := copyCsv{
-		rows:  r,
-		inter: x.ScannerVI(),
+		rows:     r,
+		structer: generteststruct.Weburl{},
 	}
+
+	iterator.inter = iterator.structer.Scanner()
 
 	fmt.Println("vor copy", record)
 	copyCount, err := dbx1.CopyFrom(
-		[]string{"csvtest"},
-		x.Columns(),
+		[]string{"zielweburl"},
+		iterator.structer.Columns(),
 		&iterator)
 
 	fmt.Println("fertig", copyCount, err)
@@ -122,24 +113,40 @@ func csvread() {
 }
 
 type copyCsv struct {
-	ptr   []string
-	rows  *csv.Reader
-	err   error
-	inter db.InterPgx
+	ptr      []string
+	rows     *csv.Reader
+	err      error
+	inter    db.InterPgx
+	structer generteststruct.Weburl
 }
 
 func (t *copyCsv) Next() bool {
-	t.ptr, t.err = t.rows.Read()
-
 	if t.err != nil {
 		return false
 	}
+	for {
+		t.ptr, t.err = t.rows.Read()
+
+		if t.err != nil {
+			return false
+		}
+
+		t.err = t.inter.ConvertStoI(t.ptr)
+		if t.err != nil {
+			return false
+		}
+		if t.structer.Url != nil {
+			fmt.Println(*t.structer.Url)
+			break
+		} else {
+			fmt.Println("niller", t.structer)
+
+		}
+	}
+
 	return true
 }
 func (t *copyCsv) Values() ([]interface{}, error) {
-
-	t.err = t.inter.ConvertStoI(t.ptr)
-
 	return t.inter, t.err
 }
 func (t *copyCsv) Err() error {
@@ -151,17 +158,28 @@ func (t *copyCsv) Err() error {
 }
 
 type WeburlScan struct {
-	ptr   *generteststruct.Weburl
+	ptr   generteststruct.Weburl
 	rows  *pgx.Rows
 	inter db.InterPgx
 }
 
 func (t *WeburlScan) Next() bool {
-	return t.rows.Next()
+	var ok bool
+	for {
+		ok = t.rows.Next()
+		if !ok {
+			break
+		}
+		t.rows.Scan(t.inter...)
+		if t.ptr.Url != nil {
+			fmt.Println(*t.ptr.Url)
+			break
+		}
+	}
+	return ok
 }
 func (t *WeburlScan) Values() ([]interface{}, error) {
-	err := t.rows.Scan(t.inter...)
-	return t.inter, err
+	return t.inter, t.rows.Err()
 }
 func (t *WeburlScan) Err() error {
 	return t.rows.Err()
@@ -174,17 +192,15 @@ func copyer() {
 	}
 	defer rows.Close()
 
-	x := new(generteststruct.Weburl)
 	iterator := WeburlScan{
-		x,
-		rows,
-		x.Scanner(),
+		ptr:  generteststruct.Weburl{},
+		rows: rows,
 	}
-
+	iterator.inter = iterator.ptr.Scanner()
 	fmt.Println("vor copy")
 	copyCount, err := dbx1.CopyFrom(
 		[]string{"zielweburl"},
-		x.Columns(),
+		iterator.ptr.Columns(),
 		&iterator)
 
 	fmt.Println("fertig", copyCount, err)
@@ -193,9 +209,9 @@ func main() {
 
 	csvread()
 
-	//copyer()
-	//mapper()
-	//fetcher()
+	copyer()
+	mapper()
+	fetcher()
 	defer dbx.Close()
 
 	os.Exit(0)
