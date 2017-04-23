@@ -8,7 +8,6 @@ import (
 	"os"
 	"restfest/db"
 	"restfest/generteststruct"
-	"strconv"
 
 	"github.com/jackc/pgx"
 	log15 "gopkg.in/inconshreveable/log15.v2"
@@ -106,8 +105,8 @@ func csvread() {
 
 	x := new(generteststruct.Csvtest)
 	iterator := copyCsv{
-
-		rows: r,
+		rows:  r,
+		inter: x.ScannerVI(),
 	}
 
 	fmt.Println("vor copy", record)
@@ -123,34 +122,25 @@ func csvread() {
 }
 
 type copyCsv struct {
-	ptr  []string
-	rows *csv.Reader
-	err  error
+	ptr   []string
+	rows  *csv.Reader
+	err   error
+	inter db.InterPgx
 }
 
 func (t *copyCsv) Next() bool {
 	t.ptr, t.err = t.rows.Read()
+
 	if t.err != nil {
 		return false
 	}
 	return true
 }
 func (t *copyCsv) Values() ([]interface{}, error) {
-	x := make([]interface{}, len(t.ptr))
-	for i, w := range t.ptr {
-		switch i {
-		case 0, 3, 4:
-			s, err := strconv.Atoi(w)
-			if err != nil {
-				return nil, err
-			}
-			x[i] = s
-		default:
-			x[i] = w
-		}
 
-	}
-	return x, t.err
+	t.err = t.inter.ConvertStoI(t.ptr)
+
+	return t.inter, t.err
 }
 func (t *copyCsv) Err() error {
 	if t.err != io.EOF {
@@ -201,11 +191,11 @@ func copyer() {
 }
 func main() {
 
-	//csvread()
+	csvread()
 
 	//copyer()
-	mapper()
-	fetcher()
+	//mapper()
+	//fetcher()
 	defer dbx.Close()
 
 	os.Exit(0)
