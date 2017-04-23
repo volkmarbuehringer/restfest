@@ -40,41 +40,13 @@ type {{$z}} struct {
 type {{$a}} []{{$z}}
 
 
-type {{$z}}Scan struct {
-	ptr   *{{$z}}
-	rows  *pgx.Rows
-	inter db.InterPgx
-}
 
-func (t *{{$z}}Scan) Columns() []string {
+func (t {{$z}}) Columns() []string {
 	return []string{
-		{{- range .Cols  }}
-		      {{printf "%q" .Column}} ,
-				{{- end }}
-	}
-}
-func (t *{{$z}}Scan) Next() bool {
-	return t.rows.Next()
-}
-func (t *{{$z}}Scan) Values() ([]interface{}, error) {
-	err := t.rows.Scan(t.inter...)
-	return t.inter, err
-}
-func (t *{{$z}}Scan) Err() error {
-	return t.rows.Err()
+		 {{- range .BindsVarInsert  }}	 {{printf "%q" .}} ,	{{- end }}
+			}
 }
 
-func {{$z}}Iterator(rows *pgx.Rows) *{{$z}}Scan {
-	x := new({{$z}})
-r := {{$z}}Scan{
-	x,
-	rows,
-	x.Scanner(),
-}
-
-return &r
-
-}
 
 
 
