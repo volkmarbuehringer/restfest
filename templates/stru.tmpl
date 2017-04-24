@@ -134,10 +134,10 @@ func (t BaseCopy{{$z}}) Err() error {
 	return nil
 }
 
-func (t *BaseCopy{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource) error {
+func (t *BaseCopy{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource,rows  *pgx.Rows) error {
 
 	t.Inter = t.{{$z}}.Scanner()
-
+t.Rows = rows
 	fmt.Println("vor copy", tab)
 	copyCount, err := con.CopyFrom(
 		[]string{tab},

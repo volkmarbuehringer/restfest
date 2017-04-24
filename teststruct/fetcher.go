@@ -31,7 +31,7 @@ func fetcher() error {
 	defer rows.Close()
 
 	iter := scanner{
-		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}, Rows: rows},
+		BaseCopyLos: generteststruct.BaseCopyLos{Rows: rows},
 	}
 	iter.Inter = iter.Los.Scanner()
 

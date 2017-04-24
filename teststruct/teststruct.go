@@ -62,11 +62,11 @@ func main() {
 
 	c := make(chan error)
 	go runner(mapper, c, "mapper")
-	go runner(fetcher, c, "fetcher")
+	//go runner(fetcher, c, "fetcher")
 	go runner(csvread, c, "csvread")
 	go runner(copyer, c, "copy table")
 
-	fmt.Println("run", <-c)
+	//fmt.Println("run", <-c)
 	fmt.Println("run", <-c)
 	fmt.Println("run", <-c)
 	fmt.Println("run", <-c)

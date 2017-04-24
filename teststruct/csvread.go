@@ -35,14 +35,10 @@ func (t *copyCsv) Next() bool {
 			if t.anz%1000 == 0 {
 				fmt.Println("read", t.anz)
 			}
-			break
-		} else {
-			//			fmt.Println("niller")
-
+			return true
 		}
 	}
 
-	return true
 }
 
 func csvread() error {
@@ -51,13 +47,10 @@ func csvread() error {
 		return err
 	}
 
-	r := csv.NewReader(f1)
-
 	iterator := copyCsv{
-		rows:        r,
-		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}},
+		rows: csv.NewReader(f1),
 	}
 
-	iterator.StartCopy("ziellos", dbx1, &iterator)
+	iterator.StartCopy("ziellos", dbx1, &iterator, nil)
 	return nil
 }

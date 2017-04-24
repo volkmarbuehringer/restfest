@@ -30,10 +30,8 @@ func copyer() error {
 	}
 	defer rows.Close()
 
-	iterator := weburlScan{
-		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}, Rows: rows},
-	}
+	iterator := weburlScan{}
 
-	return iterator.StartCopy("ziellos", dbx2, &iterator)
+	return iterator.StartCopy("ziellos", dbx2, &iterator, rows)
 
 }
