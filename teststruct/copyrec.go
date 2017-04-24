@@ -5,38 +5,25 @@ import (
 	"restfest/db"
 	"restfest/generteststruct"
 
-	"github.com/jackc/pgx"
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 type weburlScan struct {
-	rows *pgx.Rows
-	baseCopy
+	generteststruct.BaseCopyLos
 }
 
 func (t *weburlScan) Next() bool {
-
-	var ok bool
-	for {
-		ok = t.rows.Next()
-		if !ok {
-			break
-		}
-		t.rows.Scan(t.inter...)
-		if t.structer.Url != nil {
-			fmt.Println(*t.structer.Url)
-			break
+	for t.BaseCopyLos.Next() {
+		if t.Structer.L_iban != nil {
+			fmt.Println(*t.Structer.L_iban)
+			return true
 		}
 	}
-	t.err = t.rows.Err()
-	if t.err != nil {
-		return false
-	}
-	return ok
+	return false
 }
 
 func copyer() error {
-	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
+	rows, err := dbx.Query(generteststruct.SQLLos(db.GenSelectAll1), 40000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
@@ -44,10 +31,9 @@ func copyer() error {
 	defer rows.Close()
 
 	iterator := weburlScan{
-		baseCopy: baseCopy{structer: generteststruct.Weburl{}},
-		rows:     rows,
+		BaseCopyLos: generteststruct.BaseCopyLos{Structer: generteststruct.Los{}, Rows: rows},
 	}
 
-	return iterator.StartCopy("zielweburl", dbx2, &iterator)
+	return iterator.StartCopy("ziellos", dbx2, &iterator)
 
 }
