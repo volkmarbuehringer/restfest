@@ -55,7 +55,6 @@ func runner(funcer func() error, c chan error, te string) {
 }
 
 func main() {
-
 	defer dbx.Close()
 	defer dbx1.Close()
 	defer dbx2.Close()
