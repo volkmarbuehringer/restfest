@@ -10,6 +10,10 @@ import (
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
+type scanner struct {
+	generteststruct.BaseCopyLos
+}
+
 func fetcher() error {
 
 	f1, err := os.Create("flat.csv")
@@ -19,34 +23,32 @@ func fetcher() error {
 	}
 	w := csv.NewWriter(f1)
 
-	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
+	rows, err := dbx3.Query(generteststruct.SQLLos(db.GenSelectAll1), 30000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
 	}
 	defer rows.Close()
-	stru := new(generteststruct.Weburl)
-	arrp := stru.Scanner()
-	for anz := 0; rows.Next(); anz++ {
 
-		if err = rows.Scan(arrp...); err != nil {
-			log15.Crit("DBFehler", "scan", err)
-			return err
-		}
-		if stru.Url != nil {
-			fmt.Println(*stru.Url)
-		}
+	iter := scanner{
+		BaseCopyLos: generteststruct.BaseCopyLos{Structer: generteststruct.Los{}, Rows: rows},
+	}
+	iter.Inter = iter.Structer.Scanner()
 
-		record, err := arrp.ConvertItoS()
-		if err != nil {
-			return err
-		}
+	for iter.Next() {
+		if iter.Structer.L_iban != nil {
+			fmt.Println(*iter.Structer.L_iban)
+			record, err := iter.ValuesString()
+			if err != nil {
+				return err
+			}
+			if err := w.Write(record); err != nil {
+				return err
+			}
 
-		if err := w.Write(record); err != nil {
-			return err
 		}
 	}
-	// Write any buffered data to the underlying writer (standard output).
+
 	w.Flush()
 
 	if err := w.Error(); err != nil {
