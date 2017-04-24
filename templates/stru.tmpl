@@ -13,6 +13,7 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
+	"io"
 	"github.com/jackc/pgx"
 			{{if .FlaggerUdt}}
 			"github.com/jackc/pgx/pgtype"
@@ -106,6 +107,68 @@ func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
 	}
 	return nil
 }
+
+
+type BaseCopy{{$z}} struct {
+	Errc      error
+	Inter    db.InterPgx
+	Rows     *pgx.Rows
+	Structer {{$z}}
+}
+
+func (t *BaseCopy{{$z}}) Values() ([]interface{}, error) {
+	return t.Inter, t.Errc
+}
+
+
+func (t *BaseCopy{{$z}}) ValuesString() (record []string,err error) {
+record, err = t.Inter.ConvertItoS()
+return
+}
+
+
+func (t BaseCopy{{$z}}) Err() error {
+	if t.Errc != io.EOF {
+		return t.Errc
+	}
+	return nil
+}
+
+func (t *BaseCopy{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource) error {
+
+	t.Inter = t.Structer.Scanner()
+
+	fmt.Println("vor copy", tab)
+	copyCount, err := con.CopyFrom(
+		[]string{tab},
+		t.Structer.Columns(),
+		tt)
+
+	fmt.Println("fertig", copyCount, err)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *BaseCopy{{$z}}) Next() bool {
+	var ok bool
+	for {
+		ok = t.Rows.Next()
+		if !ok {
+			break
+		}
+		t.Rows.Scan(t.Inter...)
+		break
+	}
+	t.Errc = t.Rows.Err()
+	if t.Errc != nil {
+		return false
+	}
+	return ok
+
+}
+
 
 
 			{{if .FlaggerUdt}}
