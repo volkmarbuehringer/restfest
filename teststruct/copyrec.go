@@ -14,8 +14,8 @@ type weburlScan struct {
 
 func (t *weburlScan) Next() bool {
 	for t.BaseCopyLos.Next() {
-		if t.Structer.L_iban != nil {
-			fmt.Println(*t.Structer.L_iban)
+		if t.Los.L_iban != nil {
+			fmt.Println(*t.Los.L_iban)
 			return true
 		}
 	}
@@ -31,7 +31,7 @@ func copyer() error {
 	defer rows.Close()
 
 	iterator := weburlScan{
-		BaseCopyLos: generteststruct.BaseCopyLos{Structer: generteststruct.Los{}, Rows: rows},
+		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}, Rows: rows},
 	}
 
 	return iterator.StartCopy("ziellos", dbx2, &iterator)

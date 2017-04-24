@@ -29,7 +29,7 @@ func (t *copyCsv) Next() bool {
 		if t.Errc != nil {
 			return false
 		}
-		if t.Structer.L_iban != nil {
+		if t.Los.L_iban != nil {
 			//			fmt.Println(*t.structer.L_iban)
 			t.anz++
 			if t.anz%1000 == 0 {
@@ -55,7 +55,7 @@ func csvread() error {
 
 	iterator := copyCsv{
 		rows:        r,
-		BaseCopyLos: generteststruct.BaseCopyLos{Structer: generteststruct.Los{}},
+		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}},
 	}
 
 	iterator.StartCopy("ziellos", dbx1, &iterator)

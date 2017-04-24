@@ -31,13 +31,13 @@ func fetcher() error {
 	defer rows.Close()
 
 	iter := scanner{
-		BaseCopyLos: generteststruct.BaseCopyLos{Structer: generteststruct.Los{}, Rows: rows},
+		BaseCopyLos: generteststruct.BaseCopyLos{Los: generteststruct.Los{}, Rows: rows},
 	}
-	iter.Inter = iter.Structer.Scanner()
+	iter.Inter = iter.Los.Scanner()
 
 	for iter.Next() {
-		if iter.Structer.L_iban != nil {
-			fmt.Println(*iter.Structer.L_iban)
+		if iter.Los.L_iban != nil {
+			fmt.Println(*iter.Los.L_iban)
 			record, err := iter.ValuesString()
 			if err != nil {
 				return err

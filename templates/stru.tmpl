@@ -113,7 +113,7 @@ type BaseCopy{{$z}} struct {
 	Errc      error
 	Inter    db.InterPgx
 	Rows     *pgx.Rows
-	Structer {{$z}}
+	{{$z}} {{$z}}
 }
 
 func (t *BaseCopy{{$z}}) Values() ([]interface{}, error) {
@@ -136,12 +136,12 @@ func (t BaseCopy{{$z}}) Err() error {
 
 func (t *BaseCopy{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource) error {
 
-	t.Inter = t.Structer.Scanner()
+	t.Inter = t.{{$z}}.Scanner()
 
 	fmt.Println("vor copy", tab)
 	copyCount, err := con.CopyFrom(
 		[]string{tab},
-		t.Structer.Columns(),
+		t.{{$z}}.Columns(),
 		tt)
 
 	fmt.Println("fertig", copyCount, err)
