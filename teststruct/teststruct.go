@@ -17,25 +17,41 @@ import (
 var dbx *pgx.Conn
 var dbx1 *pgx.Conn
 var dbx2 *pgx.Conn
+var dbx3 *pgx.Conn
+var dbx4 *pgx.Conn
 
 func mapper() error {
-	rows, err := dbx.Query(generteststruct.SQLWeburl(db.GenSelectAll1), 10000, 0)
+	rows, err := dbx4.Query(generteststruct.SQLLos(db.GenSelectAll1), 5000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
 	}
 	defer rows.Close()
-	mapper := make(generteststruct.MapWeburl)
+	mapper := make(generteststruct.MapLos)
 	mapper.Scanner(rows)
 
-	for r, m := range mapper {
-		if m.Url != nil {
-			fmt.Println(r, *m.Url)
-		}
+	fmt.Println("len of map", len(mapper))
+	/*
+		for r, m := range mapper {
+			if m.L_iban != nil {
+				fmt.Println(r, *m.L_iban)
+			}
 
-	}
+		}
+	*/
 	return rows.Err()
 
+}
+
+func runner(funcer func() error, c chan error, te string) {
+	start := time.Now()
+	err := funcer()
+	fmt.Println(te, time.Since(start))
+	if err != nil {
+		log.Fatal(err)
+
+	}
+	c <- err
 }
 
 func main() {
@@ -44,31 +60,17 @@ func main() {
 	defer dbx1.Close()
 	defer dbx2.Close()
 
-	start := time.Now()
+	c := make(chan error)
+	go runner(mapper, c, "mapper")
+	go runner(fetcher, c, "fetcher")
+	go runner(csvread, c, "csvread")
+	go runner(copyer, c, "copy table")
 
-	if err := csvread(); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("copy flatfile", time.Since(start))
+	fmt.Println("run", <-c)
+	fmt.Println("run", <-c)
+	fmt.Println("run", <-c)
+	fmt.Println("run", <-c)
 
-	start = time.Now()
-	if err := mapper(); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("map table", time.Since(start))
-	start = time.Now()
-	if err := fetcher(); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("read flatfile", time.Since(start))
-
-	start = time.Now()
-
-	if err := copyer(); err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("copy table", time.Since(start))
 	os.Exit(0)
 }
 
@@ -93,6 +95,15 @@ func init() {
 		log15.Crit("DB", "connect", err)
 		os.Exit(1)
 	}
+	if dbx3, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
+	if dbx4, err = pgx.Connect(connConfig); err != nil {
+		log15.Crit("DB", "connect", err)
+		os.Exit(1)
+	}
+
 	err = db.SetTyp(dbx)
 	if err != nil {
 		log15.Crit("DB", "parse", err)
