@@ -30,10 +30,9 @@ func fetcher() error {
 	}
 	defer rows.Close()
 
-	iter := scanner{
-		BaseCopyLos: generteststruct.BaseCopyLos{Rows: rows},
-	}
-	iter.Inter = iter.Los.Scanner()
+	var iter scanner
+
+	iter.NewCopy(rows)
 
 	for iter.Next() {
 		if iter.Los.L_iban != nil {
