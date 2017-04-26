@@ -9,11 +9,11 @@ import (
 )
 
 type weburlScan struct {
-	generteststruct.BaseCopyLos
+	generteststruct.IterLos
 }
 
 func (t *weburlScan) Next() bool {
-	for t.BaseCopyLos.Next() {
+	for t.IterLos.Next() {
 		if t.Los.L_iban != nil {
 			fmt.Println(*t.Los.L_iban)
 			return true
@@ -37,6 +37,12 @@ func copyer() error {
 
 	iterator := weburlScan{}
 
-	return iterator.StartCopy("ziellos", dbx2, &iterator, rows)
+	count, err := iterator.StartCopy("ziellos", dbx2, &iterator, rows)
+
+	fmt.Println("nach copy", count)
+	if err != nil {
+		return err
+	}
+	return nil
 
 }

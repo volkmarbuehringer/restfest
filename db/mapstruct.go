@@ -19,6 +19,7 @@ type PgxGenerMap interface {
 type PgxGener interface {
 	Scanner() InterPgx
 	ROWInsert() InterPgx
+	Columns() []string
 }
 
 type PgxGenerIns interface {

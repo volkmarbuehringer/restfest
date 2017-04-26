@@ -13,7 +13,6 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
-	"io"
 	"github.com/jackc/pgx"
 			{{if .FlaggerUdt}}
 			"github.com/jackc/pgx/pgtype"
@@ -109,73 +108,27 @@ func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
 }
 
 
-type BaseCopy{{$z}} struct {
-	Errc      error
-	Inter    db.InterPgx
-	Rows     *pgx.Rows
+type Iter{{$z}} struct {
+	db.BaseCopy
 	{{$z}} {{$z}}
 }
 
-func (t *BaseCopy{{$z}}) Values() ([]interface{}, error) {
-	return t.Inter, t.Errc
-}
 
 
-func (t *BaseCopy{{$z}}) ValuesString() (record []string,err error) {
-record, err = t.Inter.ConvertItoS()
+
+func (t *Iter{{$z}}) NewCopy(rows  *pgx.Rows)  {
+
+ t.BaseCopy.NewCopy(rows,&t.{{$z}})
 return
 }
 
 
-func (t BaseCopy{{$z}}) Err() error {
-	if t.Errc != io.EOF {
-		return t.Errc
-	}
-	return nil
-}
+func (t *Iter{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource,rows  *pgx.Rows) (int, error) {
 
-func (t *BaseCopy{{$z}}) NewCopy(rows  *pgx.Rows)  {
-
-	t.Inter = t.{{$z}}.Scanner()
-t.Rows = rows
-return
-}
-
-
-func (t *BaseCopy{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource,rows  *pgx.Rows) error {
-
-	t.Inter = t.{{$z}}.Scanner()
-t.Rows = rows
-	fmt.Println("vor copy", tab)
-	copyCount, err := con.CopyFrom(
-		[]string{tab},
-		t.{{$z}}.Columns(),
-		tt)
-
-	fmt.Println("fertig", copyCount, err)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (t *BaseCopy{{$z}}) Next() bool {
-	var ok bool
-	for {
-		ok = t.Rows.Next()
-		if !ok {
-			break
-		}
-		t.Rows.Scan(t.Inter...)
-		break
-	}
-	t.Errc = t.Rows.Err()
-	if t.Errc != nil {
-		return false
-	}
-	return ok
+	return t.BaseCopy.StartCopy(tab, con, tt, rows, &t.{{$z}})
 
 }
+
 
 
 

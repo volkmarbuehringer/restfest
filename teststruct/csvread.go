@@ -10,7 +10,7 @@ import (
 type copyCsv struct {
 	ptr  []string
 	rows *csv.Reader
-	generteststruct.BaseCopyLos
+	generteststruct.IterLos
 	anz int
 }
 

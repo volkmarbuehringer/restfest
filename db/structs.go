@@ -2,9 +2,75 @@ package db
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"time"
+
+	"github.com/jackc/pgx"
 )
+
+type BaseCopy struct {
+	Errc  error
+	Inter InterPgx
+	Rows  *pgx.Rows
+}
+
+func (t *BaseCopy) NewCopy(rows *pgx.Rows, stru PgxGener) {
+
+	t.Inter = stru.Scanner()
+	t.Rows = rows
+	return
+}
+
+func (t *BaseCopy) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource, rows *pgx.Rows, stru PgxGener) (int, error) {
+
+	t.Inter = stru.Scanner()
+	t.Rows = rows
+
+	copyCount, err := con.CopyFrom(
+		[]string{tab},
+		stru.Columns(),
+		tt)
+
+	if err != nil {
+		return 0, err
+	}
+	return copyCount, nil
+}
+
+func (t *BaseCopy) Values() ([]interface{}, error) {
+	return t.Inter, t.Errc
+}
+
+func (t *BaseCopy) ValuesString() (record []string, err error) {
+	record, err = t.Inter.ConvertItoS()
+	return
+}
+
+func (t BaseCopy) Err() error {
+	if t.Errc != io.EOF {
+		return t.Errc
+	}
+	return nil
+}
+
+func (t *BaseCopy) Next() bool {
+	var ok bool
+	for {
+		ok = t.Rows.Next()
+		if !ok {
+			break
+		}
+		t.Rows.Scan(t.Inter...)
+		break
+	}
+	t.Errc = t.Rows.Err()
+	if t.Errc != nil {
+		return false
+	}
+	return ok
+
+}
 
 func (arr InterPgx) ConvertItoS() (record []string, err error) {
 	record = make([]string, len(arr))

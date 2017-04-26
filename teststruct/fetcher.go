@@ -11,7 +11,7 @@ import (
 )
 
 type scanner struct {
-	generteststruct.BaseCopyLos
+	generteststruct.IterLos
 }
 
 func fetcher() error {
