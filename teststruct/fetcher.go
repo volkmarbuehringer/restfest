@@ -35,17 +35,21 @@ func fetcher() error {
 	iter.NewCopy(rows)
 
 	for iter.Next() {
-		if iter.Los.L_iban != nil {
+		if iter.Los.L_iban != nil { //check values in struct
 			fmt.Println(*iter.Los.L_iban)
-			record, err := iter.ValuesString()
-			if err != nil {
-				return err
-			}
-			if err := w.Write(record); err != nil {
-				return err
-			}
 
+		} else { //replace values in struct
+			iter.Los.L_iban = new(string)
+			*iter.Los.L_iban = "willi"
 		}
+		record, err := iter.ValuesString()
+		if err != nil {
+			return err
+		}
+		if err := w.Write(record); err != nil {
+			return err
+		}
+
 	}
 
 	w.Flush()
