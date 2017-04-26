@@ -22,7 +22,7 @@ func fetcher() error {
 		return err
 	}
 	w := csv.NewWriter(f1)
-
+	w.Comma = ';'
 	rows, err := dbx3.Query(generteststruct.SQLLos(db.GenSelectAll1), 30000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
