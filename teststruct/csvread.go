@@ -15,9 +15,7 @@ type copyCsv struct {
 }
 
 func (t *copyCsv) Next() bool {
-	if t.Errc != nil {
-		return false
-	}
+
 	for {
 		t.ptr, t.Errc = t.rows.Read()
 
@@ -51,6 +49,11 @@ func csvread() error {
 		rows: csv.NewReader(f1),
 	}
 
-	iterator.StartCopy("ziellos", dbx1, &iterator, nil)
+	count, err := iterator.StartCopy("ziellos", dbx1, &iterator, nil)
+	fmt.Println("nach copy", count)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
