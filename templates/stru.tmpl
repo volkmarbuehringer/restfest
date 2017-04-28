@@ -115,7 +115,6 @@ type Iter{{$z}} struct {
 
 
 
-
 func (t *Iter{{$z}}) NewCopy(rows  *pgx.Rows)  {
 
  t.BaseCopy.NewCopy(rows,&t.{{$z}})
@@ -223,7 +222,7 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 {{end}}
 
 
-func SQL{{$z}}(flag db.SQLOper)string{
+func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
   x :=   {{printf "%q" (joiner .ColumnsT)}}
 
   switch flag{
@@ -240,6 +239,33 @@ func SQL{{$z}}(flag db.SQLOper)string{
 		x,
    {{printf "%q" .Table}}	,
   		)
+
+
+			{{else}}
+
+		case db.GenFunction:
+		return fmt.Sprintf(db.SQLPattern[flag],
+		x,
+ {{printf "%q" .PK}} ,
+ {{printf "%q" (joiner .BindsVarInsert)}}	,
+		)
+
+{{end}}
+  }
+
+	return ""
+
+}
+
+
+
+
+func ( dst {{$z}})SQL(flag db.SQLOper)string{
+  x :=   {{printf "%q" (joiner .ColumnsT)}}
+
+  switch flag{
+			{{if .Flagger}}
+
 
 		case db.GenInsert:
 		return  fmt.Sprintf( db.SQLPattern[flag],

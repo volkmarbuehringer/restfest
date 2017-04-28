@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"fmt"
 	"restfest/db"
 
 	"io"
@@ -17,34 +16,16 @@ import (
 
 var decoder = schema.NewDecoder()
 
-func prepParam(tab string, w http.ResponseWriter, r *http.Request) (json db.PgxGenerIns, fun1 db.TFunMap, err error) {
-	var ok bool
-	if fun1, ok = db.FunMap[tab]; !ok {
-		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+func prepParam(tab string, w http.ResponseWriter, r *http.Request, fun1 db.TFunMap) (json db.PgxGenerIns, err error) {
+
+	err = r.ParseForm()
+
+	if err != nil {
 		return
-	} else {
-
-		err = r.ParseForm()
-
-		if err != nil {
-			return
-		}
-
-		json = fun1.ParamFun()
-		err = decoder.Decode(json, r.Form)
-
 	}
 
-	return
-}
-
-func prepLesen(flag db.TFunMap, w http.ResponseWriter, r *http.Request) (json db.PgxGenerIns, err error) {
-	if flag.Flag == 3 {
-		json = flag.ParamFun()
-	} else {
-		json = flag.EmptyInsFun()
-	}
-	err = leser1(w, r, json)
+	json = fun1.ParamFun()
+	err = decoder.Decode(json, r.Form)
 
 	return
 }

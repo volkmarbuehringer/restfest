@@ -14,9 +14,10 @@ import (
 func putter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
+	tab := mux.Vars(r)["tab"]
 
-	if sqlFun, ok := db.FunMap[vars["tab"]]; !ok {
-		err := fmt.Errorf("Tabelle nicht gefunden: %s", vars["tab"])
+	if sqlFun, ok := db.FunMap[tab]; !ok {
+		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		senderErr(w, err)
 		log15.Error("DBFehler", " put", err)
 		return
@@ -28,7 +29,9 @@ func putter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer tx.Rollback()
-		rows := tx.QueryRow(sqlFun.SQLFun(db.GenSelectID)+" for update", id)
+		params := sqlFun.ParamFun()
+		sql := params.SQL(db.GenSelectID)
+		rows := tx.QueryRow(sql+" for update", id)
 
 		inter := sqlFun.EmptyFun()
 
@@ -50,7 +53,8 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		x := append(inter.ROWInsert(), id)
 
 		fmt.Println(x)
-		rows = tx.QueryRow(sqlFun.SQLFun(db.GenUpdate), x...)
+		sql = inter.SQL(db.GenUpdate)
+		rows = tx.QueryRow(sql, x...)
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {

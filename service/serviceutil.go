@@ -10,7 +10,7 @@ import (
 
 var preparedStmt = map[string]*pgx.PreparedStatement{}
 
-func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, sqlFun db.TFunMap, err error) {
+func prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.PreparedStatement, sqlFun db.TFunMap, err error) {
 	var ok bool
 
 	if sqlFun, ok = db.FunMap[tab]; !ok {
@@ -42,7 +42,8 @@ func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, sqlFun d
 
 	sucher := tab + strconv.Itoa(int(flag))
 	if stmt, ok = preparedStmt[sucher]; !ok {
-		if stmt, err = db.DBx.Prepare(sucher, sqlFun.SQLFun(flag)); err != nil {
+		sql := params.SQL(flag)
+		if stmt, err = db.DBx.Prepare(sucher, sql); err != nil {
 			return
 		} else {
 			preparedStmt[sucher] = stmt
@@ -53,8 +54,8 @@ func prepare(tab string, flag db.SQLOper) (stmt *pgx.PreparedStatement, sqlFun d
 	return
 }
 
-func readRow(tab string, id int) (inter db.PgxGener, err error) {
-	if stmt, funMap, err1 := prepare(tab, db.GenSelectID); err1 != nil {
+func readRow(tab string, id int, params db.PgxGenerIns) (inter db.PgxGener, err error) {
+	if stmt, funMap, err1 := prepare(tab, db.GenSelectID, params); err1 != nil {
 
 		return nil, err1
 	} else {
@@ -72,7 +73,7 @@ func readRow(tab string, id int) (inter db.PgxGener, err error) {
 func readRows(tab string, params db.PgxGenerIns) (inter db.PgxGenerAr, err error) {
 	var stmt *pgx.PreparedStatement
 	var sqlFun db.TFunMap
-	if stmt, sqlFun, err = prepare(tab, -2); err != nil {
+	if stmt, sqlFun, err = prepare(tab, -2, params); err != nil {
 
 		return
 	}

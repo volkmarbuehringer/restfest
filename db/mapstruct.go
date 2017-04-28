@@ -20,10 +20,12 @@ type PgxGener interface {
 	Scanner() InterPgx
 	ROWInsert() InterPgx
 	Columns() []string
+	SQL(SQLOper) string
 }
 
 type PgxGenerIns interface {
 	ROWInsert() InterPgx
+	SQL(SQLOper) string
 }
 
 const (
@@ -113,7 +115,6 @@ func SetTyp(con *pgx.Conn) error {
 type MapperFun2 func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error
 
 type TFunMap struct {
-	SQLFun      func(SQLOper) string
 	EmptyFun    func() PgxGener
 	EmptyInsFun func() PgxGenerIns
 	ParamFun    func() PgxGenerIns

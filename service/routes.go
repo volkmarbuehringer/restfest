@@ -12,13 +12,19 @@ type Route struct {
 type Routes []Route
 
 var routes = Routes{
-
+	Route{
+		"read id",
+		"GET",
+		"/test/service/weburl/{id:[0-9]+}",
+		getByIDHandlerWeburl,
+	},
 	Route{
 		"read id",
 		"GET",
 		"/test/service/{tab}/{id:[0-9]+}",
 		getByIDHandler,
 	},
+
 	Route{
 		"read all",
 		"GET",
