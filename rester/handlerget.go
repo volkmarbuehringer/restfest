@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	"restfest/generrester"
 	"restfest/service"
 	"strconv"
 
@@ -63,35 +62,4 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 			service.Sender(w, inter)
 		}
 	}
-}
-
-func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
-
-	params := new(generrester.WeburlParams)
-	if stmt, err := service.Prepare("weburl", service.GetSqlStmt(db.GenSelectID, 1), params); err != nil {
-		service.SenderErr(w, err)
-		log15.Error("DBFehler", "weburl", err)
-		return
-	} else {
-
-		row := db.DBx.QueryRow(stmt.Name, id)
-
-		weburl := new(generrester.Weburl)
-
-		err = row.Scan(weburl.Scanner()...)
-		if err != nil {
-			service.SenderErr(w, err)
-			log15.Error("DBFehler", "weburl", err)
-			return
-		} else {
-			*weburl.Zusatz = 333 //set value in struct
-			service.Sender(w, weburl)
-
-		}
-
-	}
-
 }
