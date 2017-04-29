@@ -180,20 +180,34 @@ func (arr InterPgx) ConvertStoI(record []string) error {
 				**t = stringer
 			}
 		case *int16:
-			t := val.(*int16)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int16)(g)
+			if len(stringer) > 0 {
+				t := val.(*int16)
+				var g int
+				g, err = strconv.Atoi(stringer)
+				*t = (int16)(g)
+			}
+
 		case *int32:
-			t := val.(*int32)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int32)(g)
+			if len(stringer) > 0 {
+				t := val.(*int32)
+				var g int
+				g, err = strconv.Atoi(stringer)
+				*t = (int32)(g)
+			}
 		case *int64:
-			t := val.(*int64)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int64)(g)
+			if len(stringer) > 0 {
+				t := val.(*int64)
+				var g int
+				g, err = strconv.Atoi(stringer)
+				*t = (int64)(g)
+			}
+		case *int:
+			if len(stringer) > 0 {
+				t := val.(*int)
+				var g int
+				g, err = strconv.Atoi(stringer)
+				*t = g
+			}
 		case **int32:
 			t := val.(**int32)
 			if len(stringer) == 0 {

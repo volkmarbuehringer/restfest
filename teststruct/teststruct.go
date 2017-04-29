@@ -21,16 +21,17 @@ var dbx3 *pgx.Conn
 var dbx4 *pgx.Conn
 
 func mapper() error {
-	rows, err := dbx4.Query(generteststruct.SQLLos(db.GenSelectAll1), 5000000, 0)
+	params := new(generteststruct.LosParams)
+	rows, err := dbx4.Query(params.SQL(db.GenSelectAll1), 5000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
 	}
 	defer rows.Close()
-	mapper := make(generteststruct.MapLos)
-	mapper.Scanner(rows)
+	var iter generteststruct.MapIterLos
+	anz := iter.NewCopy(rows) //streaming from database
 
-	fmt.Println("len of map", len(mapper))
+	fmt.Println("len of map", anz)
 	/*
 		for r, m := range mapper {
 			if m.L_iban != nil {

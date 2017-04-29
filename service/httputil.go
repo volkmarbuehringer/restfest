@@ -11,24 +11,30 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gorilla/schema"
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
-var decoder = schema.NewDecoder()
+func PrepParam(params db.PgxGenerIns, w http.ResponseWriter, r *http.Request) error {
 
-func PrepParam(tab string, w http.ResponseWriter, r *http.Request, fun1 db.TFunMap) (json db.PgxGenerIns, err error) {
-
-	err = r.ParseForm()
-
+	err := r.ParseForm()
 	if err != nil {
-		return
+		return err
 	}
 
-	json = fun1.ParamFun()
-	err = decoder.Decode(json, r.Form)
+	inter := params.Scanner()
+	zs := params.Reader(r.Form)
+	rs := make([]string, len(zs))
+	for i := range zs {
+		if len(zs[i]) > 0 {
+			rs[i] = zs[i][0]
+		} else {
+			rs[i] = ""
+		}
 
-	return
+	}
+	err = inter.ConvertStoI(rs)
+
+	return err
 }
 
 func SenderErr(w http.ResponseWriter, err error) {

@@ -21,7 +21,8 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		params, err := service.PrepParam(tab, w, r, fun1)
+		params := fun1.ParamFun()
+		err := service.PrepParam(params, w, r)
 		if err != nil {
 			service.SenderErr(w, err)
 			return

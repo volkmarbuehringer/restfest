@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"restfest/db"
 	"restfest/generrestspec"
@@ -8,33 +9,22 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 	"github.com/jackc/pgx"
 )
 
-var decoder = schema.NewDecoder()
-
 func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 
-	params := new(generrestspec.WeburlParams)
-
-	err := r.ParseForm()
-
-	if err != nil {
-		service.SenderErr(w, err)
-
-		return
+	var params = generrestspec.WeburlParams{
+		Length: 100, //default read 100 rows
 	}
 
-	params.Length = 100 //default read 100 rows
-	err = decoder.Decode(params, r.Form)
-
+	err := service.PrepParam(&params, w, r)
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 	var stmt *pgx.PreparedStatement
-	if stmt, err = service.Prepare("weburl", service.GetSqlStmt(-2, 1), params); err != nil {
+	if stmt, err = service.Prepare("weburl", service.GetSqlStmt(-2, 1), &params); err != nil {
 		service.SenderErr(w, err)
 		return
 	}
@@ -45,15 +35,26 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	inter := make(generrestspec.ArWeburl, 0)
-	err = inter.Scanner(rows)
+	var iter generrestspec.IterWeburl
+	iter.NewCopy(rows) //streaming from database
 
-	if err != nil {
-		service.SenderErr(w, err)
-		return
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("["))
+	for anz := 0; iter.Next(); anz++ {
+		if anz > 0 {
+			w.Write([]byte(","))
+		}
+		if iter.Errc != nil {
+			service.SenderErr(w, iter.Errc)
+			return
+		}
+		if err := json.NewEncoder(w).Encode(iter.Weburl); err != nil {
+			service.SenderErr(w, err)
+			return
+		}
 	}
-
-	service.Sender(w, inter)
+	w.Write([]byte("]"))
 
 }
 

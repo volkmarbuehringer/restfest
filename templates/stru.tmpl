@@ -26,10 +26,34 @@ type dummy{{$z}} time.Time
 
 type {{$z}}Params struct {
 	  {{- range .Parameters  }}
-    {{title .Column}} {{.ColumnTrans}} `schema:"{{.Column}}"`
+    {{title .Column}} {{.ColumnTrans}}
 	    {{- end }}
 }
 
+func (x *{{$z}}Params) Scanner() db.InterPgx {
+	return db.InterPgx{
+		{{- range .Parameters  }}
+				&x.{{title .Column}},
+				{{- end }}
+			}
+
+}
+
+func (x {{$z}}) Reader(mapper map[string][]string) [][]string {
+	return [][]string{
+				}
+
+}
+
+
+func (x {{$z}}Params) Reader(mapper map[string][]string) [][]string {
+	return [][]string{
+		{{- range .Parameters  }}
+		mapper[{{printf "%q" .Column}}],
+				{{- end }}
+			}
+
+}
 
 type {{$z}} struct {
   {{- range .Cols  }}
@@ -76,21 +100,27 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 }
 				{{if .Flagger}}
 				type Map{{$z}} map[{{.PKType}}]{{$z}}
-func (dst *Map{{$z}}) Scanner( rows *pgx.Rows) error {
+				type MapIter{{$z}} struct {
+					Iter{{$z}}
+					Map{{$z}}  Map{{$z}}
+				}
 
-	for rows.Next() {
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		x := new( {{$z}})
-		if err := rows.Scan(x.Scanner()...); err != nil {
-			return err
-		}
-		(*dst)[{{.PKPtr}}x.{{title .PK}}] = *x
-	}
+				func (t *MapIter{{$z}}) Next() bool {
+					ok := t.Iter{{$z}}.Next()
 
-	return nil
-}
+				 return ok
+				}
+
+				func (t *MapIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
+				 t.BaseCopy.NewCopy(rows,&t.{{$z}})
+				 t.Map{{$z}}=make(Map{{$z}})
+					for t.Iter{{$z}}.Next(){
+						t.Map{{$z}}[{{.PKPtr}}t.{{$z}}.{{title .PK}}] = t.{{$z}}
+					}
+				 return len(t.Map{{$z}})
+				}
+
+
 	{{end}}
 
 func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
@@ -113,7 +143,26 @@ type Iter{{$z}} struct {
 	{{$z}} {{$z}}
 }
 
+type ArIter{{$z}} struct {
+	Iter{{$z}}
+	Ar{{$z}} Ar{{$z}}
+}
 
+
+
+func (t *ArIter{{$z}}) Next() bool {
+	ok := t.Iter{{$z}}.Next()
+
+ return ok
+}
+
+func (t *ArIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
+ t.BaseCopy.NewCopy(rows,&t.{{$z}})
+	for t.Iter{{$z}}.Next(){
+		t.Ar{{$z}} = append(t.Ar{{$z}},t.{{$z}})
+	}
+ return len(t.Ar{{$z}})
+}
 
 func (t *Iter{{$z}}) NewCopy(rows  *pgx.Rows)  {
 

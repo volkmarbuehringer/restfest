@@ -21,11 +21,15 @@ type PgxGener interface {
 	ROWInsert() InterPgx
 	Columns() []string
 	SQL(SQLOper) string
+	Reader(map[string][]string) [][]string
 }
 
 type PgxGenerIns interface {
 	ROWInsert() InterPgx
 	SQL(SQLOper) string
+
+	Scanner() InterPgx
+	Reader(map[string][]string) [][]string
 }
 
 const (

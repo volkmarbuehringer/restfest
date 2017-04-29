@@ -28,7 +28,8 @@ func (t *weburlScan) Next() bool {
 }
 
 func copyer() error {
-	rows, err := dbx.Query(generteststruct.SQLLos(db.GenSelectAll1), 40000000, 0)
+	params := new(generteststruct.LosParams)
+	rows, err := dbx.Query(params.SQL(db.GenSelectAll1), 40000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err

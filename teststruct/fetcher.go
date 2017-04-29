@@ -10,10 +10,6 @@ import (
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
-type scanner struct {
-	generteststruct.IterLos
-}
-
 func fetcher() error {
 
 	f1, err := os.Create("flat.csv")
@@ -23,14 +19,15 @@ func fetcher() error {
 	}
 	w := csv.NewWriter(f1)
 	w.Comma = ';'
-	rows, err := dbx3.Query(generteststruct.SQLLos(db.GenSelectAll1), 30000000, 0)
+	params := new(generteststruct.LosParams)
+	rows, err := dbx3.Query(params.SQL(db.GenSelectAll1), 30000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
 	}
 	defer rows.Close()
 
-	var iter scanner
+	var iter generteststruct.IterLos
 
 	iter.NewCopy(rows)
 
