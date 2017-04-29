@@ -105,12 +105,6 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 					Map{{$z}}  Map{{$z}}
 				}
 
-				func (t *MapIter{{$z}}) Next() bool {
-					ok := t.Iter{{$z}}.Next()
-
-				 return ok
-				}
-
 				func (t *MapIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
 				 t.BaseCopy.NewCopy(rows,&t.{{$z}})
 				 t.Map{{$z}}=make(Map{{$z}})
@@ -149,12 +143,6 @@ type ArIter{{$z}} struct {
 }
 
 
-
-func (t *ArIter{{$z}}) Next() bool {
-	ok := t.Iter{{$z}}.Next()
-
- return ok
-}
 
 func (t *ArIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
  t.BaseCopy.NewCopy(rows,&t.{{$z}})
