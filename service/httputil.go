@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/schema"
+	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 var decoder = schema.NewDecoder()
@@ -34,6 +35,7 @@ func SenderErr(w http.ResponseWriter, err error) {
 	type JSONErr struct {
 		Error string
 	}
+	log15.Error("DBFehler", "getall", err)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotFound)
 	if err1 := json.NewEncoder(w).Encode(JSONErr{err.Error()}); err1 != nil {

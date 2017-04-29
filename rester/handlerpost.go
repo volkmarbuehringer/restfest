@@ -7,7 +7,6 @@ import (
 	"restfest/service"
 
 	"github.com/gorilla/mux"
-	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func poster(w http.ResponseWriter, r *http.Request) {
@@ -17,14 +16,12 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "getall", err)
 			return
 		}
 	} else {
 		stmt, err := service.Prepare(tab, service.GetSqlStmt(-1, fun1.Flag), fun1.EmptyFun())
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "post", err)
 			return
 		}
 
@@ -39,7 +36,6 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "post", err)
 			return
 		}
 		input := json.ROWInsert()
@@ -52,7 +48,6 @@ func poster(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "post", err)
 			return
 		}
 

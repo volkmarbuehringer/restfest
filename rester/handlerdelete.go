@@ -7,8 +7,6 @@ import (
 	"restfest/service"
 	"strconv"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
-
 	"github.com/gorilla/mux"
 )
 
@@ -20,7 +18,6 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "getall", err)
 			return
 		}
 	} else {
@@ -28,7 +25,6 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "delete", err)
 			return
 		}
 
@@ -40,7 +36,6 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "delete", err)
 			return
 		}
 

@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"github.com/jackc/pgx"
-	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 var decoder = schema.NewDecoder()
@@ -23,27 +22,25 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", "getall", err)
+
 		return
 	}
 
-	params.Length = 100
+	params.Length = 100 //default read 100 rows
 	err = decoder.Decode(params, r.Form)
 
 	if err != nil {
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", "getall", err)
 		return
 	}
 	var stmt *pgx.PreparedStatement
 	if stmt, err = service.Prepare("weburl", service.GetSqlStmt(-2, 1), params); err != nil {
-
+		service.SenderErr(w, err)
 		return
 	}
 	rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
 	if err != nil {
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", "getall", err)
 		return
 	}
 	defer rows.Close()
@@ -53,7 +50,6 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", "getall", err)
 		return
 	}
 
@@ -69,7 +65,6 @@ func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	params := new(generrestspec.WeburlParams)
 	if stmt, err := service.Prepare("weburl", service.GetSqlStmt(db.GenSelectID, 1), params); err != nil {
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", "weburl", err)
 		return
 	} else {
 
@@ -80,10 +75,12 @@ func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 		err = row.Scan(weburl.Scanner()...)
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "weburl", err)
 			return
 		} else {
-			*weburl.Zusatz = 333 //set value in struct
+			if weburl.Zusatz != nil {
+				*weburl.Zusatz = 333 //set value in struct
+			}
+
 			service.Sender(w, weburl)
 
 		}

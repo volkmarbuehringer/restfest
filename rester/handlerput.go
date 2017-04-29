@@ -7,8 +7,6 @@ import (
 	"restfest/service"
 	"strconv"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
-
 	"github.com/gorilla/mux"
 )
 
@@ -20,13 +18,11 @@ func putter(w http.ResponseWriter, r *http.Request) {
 	if sqlFun, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		service.SenderErr(w, err)
-		log15.Error("DBFehler", " put", err)
 		return
 	} else {
 		tx, err := db.DBx.Begin()
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "begin put", err)
 			return
 		}
 		defer tx.Rollback()
@@ -40,14 +36,12 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "prep put", err)
 			return
 		}
 
 		err = service.Leser1(w, r, inter)
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "put", err)
 			return
 		}
 
@@ -60,14 +54,12 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "update", err)
 			return
 		}
 
 		err = tx.Commit()
 		if err != nil {
 			service.SenderErr(w, err)
-			log15.Error("DBFehler", "commit", err)
 			return
 		}
 
