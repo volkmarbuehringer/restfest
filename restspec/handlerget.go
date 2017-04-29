@@ -42,17 +42,22 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("["))
 	for anz := 0; iter.Next(); anz++ {
-		if anz > 0 {
-			w.Write([]byte(","))
-		}
+
 		if iter.Errc != nil {
 			service.SenderErr(w, iter.Errc)
 			return
 		}
-		if err := json.NewEncoder(w).Encode(iter.Weburl); err != nil {
-			service.SenderErr(w, err)
-			return
+		if iter.Weburl.Zusatz != nil {
+			*iter.Weburl.Zusatz = 7899
+			if anz > 0 {
+				w.Write([]byte(","))
+			}
+			if err := json.NewEncoder(w).Encode(iter.Weburl); err != nil {
+				service.SenderErr(w, err)
+				return
+			}
 		}
+
 	}
 	w.Write([]byte("]"))
 
