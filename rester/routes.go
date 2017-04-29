@@ -1,52 +1,43 @@
-package service
+package main
 
-import "net/http"
+import "restfest/service"
 
-type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
-}
-
-type Routes []Route
-
-var routes = Routes{
-	Route{
+var routes = service.Routes{
+	service.Route{
 		"read id",
 		"GET",
 		"/test/service/weburl/{id:[0-9]+}",
 		getByIDHandlerWeburl,
 	},
-	Route{
+	service.Route{
 		"read id",
 		"GET",
 		"/test/service/{tab}/{id:[0-9]+}",
 		getByIDHandler,
 	},
 
-	Route{
+	service.Route{
 		"read all",
 		"GET",
 		"/test/service/{tab}",
 		getAllHandler,
 	},
 
-	Route{
+	service.Route{
 		"Insert",
 		"POST",
 		"/test/service/{tab}",
 		poster,
 	},
 
-	Route{
+	service.Route{
 		"Update",
 		"PUT",
 		"/test/service/{tab}/{id:[0-9]+}",
 		putter,
 	},
 
-	Route{
+	service.Route{
 		"Delete",
 		"DELETE",
 		"/test/service/{tab}/{id:[0-9]+}",

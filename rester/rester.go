@@ -7,5 +7,5 @@ import (
 //go:generate go run ../gen.go rester 0
 
 func main() {
-	service.Listen()
+	service.Listen(routes)
 }

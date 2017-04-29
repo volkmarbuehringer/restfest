@@ -23,13 +23,13 @@ func Logger(inner http.Handler, name string) http.Handler {
 	})
 }
 
-func Listen() {
+func Listen(routes Routes) {
 
 	srv := &http.Server{
 		ReadTimeout:  200 * time.Second,
 		WriteTimeout: 200 * time.Second,
 		Addr:         ":8080",
-		Handler:      NewRouter(),
+		Handler:      NewRouter(routes),
 	}
 	fmt.Println("listen")
 	log.Fatal(srv.ListenAndServe())

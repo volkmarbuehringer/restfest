@@ -1,10 +1,11 @@
-package service
+package main
 
 import (
 	"fmt"
 	"net/http"
 	"restfest/db"
 	"restfest/generrester"
+	"restfest/service"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -17,27 +18,27 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "getall", err)
 			return
 		}
 
 	} else {
-		params, err := prepParam(tab, w, r, fun1)
+		params, err := service.PrepParam(tab, w, r, fun1)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "getall", err)
 			return
 		}
 
-		inter, err := readRows(tab, params)
+		inter, err := service.ReadRows(tab, params)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "getall", err)
 			return
 		}
 
-		sender(w, inter)
+		service.Sender(w, inter)
 	}
 }
 
@@ -49,17 +50,17 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "getall", err)
 			return
 		}
 	} else {
-		if inter, err := readRow(vars["tab"], id, fun1.ParamFun()); err != nil {
-			senderErr(w, err)
+		if inter, err := service.ReadRow(vars["tab"], id, fun1.ParamFun()); err != nil {
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "getall", err)
 			return
 		} else {
-			sender(w, inter)
+			service.Sender(w, inter)
 		}
 	}
 }
@@ -70,8 +71,8 @@ func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(vars["id"])
 
 	params := new(generrester.WeburlParams)
-	if stmt, _, err := prepare("weburl", db.GenSelectID, params); err != nil {
-		senderErr(w, err)
+	if stmt, err := service.Prepare("weburl", service.GetSqlStmt(db.GenSelectID, 1), params); err != nil {
+		service.SenderErr(w, err)
 		log15.Error("DBFehler", "weburl", err)
 		return
 	} else {
@@ -82,12 +83,12 @@ func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 
 		err = row.Scan(weburl.Scanner()...)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "weburl", err)
 			return
 		} else {
 			*weburl.Zusatz = 333 //set value in struct
-			sender(w, weburl)
+			service.Sender(w, weburl)
 
 		}
 

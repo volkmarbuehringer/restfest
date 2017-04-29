@@ -10,23 +10,18 @@ import (
 
 var preparedStmt = map[string]*pgx.PreparedStatement{}
 
-func prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.PreparedStatement, sqlFun db.TFunMap, err error) {
-	var ok bool
+var ok bool
 
-	if sqlFun, ok = db.FunMap[tab]; !ok {
-		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-		return
-	}
-
-	switch flag {
+func GetSqlStmt(flagi db.SQLOper, tabFlag int) (flag db.SQLOper) {
+	switch flagi {
 	case -1:
-		if sqlFun.Flag == 3 {
+		if tabFlag == 3 {
 			flag = db.GenFunction
 		} else {
 			flag = db.GenInsert
 		}
 	case -2:
-		switch sqlFun.Flag {
+		switch tabFlag {
 		case 3:
 			flag = db.GenFunction
 		case 4:
@@ -34,11 +29,15 @@ func prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.Prep
 		case 1, 2:
 			flag = db.GenSelectAll
 		default:
-			err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-			return
+			//err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+			flag = flagi
 
 		}
 	}
+	return
+}
+
+func Prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.PreparedStatement, err error) {
 
 	sucher := tab + strconv.Itoa(int(flag))
 	if stmt, ok = preparedStmt[sucher]; !ok {
@@ -54,40 +53,50 @@ func prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.Prep
 	return
 }
 
-func readRow(tab string, id int, params db.PgxGenerIns) (inter db.PgxGener, err error) {
-	if stmt, funMap, err1 := prepare(tab, db.GenSelectID, params); err1 != nil {
+func ReadRow(tab string, id int, params db.PgxGenerIns) (inter db.PgxGener, err error) {
 
-		return nil, err1
+	if funMap, ok := db.FunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
+		return
 	} else {
+		if stmt, err1 := Prepare(tab, GetSqlStmt(db.GenSelectID, funMap.Flag), params); err1 != nil {
 
-		row := db.DBx.QueryRow(stmt.Name, id)
+			return nil, err1
+		} else {
 
-		inter = funMap.EmptyFun()
+			row := db.DBx.QueryRow(stmt.Name, id)
 
-		err = row.Scan(inter.Scanner()...)
+			inter = funMap.EmptyFun()
 
+			err = row.Scan(inter.Scanner()...)
+
+		}
 	}
+
 	return
 }
 
-func readRows(tab string, params db.PgxGenerIns) (inter db.PgxGenerAr, err error) {
+func ReadRows(tab string, params db.PgxGenerIns) (inter db.PgxGenerAr, err error) {
 	var stmt *pgx.PreparedStatement
-	var sqlFun db.TFunMap
-	if stmt, sqlFun, err = prepare(tab, -2, params); err != nil {
-
+	if funMap, ok := db.FunMap[tab]; !ok {
+		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		return
+	} else {
+		if stmt, err = Prepare(tab, GetSqlStmt(-2, funMap.Flag), params); err != nil {
+
+			return
+		}
+		rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
+		if err != nil {
+
+			return nil, err
+		}
+		defer rows.Close()
+
+		inter = funMap.EmptyArray()
+
+		err = inter.Scanner(rows)
+
 	}
-	rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
-	if err != nil {
-
-		return nil, err
-	}
-	defer rows.Close()
-
-	inter = sqlFun.EmptyArray()
-
-	err = inter.Scanner(rows)
-
 	return
-
 }

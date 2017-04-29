@@ -1,9 +1,10 @@
-package service
+package main
 
 import (
 	"fmt"
 	"net/http"
 	"restfest/db"
+	"restfest/service"
 	"strconv"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
@@ -18,13 +19,13 @@ func putter(w http.ResponseWriter, r *http.Request) {
 
 	if sqlFun, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-		senderErr(w, err)
+		service.SenderErr(w, err)
 		log15.Error("DBFehler", " put", err)
 		return
 	} else {
 		tx, err := db.DBx.Begin()
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "begin put", err)
 			return
 		}
@@ -38,14 +39,14 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "prep put", err)
 			return
 		}
 
-		err = leser1(w, r, inter)
+		err = service.Leser1(w, r, inter)
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "put", err)
 			return
 		}
@@ -58,19 +59,19 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "update", err)
 			return
 		}
 
 		err = tx.Commit()
 		if err != nil {
-			senderErr(w, err)
+			service.SenderErr(w, err)
 			log15.Error("DBFehler", "commit", err)
 			return
 		}
 
-		sender(w, inter)
+		service.Sender(w, inter)
 
 	}
 }
