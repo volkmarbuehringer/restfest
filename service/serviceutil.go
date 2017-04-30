@@ -33,6 +33,8 @@ func GetSqlStmt(flagi db.SQLOper, tabFlag int) (flag db.SQLOper) {
 			flag = flagi
 
 		}
+	default:
+		flag = flagi
 	}
 	return
 }
@@ -42,6 +44,7 @@ func Prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.Prep
 	sucher := tab + strconv.Itoa(int(flag))
 	if stmt, ok = preparedStmt[sucher]; !ok {
 		sql := params.SQL(flag)
+		fmt.Println("sql", sql, flag)
 		if stmt, err = db.DBx.Prepare(sucher, sql); err != nil {
 			return
 		} else {

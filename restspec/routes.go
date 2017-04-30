@@ -15,4 +15,22 @@ var routes = service.Routes{
 		"/test/service/weburl",
 		getAllHandlerWeburl,
 	},
+	service.Route{
+		"Insert",
+		"POST",
+		"/test/service/weburl",
+		posterWeburl,
+	},
+	service.Route{
+		"Delete",
+		"DELETE",
+		"/test/service/weburl/{id:[0-9]+}",
+		deleterWeburl,
+	},
+	service.Route{
+		"Update",
+		"PUT",
+		"/test/service/weburl/{id:[0-9]+}",
+		putterWeburl,
+	},
 }

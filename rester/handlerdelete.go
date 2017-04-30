@@ -21,7 +21,7 @@ func deleter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		stmt, err := service.Prepare(tab, service.GetSqlStmt(db.GenDelete, fun1.Flag), fun1.EmptyFun())
+		stmt, err := service.Prepare(tab, db.GenDelete, fun1.EmptyFun())
 
 		if err != nil {
 			service.SenderErr(w, err)
