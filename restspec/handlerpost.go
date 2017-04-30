@@ -11,7 +11,7 @@ func posterWeburl(w http.ResponseWriter, r *http.Request) {
 
 	var weburl = generrestspec.Weburl{}
 
-	stmt, err := service.Prepare("weburl", service.GetSqlStmt(-1, 1), &weburl)
+	stmt, err := service.Prepare("weburl", db.GenInsert, &weburl)
 	if err != nil {
 		service.SenderErr(w, err)
 		return

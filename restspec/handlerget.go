@@ -23,7 +23,7 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var stmt *pgx.PreparedStatement
-	if stmt, err = service.Prepare("weburl", service.GetSqlStmt(-2, 1), &params); err != nil {
+	if stmt, err = service.Prepare("weburl", db.GenSelectAll, &params); err != nil {
 		service.SenderErr(w, err)
 		return
 	}
@@ -70,7 +70,7 @@ func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(vars["id"])
 
 	params := new(generrestspec.WeburlParams)
-	if stmt, err := service.Prepare("weburl", service.GetSqlStmt(db.GenSelectID, 1), params); err != nil {
+	if stmt, err := service.Prepare("weburl", db.GenSelectID, params); err != nil {
 		service.SenderErr(w, err)
 		return
 	} else {
