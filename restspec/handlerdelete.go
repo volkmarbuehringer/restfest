@@ -14,7 +14,7 @@ func deleterWeburl(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 	var weburl = generrestspec.Weburl{}
-	stmt, err := service.Prepare("weburl", db.GenDelete, &weburl)
+	stmt, err := service.PrepareSQL("weburlDEL", "delete from weburl where id =$1 returning *")
 
 	if err != nil {
 		service.SenderErr(w, err)

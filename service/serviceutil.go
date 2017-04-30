@@ -39,12 +39,26 @@ func GetSqlStmt(flagi db.SQLOper, tabFlag int) (flag db.SQLOper) {
 	return
 }
 
+func PrepareSQL(sucher string, sql string) (stmt *pgx.PreparedStatement, err error) {
+
+	if stmt, ok = preparedStmt[sucher]; !ok {
+
+		if stmt, err = db.DBx.Prepare(sucher, sql); err != nil {
+			return
+		} else {
+			preparedStmt[sucher] = stmt
+			fmt.Println(*stmt)
+		}
+
+	}
+	return
+}
+
 func Prepare(tab string, flag db.SQLOper, params db.PgxGenerIns) (stmt *pgx.PreparedStatement, err error) {
 
 	sucher := tab + strconv.Itoa(int(flag))
 	if stmt, ok = preparedStmt[sucher]; !ok {
 		sql := params.SQL(flag)
-		fmt.Println("sql", sql, flag)
 		if stmt, err = db.DBx.Prepare(sucher, sql); err != nil {
 			return
 		} else {
