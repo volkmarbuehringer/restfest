@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"restfest/db"
 	"restfest/generrestspec"
@@ -11,9 +12,9 @@ import (
 	"github.com/jackc/pgx"
 )
 
-func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
+func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
-	var params = generrestspec.WeburlParams{
+	var params = generrestspec.LosParams{
 		Length: 100, //default read 100 rows
 	}
 
@@ -23,7 +24,12 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var stmt *pgx.PreparedStatement
-	if stmt, err = service.Prepare("weburl", db.GenSelectAll, &params); err != nil {
+
+	if stmt, err = service.PrepareSQL("losAll", func() string {
+		return fmt.Sprintf("select %s from "+db.DBschema+".los where l_iban is not null limit $1 offset $2",
+			generrestspec.LosSQL.All,
+		)
+	}); err != nil {
 		service.SenderErr(w, err)
 		return
 	}
@@ -34,7 +40,7 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var iter generrestspec.IterWeburl
+	var iter generrestspec.IterLos
 	iter.NewCopy(rows) //streaming from database
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -46,12 +52,12 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 			service.SenderErr(w, iter.Errc)
 			return
 		}
-		if iter.Weburl.Zusatz != nil {
-			*iter.Weburl.Zusatz = 7899
+		if iter.Los.L_iban != nil {
+			*iter.Los.L_iban = "efsdfsadfsdf"
 			if anz > 0 {
 				w.Write([]byte(","))
 			}
-			err = iter.Weburl.Writer(w)
+			err = iter.Los.Writer(w)
 			if err != nil {
 				service.SenderErr(w, err)
 				return
@@ -64,31 +70,34 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getByIDHandlerWeburl(w http.ResponseWriter, r *http.Request) {
+func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	params := new(generrestspec.WeburlParams)
-	if stmt, err := service.Prepare("weburl", db.GenSelectID, params); err != nil {
+	if stmt, err := service.PrepareSQL("losID", func() string {
+		return fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 ",
+			generrestspec.LosSQL.All,
+		)
+	}); err != nil {
 		service.SenderErr(w, err)
 		return
 	} else {
 
 		row := db.DBx.QueryRow(stmt.Name, id)
 
-		weburl := new(generrestspec.Weburl)
+		los := new(generrestspec.Los)
 
-		err = row.Scan(weburl.Scanner()...)
+		err = row.Scan(los.Scanner()...)
 		if err != nil {
 			service.SenderErr(w, err)
 			return
 		} else {
-			if weburl.Zusatz != nil {
-				*weburl.Zusatz = 333 //set value in struct
+			if los.L_iban != nil {
+				*los.L_iban = "333" //set value in struct
 			}
 
-			service.Sender(w, weburl)
+			service.Sender(w, los)
 
 		}
 

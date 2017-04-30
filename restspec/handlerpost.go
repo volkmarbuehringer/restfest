@@ -1,38 +1,42 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"restfest/db"
 	"restfest/generrestspec"
 	"restfest/service"
 )
 
-func posterWeburl(w http.ResponseWriter, r *http.Request) {
+func posterLos(w http.ResponseWriter, r *http.Request) {
 
-	var weburl = generrestspec.Weburl{}
+	var los = generrestspec.Los{}
 
-	stmt, err := service.Prepare("weburl", db.GenInsert, &weburl)
+	stmt, err := service.PrepareSQL("losInsert", func() string {
+		return fmt.Sprintf(`insert into `+db.DBschema+`.los(%s)values(%s) returning %s`,
+			generrestspec.LosSQL.Inserts, generrestspec.LosSQL.BindsInsert, generrestspec.LosSQL.All)
+	})
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
-	err = service.Leser1(w, r, &weburl)
-
-	if err != nil {
-		service.SenderErr(w, err)
-		return
-	}
-
-	rows := db.DBx.QueryRow(stmt.Name, weburl.ROWInsert()...)
-
-	err = rows.Scan(weburl.Scanner()...)
+	err = service.Leser1(w, r, &los)
 
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
-	service.Sender(w, weburl)
+	rows := db.DBx.QueryRow(stmt.Name, los.ROWInsert()...)
+
+	err = rows.Scan(los.Scanner()...)
+
+	if err != nil {
+		service.SenderErr(w, err)
+		return
+	}
+
+	service.Sender(w, los)
 
 }

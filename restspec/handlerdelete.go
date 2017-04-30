@@ -10,11 +10,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func deleterWeburl(w http.ResponseWriter, r *http.Request) {
+func deleterLos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
-	var weburl = generrestspec.Weburl{}
-	stmt, err := service.PrepareSQL("weburlDEL", "delete from weburl where id =$1 returning *")
+	var los = generrestspec.Los{}
+	stmt, err := service.PrepareSQL("losDEL", func() string {
+		return "delete from los where id =$1 returning " + generrestspec.LosSQL.All
+	})
 
 	if err != nil {
 		service.SenderErr(w, err)
@@ -23,13 +25,13 @@ func deleterWeburl(w http.ResponseWriter, r *http.Request) {
 
 	rows := db.DBx.QueryRow(stmt.Name, id)
 
-	err = rows.Scan(weburl.Scanner()...)
+	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
-	service.Sender(w, weburl)
+	service.Sender(w, los)
 
 }

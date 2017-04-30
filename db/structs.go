@@ -15,6 +15,16 @@ type BaseCopy struct {
 	Rows  *pgx.Rows
 }
 
+type ColumnLists struct {
+	All            string
+	Inserts        string
+	BindsInsert    string
+	PK             string
+	PKUpdate       string
+	BindsVarInsert string
+	BindsUpdate    string
+}
+
 func (t *BaseCopy) NewCopy(rows *pgx.Rows, stru PgxGener) {
 
 	t.Inter = stru.Scanner()

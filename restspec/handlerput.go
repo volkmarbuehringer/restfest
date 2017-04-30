@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func putterWeburl(w http.ResponseWriter, r *http.Request) {
+func putterLos(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
@@ -21,30 +21,33 @@ func putterWeburl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-	var params generrestspec.WeburlParams
-	var weburl generrestspec.Weburl
-	sql := params.SQL(db.GenSelectID)
-	rows := tx.QueryRow(sql+" for update", id)
+	var los generrestspec.Los
 
-	err = rows.Scan(weburl.Scanner()...)
+	rows := tx.QueryRow(fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 for update",
+		generrestspec.LosSQL.All,
+	), id)
+
+	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
-	err = service.Leser1(w, r, &weburl)
+	err = service.Leser1(w, r, &los)
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
-	x := append(weburl.ROWInsert(), id)
+	x := append(los.ROWInsert(), id)
 
 	fmt.Println(x)
-	sql = weburl.SQL(db.GenUpdate)
+
+	sql := fmt.Sprintf(`update `+db.DBschema+`.los set %s where %s returning %s`,
+		generrestspec.LosSQL.BindsUpdate, generrestspec.LosSQL.PKUpdate, generrestspec.LosSQL.All)
 	rows = tx.QueryRow(sql, x...)
-	err = rows.Scan(weburl.Scanner()...)
+	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
 		service.SenderErr(w, err)
@@ -57,6 +60,6 @@ func putterWeburl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.Sender(w, weburl)
+	service.Sender(w, los)
 
 }

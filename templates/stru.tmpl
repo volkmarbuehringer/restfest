@@ -32,6 +32,18 @@ type {{$z}}Params struct {
 	    {{- end }}
 }
 
+var  {{$z}}SQL  =db.ColumnLists{
+	 {{printf "%q" (joiner .ColumnsT)}},
+	  {{printf "%q" (joiner .ColumnsInsert)  }}  ,
+		 {{printf "%q" (joiner .BindsInsert)  }} ,
+	   {{printf "%q" .PK}} ,
+		 {{printf "%q" .PKBind}},
+		{{printf "%q" (joiner .BindsVarInsert)}}	 ,
+						{{printf "%q" (joiner .BindsUpdate)}}  ,
+
+}
+
+
 func (x *{{$z}}Params) Scanner() db.InterPgx {
 	return db.InterPgx{
 		{{- range .Parameters  }}
@@ -257,21 +269,24 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 {{end}}
 
 
+
+
+
 func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
-  x :=   {{printf "%q" (joiner .ColumnsT)}}
+
 
   switch flag{
 			{{if .Flagger}}
     case db.GenSelectID,  db.GenSelectAll:
     return fmt.Sprintf(db.SQLPattern[flag],
-    x,
+  {{$z}}SQL.All,
 	     {{printf "%q" .Table}}	,
-      {{printf "%q" .PK}} ,
+      {{$z}}SQL.PK ,
     )
 
 		case db.GenSelectAll1:
 		return fmt.Sprintf(db.SQLPattern[flag],
-		x,
+	{{$z}}SQL.All,
    {{printf "%q" .Table}}	,
   		)
 
@@ -280,9 +295,9 @@ func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
 
 		case db.GenFunction:
 		return fmt.Sprintf(db.SQLPattern[flag],
-		x,
- {{printf "%q" .PK}} ,
- {{printf "%q" (joiner .BindsVarInsert)}}	,
+	{{$z}}SQL.All,
+{{$z}}SQL.PK,
+ {{$z}}SQL.BindsVarInsert,
 		)
 
 {{end}}
@@ -296,7 +311,7 @@ func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
 
 
 func ( dst {{$z}})SQL(flag db.SQLOper)string{
-  x :=   {{printf "%q" (joiner .ColumnsT)}}
+
 
   switch flag{
 			{{if .Flagger}}
@@ -305,29 +320,29 @@ func ( dst {{$z}})SQL(flag db.SQLOper)string{
 		case db.GenInsert:
 		return  fmt.Sprintf( db.SQLPattern[flag],
 			{{printf "%q" .Table}}	,
-			 {{printf "%q" (joiner .ColumnsInsert)  }}  ,
-			 {{printf "%q" (joiner .BindsInsert)  }} ,
-				x)
+			 {{$z}}SQL.Inserts  ,
+			 {{$z}}SQL.BindsInsert ,
+				{{$z}}SQL.All,)
 
 				case db.GenDelete:
 				return  fmt.Sprintf(db.SQLPattern[flag]  ,
 					{{printf "%q" .Table}}	,
-						{{printf "%q" .PK}},
-						x)
+					{{$z}}SQL.PK,
+						{{$z}}SQL.All,)
 				case db.GenUpdate:
 				return  fmt.Sprintf(db.SQLPattern[flag]  ,
 					{{printf "%q" .Table}}	,
-						{{printf "%q" (joiner .BindsUpdate)}}  ,
-						{{printf "%q" .PKBind}},
-					x)
+					{{$z}}SQL.BindsUpdate  ,
+								{{$z}}SQL.PKUpdate,
+					{{$z}}SQL.All,)
 
 			{{else}}
 
 		case db.GenFunction:
 		return fmt.Sprintf(db.SQLPattern[flag],
-		x,
- {{printf "%q" .PK}} ,
- {{printf "%q" (joiner .BindsVarInsert)}}	,
+		{{$z}}SQL.All,
+{{$z}}SQL.PK,
+{{$z}}SQL.BindsVarInsert,
 		)
 
 {{end}}
