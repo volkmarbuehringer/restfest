@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/jackc/pgx"
@@ -10,8 +11,11 @@ import (
 
 type SQLOper int
 
-type PgxGenerAr interface {
-	Scanner(*pgx.Rows) error
+type Iterator interface {
+	Next() bool
+	NewCopy(rows *pgx.Rows)
+	Err() error
+	Value() PgxGener
 }
 type PgxGenerMap interface {
 	Scanner(*pgx.Rows) error
@@ -22,6 +26,7 @@ type PgxGener interface {
 	Columns() []string
 	SQL(SQLOper) string
 	Reader(map[string][]string) [][]string
+	Writer(w io.Writer) error
 }
 
 type PgxGenerIns interface {
@@ -122,7 +127,7 @@ type TFunMap struct {
 	EmptyFun    func() PgxGener
 	EmptyInsFun func() PgxGenerIns
 	ParamFun    func() PgxGenerIns
-	EmptyArray  func() PgxGenerAr
+	Iterator    func() Iterator
 	Flag        int
 }
 

@@ -76,7 +76,7 @@ func ReadRow(tab string, id int, params db.PgxGenerIns) (inter db.PgxGener, err 
 	return
 }
 
-func ReadRows(tab string, params db.PgxGenerIns) (inter db.PgxGenerAr, err error) {
+func ReadRows(tab string, params db.PgxGenerIns) (rows *pgx.Rows, err error) {
 	var stmt *pgx.PreparedStatement
 	if funMap, ok := db.FunMap[tab]; !ok {
 		err = fmt.Errorf("Tabelle nicht gefunden: %s", tab)
@@ -86,16 +86,7 @@ func ReadRows(tab string, params db.PgxGenerIns) (inter db.PgxGenerAr, err error
 
 			return
 		}
-		rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
-		if err != nil {
-
-			return nil, err
-		}
-		defer rows.Close()
-
-		inter = funMap.EmptyArray()
-
-		err = inter.Scanner(rows)
+		rows, err = db.DBx.Query(stmt.Name, params.ROWInsert()...)
 
 	}
 	return

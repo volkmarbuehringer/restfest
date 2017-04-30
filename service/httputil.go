@@ -22,19 +22,9 @@ func PrepParam(params db.PgxGenerIns, w http.ResponseWriter, r *http.Request) er
 	}
 
 	inter := params.Scanner()
-	zs := params.Reader(r.Form)
-	rs := make([]string, len(zs))
-	for i := range zs {
-		if len(zs[i]) > 0 {
-			rs[i] = zs[i][0]
-		} else {
-			rs[i] = ""
-		}
 
-	}
-	err = inter.ConvertStoI(rs)
+	return inter.ConvertAtoI(params.Reader(r.Form))
 
-	return err
 }
 
 func SenderErr(w http.ResponseWriter, err error) {

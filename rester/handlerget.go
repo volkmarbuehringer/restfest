@@ -28,13 +28,36 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		inter, err := service.ReadRows(tab, params)
+		rows, err := service.ReadRows(tab, params)
 		if err != nil {
 			service.SenderErr(w, err)
 			return
 		}
 
-		service.Sender(w, inter)
+		defer rows.Close()
+		iter := fun1.Iterator()
+		iter.NewCopy(rows)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("["))
+		for anz := 0; iter.Next(); anz++ {
+
+			if err = iter.Err(); err != nil {
+				service.SenderErr(w, err)
+				return
+			}
+
+			if anz > 0 {
+				w.Write([]byte(","))
+			}
+			err = iter.Value().Writer(w)
+			if err != nil {
+				service.SenderErr(w, err)
+				return
+			}
+
+		}
+		w.Write([]byte("]"))
 	}
 }
 

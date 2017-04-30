@@ -157,144 +157,164 @@ func (arr InterPgx) ConvertItoS() (record []string, err error) {
 	return
 }
 
-func (arr InterPgx) ConvertStoI(record []string) error {
+func (arr InterPgx) ConvertStoIS(stringer string, i int, val interface{}) error {
 	var err error
+	switch val.(type) {
+	case *string:
+		t := val.(*string)
+		*t = stringer
+	case **string:
+		t := val.(**string)
+
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+
+			*t = new(string)
+			**t = stringer
+		}
+	case *int16:
+		if len(stringer) > 0 {
+			t := val.(*int16)
+			var g int
+			g, err = strconv.Atoi(stringer)
+			*t = (int16)(g)
+		}
+
+	case *int32:
+		if len(stringer) > 0 {
+			t := val.(*int32)
+			var g int
+			g, err = strconv.Atoi(stringer)
+			*t = (int32)(g)
+		}
+	case *int64:
+		if len(stringer) > 0 {
+			t := val.(*int64)
+			var g int
+			g, err = strconv.Atoi(stringer)
+			*t = (int64)(g)
+		}
+	case *int:
+		if len(stringer) > 0 {
+			t := val.(*int)
+			var g int
+			g, err = strconv.Atoi(stringer)
+			*t = g
+		}
+	case **int32:
+		t := val.(**int32)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			var tt int
+			tt, err = strconv.Atoi(stringer)
+			var g = (int32)(tt)
+			*t = &g
+		}
+	case **int16:
+		t := val.(**int16)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			var tt int
+			tt, err = strconv.Atoi(stringer)
+			var g = (int16)(tt)
+			*t = &g
+		}
+	case **int64:
+		t := val.(**int64)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			var tt int
+			tt, err = strconv.Atoi(stringer)
+			var g = (int64)(tt)
+			*t = &g
+		}
+	case *float64:
+		t := val.(*float64)
+		*t, err = strconv.ParseFloat(stringer, 64)
+
+	case **float64:
+		t := val.(**float64)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			*t = new(float64)
+			**t, err = strconv.ParseFloat(stringer, 64)
+
+		}
+
+	case *bool:
+		t := val.(*bool)
+		*t, err = strconv.ParseBool(stringer)
+	case **bool:
+		t := val.(**bool)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			*t = new(bool)
+			**t, err = strconv.ParseBool(stringer)
+
+		}
+
+	case **time.Time:
+		t := val.(**time.Time)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+
+			*t = new(time.Time)
+
+			**t, err = time.Parse("2006-01-02", stringer)
+
+		}
+	case *time.Time:
+		t := val.(*time.Time)
+		*t, err = time.Parse("2006-01-02", stringer)
+	default:
+		if arr[i] != nil {
+			return fmt.Errorf("unknown %d %T", i, arr[i])
+
+		} else {
+			return fmt.Errorf("unknown %d ", i)
+
+		}
+
+	}
+	return err
+}
+
+func (arr InterPgx) ConvertAtoI(record [][]string) error {
+	if len(arr) != len(record) {
+		return fmt.Errorf("längen stimmen nicht %d %d", len(record), len(arr))
+	}
+	for i, val := range arr {
+		if len(record[i]) > 0 {
+			stringer := record[i][0]
+			err := arr.ConvertStoIS(stringer, i, val)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
+}
+
+func (arr InterPgx) ConvertStoI(record []string) error {
 
 	if len(arr) != len(record) {
 		return fmt.Errorf("längen stimmen nicht %d %d", len(record), len(arr))
 	}
 	for i, val := range arr {
 		stringer := record[i]
-		switch val.(type) {
-		case *string:
-			t := val.(*string)
-			*t = stringer
-		case **string:
-			t := val.(**string)
-
-			if len(stringer) == 0 {
-				*t = nil
-			} else {
-
-				*t = new(string)
-				**t = stringer
-			}
-		case *int16:
-			if len(stringer) > 0 {
-				t := val.(*int16)
-				var g int
-				g, err = strconv.Atoi(stringer)
-				*t = (int16)(g)
-			}
-
-		case *int32:
-			if len(stringer) > 0 {
-				t := val.(*int32)
-				var g int
-				g, err = strconv.Atoi(stringer)
-				*t = (int32)(g)
-			}
-		case *int64:
-			if len(stringer) > 0 {
-				t := val.(*int64)
-				var g int
-				g, err = strconv.Atoi(stringer)
-				*t = (int64)(g)
-			}
-		case *int:
-			if len(stringer) > 0 {
-				t := val.(*int)
-				var g int
-				g, err = strconv.Atoi(stringer)
-				*t = g
-			}
-		case **int32:
-			t := val.(**int32)
-			if len(stringer) == 0 {
-				*t = nil
-			} else {
-				var tt int
-				tt, err = strconv.Atoi(stringer)
-				var g = (int32)(tt)
-				*t = &g
-			}
-		case **int16:
-			t := val.(**int16)
-			if len(stringer) == 0 {
-				*t = nil
-			} else {
-				var tt int
-				tt, err = strconv.Atoi(stringer)
-				var g = (int16)(tt)
-				*t = &g
-			}
-		case **int64:
-			t := val.(**int64)
-			if len(stringer) == 0 {
-				*t = nil
-			} else {
-				var tt int
-				tt, err = strconv.Atoi(stringer)
-				var g = (int64)(tt)
-				*t = &g
-			}
-		case *float64:
-			t := val.(*float64)
-			*t, err = strconv.ParseFloat(stringer, 64)
-
-		case **float64:
-			t := val.(**float64)
-			if len(record[i]) == 0 {
-				*t = nil
-			} else {
-				*t = new(float64)
-				**t, err = strconv.ParseFloat(stringer, 64)
-
-			}
-
-		case *bool:
-			t := val.(*bool)
-			*t, err = strconv.ParseBool(stringer)
-		case **bool:
-			t := val.(**bool)
-			if len(record[i]) == 0 {
-				*t = nil
-			} else {
-				*t = new(bool)
-				**t, err = strconv.ParseBool(stringer)
-
-			}
-
-		case **time.Time:
-			t := val.(**time.Time)
-			if len(record[i]) == 0 {
-				*t = nil
-			} else {
-
-				*t = new(time.Time)
-
-				**t, err = time.Parse("2006-01-02", stringer)
-
-			}
-		case *time.Time:
-			t := val.(*time.Time)
-			*t, err = time.Parse("2006-01-02", stringer)
-		default:
-			if arr[i] != nil {
-				return fmt.Errorf("unknown %d %T", i, arr[i])
-
-			} else {
-				return fmt.Errorf("unknown %d ", i)
-
-			}
-
-		}
-
+		err := arr.ConvertStoIS(stringer, i, val)
 		if err != nil {
-
 			return err
 		}
 
 	}
-	return err
+	return nil
 }

@@ -13,6 +13,8 @@ import (
 	"restfest/db"
 	"fmt"
 	"time"
+	"io"
+		"encoding/json"
 	"github.com/jackc/pgx"
 			{{if .FlaggerUdt}}
 			"github.com/jackc/pgx/pgtype"
@@ -117,19 +119,6 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 
 	{{end}}
 
-func (dst *{{$a}}) Scanner( rows *pgx.Rows) error {
-	for rows.Next() {
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		x := new( {{$z}})
-		if err := rows.Scan(x.Scanner()...); err != nil {
-			return err
-		}
-		*dst = append(*dst, *x)
-	}
-	return nil
-}
 
 
 type Iter{{$z}} struct {
@@ -142,7 +131,12 @@ type ArIter{{$z}} struct {
 	Ar{{$z}} Ar{{$z}}
 }
 
-
+func (t {{$z}}) Writer(w io.Writer)  error {
+if err := json.NewEncoder(w).Encode(t); err != nil {
+	return err
+}
+	return nil
+}
 
 func (t *ArIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
  t.BaseCopy.NewCopy(rows,&t.{{$z}})
@@ -158,6 +152,10 @@ func (t *Iter{{$z}}) NewCopy(rows  *pgx.Rows)  {
 return
 }
 
+func (t *Iter{{$z}}) Value() db.PgxGener  {
+
+ return &t.{{$z}}
+}
 
 func (t *Iter{{$z}}) StartCopy(tab string, con *pgx.Conn, tt pgx.CopyFromSource,rows  *pgx.Rows) (int, error) {
 

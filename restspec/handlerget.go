@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"restfest/db"
 	"restfest/generrestspec"
@@ -52,10 +51,12 @@ func getAllHandlerWeburl(w http.ResponseWriter, r *http.Request) {
 			if anz > 0 {
 				w.Write([]byte(","))
 			}
-			if err := json.NewEncoder(w).Encode(iter.Weburl); err != nil {
+			err = iter.Weburl.Writer(w)
+			if err != nil {
 				service.SenderErr(w, err)
 				return
 			}
+
 		}
 
 	}

@@ -19,7 +19,7 @@ func init(){
 db.FunMap=map[string]db.TFunMap{
 	{{- range .Table }}{{if ne .Flag 5}}
 	{{if .Worker}}
-	{{$y := printf "%q" .Table -}}{{$y}}:{		
+	{{$y := printf "%q" .Table -}}{{$y}}:{
 		func () db.PgxGener{
 		    return new(gener{{$x}}.{{title .Table}})
 		},
@@ -33,9 +33,8 @@ db.FunMap=map[string]db.TFunMap{
 			{{end}}
 		    return rt
 		},
-		func () db.PgxGenerAr {
-		    x:=make(gener{{$x}}.Ar{{title .Table}},0)
-				return &x
+		func () db.Iterator {
+				return new( gener{{$x}}.Iter{{title .Table}} )
 		},
 		{{.Flag}}, },
 		{{- end }}
