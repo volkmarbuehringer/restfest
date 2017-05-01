@@ -26,7 +26,7 @@ type PgxGener interface {
 	Columns() []string
 	SQL(SQLOper) string
 	Reader(map[string][]string) [][]string
-	Writer(w io.Writer) error
+	Writer(io.Writer, string) error
 }
 
 type PgxGenerIns interface {

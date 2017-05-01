@@ -46,18 +46,14 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("["))
+	var trenner string
 	for anz := 0; iter.Next(); anz++ {
-
-		if iter.Errc != nil {
-			service.SenderErr(w, iter.Errc)
-			return
-		}
 		if iter.Los.L_iban != nil {
 			*iter.Los.L_iban = "efsdfsadfsdf"
 			if anz > 0 {
-				w.Write([]byte(","))
+				trenner = ","
 			}
-			err = iter.Los.Writer(w)
+			err = iter.Los.Writer(w, trenner)
 			if err != nil {
 				service.SenderErr(w, err)
 				return
@@ -65,6 +61,10 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 		}
 
+	}
+	if iter.Errc != nil {
+		service.SenderErr(w, iter.Errc)
+		return
 	}
 	w.Write([]byte("]"))
 

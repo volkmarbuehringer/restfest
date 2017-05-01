@@ -40,23 +40,24 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("["))
+		var trenner string
 		for anz := 0; iter.Next(); anz++ {
 
-			if err = iter.Err(); err != nil {
-				service.SenderErr(w, err)
-				return
-			}
-
 			if anz > 0 {
-				w.Write([]byte(","))
+				trenner = ","
 			}
-			err = iter.Value().Writer(w)
+			err = iter.Value().Writer(w, trenner)
 			if err != nil {
 				service.SenderErr(w, err)
 				return
 			}
 
 		}
+		if err = iter.Err(); err != nil {
+			service.SenderErr(w, err)
+			return
+		}
+
 		w.Write([]byte("]"))
 	}
 }

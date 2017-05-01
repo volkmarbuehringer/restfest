@@ -47,11 +47,10 @@ func mapper() error {
 func runner(funcer func() error, c chan error, te string) {
 	start := time.Now()
 	err := funcer()
-	fmt.Println(te, time.Since(start))
 	if err != nil {
 		log.Fatal(err)
-
 	}
+	fmt.Println(te, time.Since(start))
 	c <- err
 }
 

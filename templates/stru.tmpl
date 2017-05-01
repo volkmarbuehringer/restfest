@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"time"
 	"io"
+	"strings"
 		"encoding/json"
 	"github.com/jackc/pgx"
 			{{if .FlaggerUdt}}
@@ -31,6 +32,16 @@ type {{$z}}Params struct {
     {{title .Column}} {{.ColumnTrans}}
 	    {{- end }}
 }
+
+type {{$z}} struct {
+  {{- range .Cols  }}
+    {{title .Column}} {{.ColumnTrans}}  `json:{{printf "%q" .Column}}`
+    {{- end }}
+}
+
+type {{$a}} []{{$z}}
+
+
 
 var  {{$z}}SQL  =db.ColumnLists{
 	 {{printf "%q" (joiner .ColumnsT)}},
@@ -69,20 +80,10 @@ func (x {{$z}}Params) Reader(mapper map[string][]string) [][]string {
 
 }
 
-type {{$z}} struct {
-  {{- range .Cols  }}
-    {{title .Column}} {{.ColumnTrans}}  `json:{{printf "%q" .Column}}`
-    {{- end }}
-}
-
-type {{$a}} []{{$z}}
-
 
 
 func (t {{$z}}) Columns() []string {
-	return []string{
-		 {{- range .Cols }}	 {{printf "%q" .Column}} ,	{{- end }}
-			}
+	return strings.Split({{$z}}SQL.All,",")
 }
 
 
@@ -112,12 +113,122 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 }
 
 }
+
+
+
+func (t {{$z}}) Writer(w io.Writer,trenner string)  error {
+		w.Write([]byte(trenner))
+
+if err := json.NewEncoder(w).Encode(t); err != nil {
+	return err
+}
+	return nil
+}
+
+
+
+
+func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
+
+
+  switch flag{
+			{{if .Flagger}}
+    case db.GenSelectID,  db.GenSelectAll:
+    return fmt.Sprintf(db.SQLPattern[flag],
+  {{$z}}SQL.All,
+	     {{printf "%q" .Table}}	,
+      {{$z}}SQL.PK ,
+    )
+
+		case db.GenSelectAll1:
+		return fmt.Sprintf(db.SQLPattern[flag],
+	{{$z}}SQL.All,
+   {{printf "%q" .Table}}	,
+  		)
+
+
+			{{else}}
+
+		case db.GenFunction:
+		return fmt.Sprintf(db.SQLPattern[flag],
+	{{$z}}SQL.All,
+{{$z}}SQL.PK,
+ {{$z}}SQL.BindsVarInsert,
+		)
+
+{{end}}
+  }
+
+	return ""
+
+}
+
+
+
+
+func ( dst {{$z}})SQL(flag db.SQLOper)string{
+
+
+  switch flag{
+			{{if .Flagger}}
+
+
+		case db.GenInsert:
+		return  fmt.Sprintf( db.SQLPattern[flag],
+			{{printf "%q" .Table}}	,
+			 {{$z}}SQL.Inserts  ,
+			 {{$z}}SQL.BindsInsert ,
+				{{$z}}SQL.All,)
+
+				case db.GenDelete:
+				return  fmt.Sprintf(db.SQLPattern[flag]  ,
+					{{printf "%q" .Table}}	,
+					{{$z}}SQL.PK,
+						{{$z}}SQL.All,)
+				case db.GenUpdate:
+				return  fmt.Sprintf(db.SQLPattern[flag]  ,
+					{{printf "%q" .Table}}	,
+					{{$z}}SQL.BindsUpdate  ,
+								{{$z}}SQL.PKUpdate,
+					{{$z}}SQL.All,)
+
+			{{else}}
+
+		case db.GenFunction:
+		return fmt.Sprintf(db.SQLPattern[flag],
+		{{$z}}SQL.All,
+{{$z}}SQL.PK,
+{{$z}}SQL.BindsVarInsert,
+		)
+
+{{end}}
+  }
+
+	return ""
+
+}
+
+
+
+type Iter{{$z}} struct {
+	db.BaseCopy
+	{{$z}} {{$z}}
+}
+
+type ArIter{{$z}} struct {
+	Iter{{$z}}
+	Ar{{$z}} Ar{{$z}}
+}
+
+
 				{{if .Flagger}}
-				type Map{{$z}} map[{{.PKType}}]{{$z}}
-				type MapIter{{$z}} struct {
-					Iter{{$z}}
-					Map{{$z}}  Map{{$z}}
-				}
+
+type Map{{$z}} map[{{.PKType}}]{{$z}}
+
+type MapIter{{$z}} struct {
+		Iter{{$z}}
+		Map{{$z}}  Map{{$z}}
+}
 
 				func (t *MapIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
 				 t.BaseCopy.NewCopy(rows,&t.{{$z}})
@@ -132,23 +243,6 @@ func (rt *{{$z}}Params)ROWInsert() db.InterPgx {
 	{{end}}
 
 
-
-type Iter{{$z}} struct {
-	db.BaseCopy
-	{{$z}} {{$z}}
-}
-
-type ArIter{{$z}} struct {
-	Iter{{$z}}
-	Ar{{$z}} Ar{{$z}}
-}
-
-func (t {{$z}}) Writer(w io.Writer)  error {
-if err := json.NewEncoder(w).Encode(t); err != nil {
-	return err
-}
-	return nil
-}
 
 func (t *ArIter{{$z}}) NewCopy(rows  *pgx.Rows) int {
  t.BaseCopy.NewCopy(rows,&t.{{$z}})
@@ -267,87 +361,3 @@ func (dst *{{$a}}) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 
 
 {{end}}
-
-
-
-
-
-func ( dst {{$z}}Params)SQL(flag db.SQLOper)string{
-
-
-  switch flag{
-			{{if .Flagger}}
-    case db.GenSelectID,  db.GenSelectAll:
-    return fmt.Sprintf(db.SQLPattern[flag],
-  {{$z}}SQL.All,
-	     {{printf "%q" .Table}}	,
-      {{$z}}SQL.PK ,
-    )
-
-		case db.GenSelectAll1:
-		return fmt.Sprintf(db.SQLPattern[flag],
-	{{$z}}SQL.All,
-   {{printf "%q" .Table}}	,
-  		)
-
-
-			{{else}}
-
-		case db.GenFunction:
-		return fmt.Sprintf(db.SQLPattern[flag],
-	{{$z}}SQL.All,
-{{$z}}SQL.PK,
- {{$z}}SQL.BindsVarInsert,
-		)
-
-{{end}}
-  }
-
-	return ""
-
-}
-
-
-
-
-func ( dst {{$z}})SQL(flag db.SQLOper)string{
-
-
-  switch flag{
-			{{if .Flagger}}
-
-
-		case db.GenInsert:
-		return  fmt.Sprintf( db.SQLPattern[flag],
-			{{printf "%q" .Table}}	,
-			 {{$z}}SQL.Inserts  ,
-			 {{$z}}SQL.BindsInsert ,
-				{{$z}}SQL.All,)
-
-				case db.GenDelete:
-				return  fmt.Sprintf(db.SQLPattern[flag]  ,
-					{{printf "%q" .Table}}	,
-					{{$z}}SQL.PK,
-						{{$z}}SQL.All,)
-				case db.GenUpdate:
-				return  fmt.Sprintf(db.SQLPattern[flag]  ,
-					{{printf "%q" .Table}}	,
-					{{$z}}SQL.BindsUpdate  ,
-								{{$z}}SQL.PKUpdate,
-					{{$z}}SQL.All,)
-
-			{{else}}
-
-		case db.GenFunction:
-		return fmt.Sprintf(db.SQLPattern[flag],
-		{{$z}}SQL.All,
-{{$z}}SQL.PK,
-{{$z}}SQL.BindsVarInsert,
-		)
-
-{{end}}
-  }
-
-	return ""
-
-}

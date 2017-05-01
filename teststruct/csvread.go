@@ -22,7 +22,7 @@ func (t *copyCsv) Next() bool {
 		if t.Errc != nil {
 			return false
 		}
-
+		//	fmt.Println("string", len(t.ptr), t.ptr)
 		t.Errc = t.Inter.ConvertStoI(t.ptr)
 		if t.Errc != nil {
 			return false
@@ -44,9 +44,10 @@ func csvread() error {
 	if err != nil {
 		return err
 	}
-
+	w := csv.NewReader(f1)
+	w.Comma = ';'
 	iterator := copyCsv{
-		rows: csv.NewReader(f1),
+		rows: w,
 	}
 
 	count, err := iterator.StartCopy("ziellos", dbx1, &iterator, nil)
