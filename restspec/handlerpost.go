@@ -10,7 +10,7 @@ import (
 
 func posterLos(w http.ResponseWriter, r *http.Request) {
 
-	var los = generrestspec.Los{}
+	var los = generrestspec.Los{L_iban: db.String("default")}
 
 	stmt, err := service.PrepareSQL("losInsert", func() string {
 		return fmt.Sprintf(`insert into `+db.DBschema+`.los(%s)values(%s) returning %s`,

@@ -26,7 +26,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 	var stmt *pgx.PreparedStatement
 
 	if stmt, err = service.PrepareSQL("losAll", func() string {
-		return fmt.Sprintf("select %s from "+db.DBschema+".los where l_iban is not null limit $1 offset $2",
+		return fmt.Sprintf("select %s from "+db.DBschema+".los where l_iban is null limit $1 offset $2",
 			generrestspec.LosSQL.All,
 		)
 	}); err != nil {
@@ -48,8 +48,9 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("["))
 	var trenner string
 	for anz := 0; iter.Next(); anz++ {
+		iter.Los.L_iban = db.String("efsdfsadfsdf")
 		if iter.Los.L_iban != nil {
-			*iter.Los.L_iban = "efsdfsadfsdf"
+
 			if anz > 0 {
 				trenner = ","
 			}
@@ -93,9 +94,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 			service.SenderErr(w, err)
 			return
 		} else {
-			if los.L_iban != nil {
-				*los.L_iban = "333" //set value in struct
-			}
+			los.L_iban = db.String("neuer wert")
 
 			service.Sender(w, los)
 

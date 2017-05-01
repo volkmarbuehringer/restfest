@@ -18,9 +18,7 @@ func (t *weburlScan) Next() bool {
 			fmt.Println(*t.Los.L_iban)
 			return true
 		} else {
-
-			t.Los.L_iban = new(string)
-			*t.Los.L_iban = "willi"
+			*t.Los.L_iban = string("willi")
 			return true
 		}
 	}

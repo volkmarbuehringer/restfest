@@ -9,6 +9,15 @@ import (
 	"github.com/jackc/pgx"
 )
 
+func String(defaulter string) *string {
+	if len(defaulter) > 0 {
+		t := new(string)
+		*t = defaulter
+		return t
+	}
+	return nil
+}
+
 type BaseCopy struct {
 	Errc  error
 	Inter InterPgx
@@ -176,13 +185,7 @@ func (arr InterPgx) ConvertStoIS(stringer string, i int, val interface{}) error 
 	case **string:
 		t := val.(**string)
 
-		if len(stringer) == 0 {
-			*t = nil
-		} else {
-
-			*t = new(string)
-			**t = stringer
-		}
+		*t = String(stringer)
 	case *int16:
 		if len(stringer) > 0 {
 			t := val.(*int16)

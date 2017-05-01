@@ -36,8 +36,7 @@ func fetcher() error {
 			fmt.Println(*iter.Los.L_iban)
 
 		} else { //replace values in struct
-			iter.Los.L_iban = new(string)
-			*iter.Los.L_iban = "willi"
+			*iter.Los.L_iban = string("willi")
 		}
 		record, err := iter.ValuesString()
 		if err != nil {
