@@ -9,6 +9,70 @@ import (
 	"github.com/jackc/pgx"
 )
 
+func Int16p(def string) (int16, error) {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+
+		return 0, err
+	}
+	return (int16)(x), nil
+}
+
+func Int32p(def string) (int32, error) {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+
+		return 0, err
+	}
+	return (int32)(x), nil
+}
+func Int64p(def string) (int64, error) {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+
+		return 0, err
+	}
+	return (int64)(x), nil
+}
+func Int(def string, errp *error) *int {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+		*errp = err
+		return nil
+	}
+	return &x
+}
+
+func Int16(def string, errp *error) *int16 {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+		*errp = err
+		return nil
+	}
+	var xx = (int16)(x)
+	return &xx
+}
+
+func Int32(def string, errp *error) *int32 {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+		*errp = err
+		return nil
+	}
+	var xx = (int32)(x)
+	return &xx
+}
+
+func Int64(def string, errp *error) *int64 {
+	x, err := strconv.Atoi(def)
+	if err != nil {
+		*errp = err
+		return nil
+	}
+	var xx = (int64)(x)
+	return &xx
+}
+
 func String(defaulter string) *string {
 	if len(defaulter) > 0 {
 		t := new(string)
@@ -75,6 +139,9 @@ func (t BaseCopy) Err() error {
 
 func (t *BaseCopy) Next() bool {
 	var ok bool
+	if t.Rows == nil {
+		return false
+	}
 	for {
 		ok = t.Rows.Next()
 		if !ok {
@@ -189,61 +256,51 @@ func (arr InterPgx) ConvertStoIS(stringer string, i int, val interface{}) error 
 	case *int16:
 		if len(stringer) > 0 {
 			t := val.(*int16)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int16)(g)
+			*t, err = Int16p(stringer)
 		}
 
 	case *int32:
 		if len(stringer) > 0 {
 			t := val.(*int32)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int32)(g)
+			*t, err = Int32p(stringer)
 		}
 	case *int64:
 		if len(stringer) > 0 {
 			t := val.(*int64)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = (int64)(g)
+			*t, err = Int64p(stringer)
 		}
 	case *int:
 		if len(stringer) > 0 {
 			t := val.(*int)
-			var g int
-			g, err = strconv.Atoi(stringer)
-			*t = g
+			*t, err = strconv.Atoi(stringer)
 		}
 	case **int32:
 		t := val.(**int32)
 		if len(stringer) == 0 {
 			*t = nil
 		} else {
-			var tt int
-			tt, err = strconv.Atoi(stringer)
-			var g = (int32)(tt)
-			*t = &g
+			*t = Int32(stringer, &err)
+		}
+	case **int:
+		t := val.(**int)
+		if len(stringer) == 0 {
+			*t = nil
+		} else {
+			*t = Int(stringer, &err)
 		}
 	case **int16:
 		t := val.(**int16)
 		if len(stringer) == 0 {
 			*t = nil
 		} else {
-			var tt int
-			tt, err = strconv.Atoi(stringer)
-			var g = (int16)(tt)
-			*t = &g
+			*t = Int16(stringer, &err)
 		}
 	case **int64:
 		t := val.(**int64)
 		if len(stringer) == 0 {
 			*t = nil
 		} else {
-			var tt int
-			tt, err = strconv.Atoi(stringer)
-			var g = (int64)(tt)
-			*t = &g
+			*t = Int64(stringer, &err)
 		}
 	case *float64:
 		t := val.(*float64)
