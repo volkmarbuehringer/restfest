@@ -44,7 +44,6 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 	iter.NewCopy(rows) //streaming from database
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("["))
 	var trenner string
 	for anz := 0; iter.Next(); anz++ {
