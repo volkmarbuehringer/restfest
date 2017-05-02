@@ -96,31 +96,33 @@ with pk as (
 		    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
 	)
 )
-select flag,x.table_name,column_name,routine_name,
-(select case when count(*) > 0 and flag <> 3 then true else false end from flagger where name = x.table_name) as tflag
+select flag,x.table_name,column_name,case when rower = 1 then routine_name else specific_name end,
+(select case when count(*) > 0 and flag <> 3 then true else false end from flagger where name = x.table_name) as tflag,
+specific_name
 from(
 select
 case when  t.table_name in ( 'weburl') then 4 else 1 end as flag,
 t.table_name,pk.column_name,
-'' as routine_name,t.table_schema
+'' as routine_name,t.table_schema,t.table_name as specific_name, row_number()over ( partition by t.table_name) as rower
 from
 information_schema.tables t
 inner join pk on ( t.table_name = pk.table_name)
  where t.table_schema ='` + dbschema + `'
  union all
- select 5,t.user_defined_type_name,attribute_name  , '' as routine,t.user_defined_type_schema
+ select 5,t.user_defined_type_name,attribute_name  , '' as routine,t.user_defined_type_schema,t.user_defined_type_name as specific_name,
+ row_number()over ( partition by user_defined_type_name) as rower
  from information_schema.user_defined_types t
 inner join information_schema.attributes on t.user_defined_type_name=udt_name   and ordinal_position = 1
  where t.user_defined_type_schema ='` + dbschema + `' and udt_schema = '` + dbschema + `'
    union all
 select 2,c.table_name
 ,column_name
-,'' as routine, v.table_schema
+,'' as routine, v.table_schema,c.table_name as specific_name,row_number()over(partition by c.table_name) as rower
 from information_schema.views v
 inner join information_schema.columns c on v.table_name = c.table_name and ordinal_position = 1
 where v.table_schema ='` + dbschema + `' and c.table_schema = '` + dbschema + `'
 union all
-sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as table_schema
+sELECT 3,routines.type_udt_name,routine_name,routine_name, specific_schema as table_schema,specific_name,row_number()over(partition by routine_name) as rower
  FROM information_schema.routines
     WHERE routines.specific_schema='` + dbschema + `'
 		and data_type = 'USER-DEFINED'

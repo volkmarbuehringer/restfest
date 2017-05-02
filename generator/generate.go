@@ -22,6 +22,7 @@ type TabFlag struct {
 	Parameter string
 	Worker    bool
 	Flagger   bool
+	Specific  string
 }
 
 var db *pgx.Conn
@@ -31,7 +32,7 @@ var tflag bool
 func generateMap(t *template.Template, arr []*TabFlag) error {
 	f1, err := os.Create("mapper.tmp")
 	if err != nil {
-		log15.Crit("DBFehler", "create", err)
+		log15.Crit("map", "create", err)
 		return err
 	}
 
@@ -42,7 +43,7 @@ func generateMap(t *template.Template, arr []*TabFlag) error {
 			Table     []*TabFlag
 			Timestamp time.Time
 		}{os.Args[1], arr, time.Now()}); err != nil {
-			log15.Crit("DBFehler", "map", err)
+			log15.Crit("template map", "map", err)
 			return err
 		}
 
@@ -110,7 +111,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 			prof := Prof{}
 			if err := rows.Scan(&prof.Column, &prof.ColumnTrans, &prof.ColumnT); err != nil {
-				log15.Crit("DBFehler", "scan", err)
+				log15.Crit("DBFehler", "scan1", err)
 				return err
 			}
 			profA = append(profA, prof)
@@ -155,20 +156,20 @@ func generateStru(t *template.Template, row *TabFlag) error {
 		}
 		{
 
-			if rows, err := db.Query(sqlfunctionparams, row.Parameter); err != nil {
+			if rows, err := db.Query(sqlfunctionparams, row.Specific); err != nil {
 				log15.Crit("DBFehler", "query", err)
 				return err
 			} else {
 				defer rows.Close()
 
 				for rows.Next() {
+
 					prof := Prof{}
 					if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
-						log15.Crit("DBFehler", "scann", err)
+						log15.Crit("DBFehler", "scann2", err)
 						return err
 					}
 					profB = append(profB, prof)
-
 				}
 				if !flagger {
 					BindsVarInsert = make([]string, len(profB))
@@ -180,7 +181,8 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 		}
 		if (len(profA) > 0 && flagger) || (len(profA) > 0 && len(profB) > 0) {
-			f, err := os.Create(gendir + "/" + namer + ".go")
+
+			f, err := os.Create(gendir + "/" + row.Specific + ".go")
 			if err != nil {
 				log15.Crit("DBFehler", "gener", err)
 				return err
@@ -253,8 +255,8 @@ func dbGen() (arr []*TabFlag, err error) {
 
 	for rows.Next() {
 		var row TabFlag
-		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.TFlag); err != nil {
-			log15.Crit("DBFehler", "scan", err)
+		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.TFlag, &row.Specific); err != nil {
+			log15.Crit("DBFehler", "scanstruct", err)
 			return
 		}
 		if row.TFlag {
@@ -269,13 +271,15 @@ func dbGen() (arr []*TabFlag, err error) {
 func Generator() error {
 	pwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 	fmt.Println(pwd)
 
 	defer db.Close()
 	arr, err := dbGen()
+	if err != nil {
+		return err
+	}
 	//	os.RemoveAll(gendir)
 	os.Mkdir(gendir, 0777)
 	os.Remove("mapper.go")
@@ -288,13 +292,14 @@ func Generator() error {
 	// Create a new template and parse the letter into it.
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("../templates/*")
 	if err1 != nil {
-		log15.Crit("DBFehler", "temp1", err1)
+		log15.Crit("DBFehler Temp.", "temp1", err1)
 		return err1
 	}
 
 	for _, row := range arr {
 		fmt.Println("tabelle", row.Table, row.Parameter, row.TFlag)
 		if err = generateStru(t, row); err != nil {
+			fmt.Println("fehler bei struct", err)
 			return err
 		}
 		if row.Flag == 3 {
@@ -305,6 +310,7 @@ func Generator() error {
 	if os.Args[2] != "1" {
 
 		if err := generateMap(t, arr); err != nil {
+			fmt.Println("fehler bei map", err)
 			return err
 		}
 		if err = os.Rename("mapper.tmp", "mapper.go"); err != nil {
@@ -314,7 +320,7 @@ func Generator() error {
 	if tflag {
 
 		if err := generateMapTyp(t, arr); err != nil {
-			return err
+			fmt.Println("fehler bei map", err)
 		}
 		if err = os.Rename("mappertyp.tmp", "mappertyp.go"); err != nil {
 			return err
