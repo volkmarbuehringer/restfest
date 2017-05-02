@@ -276,7 +276,7 @@ func Generator() error {
 
 	defer db.Close()
 	arr, err := dbGen()
-	os.RemoveAll(gendir)
+	//	os.RemoveAll(gendir)
 	os.Mkdir(gendir, 0777)
 	os.Remove("mapper.go")
 	os.Remove("mappertyp.go")
