@@ -27,7 +27,7 @@ func Listen(routes Routes) {
 
 	srv := &http.Server{
 		ReadTimeout:  200 * time.Second,
-		WriteTimeout: 200 * time.Second,
+		WriteTimeout: 20000 * time.Second,
 		Addr:         ":8080",
 		Handler:      NewRouter(routes),
 	}
