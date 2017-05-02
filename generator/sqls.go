@@ -127,6 +127,7 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as t
 		and routine_type ='FUNCTION'
 	) x
 	where table_name not like 'hst%' and table_name not like '%hst'
+	and table_name in ( select table_name from ` + dbschema + `.testselector where project = '` + os.Args[1] + `' )
 	order by table_name
 	limit 400
 `
