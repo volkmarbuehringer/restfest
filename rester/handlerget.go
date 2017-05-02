@@ -38,7 +38,6 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 		iter := fun1.Iterator()
 		iter.NewCopy(rows)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("["))
 		var trenner string
 		for anz := 0; iter.Next(); anz++ {
@@ -59,6 +58,7 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Write([]byte("]"))
+
 	}
 }
 
