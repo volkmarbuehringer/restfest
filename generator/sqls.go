@@ -96,7 +96,7 @@ with pk as (
 		    and t.typnamespace = ( select oid from pg_namespace where nspname = '` + dbschema + `')
 	)
 )
-select flag,table_name,column_name,routine_name,
+select flag,x.table_name,column_name,routine_name,
 (select case when count(*) > 0 and flag <> 3 then true else false end from flagger where name = x.table_name) as tflag
 from(
 select
@@ -126,9 +126,9 @@ sELECT 3,routines.type_udt_name,routine_name,specific_name, specific_schema as t
 		and data_type = 'USER-DEFINED'
 		and routine_type ='FUNCTION'
 	) x
-	where table_name not like 'hst%' and table_name not like '%hst'
-	and table_name in ( select table_name from ` + dbschema + `.testselector where project = '` + os.Args[1] + `' )
-	order by table_name
+	inner join ` + dbschema + `.testselector ts on project = '` + os.Args[1] + `' and x.table_name like coalesce(ts.table_name,'%')
+	where x.table_name not like 'hst%' and x.table_name not like '%hst'
+	order by x.table_name
 	limit 400
 `
 
