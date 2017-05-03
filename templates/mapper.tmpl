@@ -20,23 +20,23 @@ db.FunMap=map[string]db.TFunMap{
 	{{- range .Table }}{{if ne .Flag 5}}
 	{{if .Worker}}
 	{{$y := printf "%q" .Table -}}{{$y}}:{
-		func () db.PgxGener{
+		EmptyFun:		func () db.PgxGener{
 		    return new(gener{{$x}}.{{title .Table}})
 		},
-		func () db.PgxGenerIns{
+		EmptyInsFun:  func () db.PgxGenerIns{
 		    return new(gener{{$x}}.{{title .Table}})
 		},
-		func () db.PgxGenerIns{
+				ParamFun: func () db.PgxGenerIns{
 		 rt := new(gener{{$x}}.{{title .Table}}Params)
 			{{if .Flagger}}
 				rt.Length=100
 			{{end}}
 		    return rt
 		},
-		func () db.Iterator {
+	 Iterator:	func () db.Iterator {
 				return new( gener{{$x}}.Iter{{title .Table}} )
 		},
-		{{.Flag}}, },
+		Flag:		{{.Flag}}, },
 		{{- end }}
 	{{- end }}{{- end }}
 }
