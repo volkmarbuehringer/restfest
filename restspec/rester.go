@@ -8,5 +8,5 @@ import (
 
 //example for service with fixed routes and without mapping
 func main() {
-	service.Listen(routes)
+	service.Listen(routing())
 }

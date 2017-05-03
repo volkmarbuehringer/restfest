@@ -8,5 +8,5 @@ import (
 
 //example for generic service with mapping to structures
 func main() {
-	service.Listen(routes)
+	service.Listen(routing())
 }

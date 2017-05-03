@@ -8,11 +8,11 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/jackc/pgx"
+	"github.com/julienschmidt/httprouter"
 )
 
-func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
+func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var params = generrestspec.LosParams{
 		Length: 100, //default read 100 rows
@@ -70,10 +70,13 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
+func getByIDHandlerLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		service.SenderErr(w, err)
+		return
+	}
 
 	if stmt, err := service.PrepareSQL("losID", func() string {
 		return fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 ",

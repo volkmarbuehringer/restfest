@@ -1,41 +1,34 @@
 package main
 
-import "restfest/service"
+import (
+	"log"
+	"net/http"
+	"os"
+	"time"
 
-var routes = service.Routes{
+	"github.com/julienschmidt/httprouter"
+)
 
-	service.Route{
-		"read id",
-		"GET",
-		"/test/service/{tab}/{id:[0-9]+}",
-		getByIDHandler,
-	},
+const pfad string = "/test/service/:tab/"
 
-	service.Route{
-		"read all",
-		"GET",
-		"/test/service/{tab}",
-		getAllHandler,
-	},
+var logger = log.New(os.Stdout, "[req] ", 0)
 
-	service.Route{
-		"Insert",
-		"POST",
-		"/test/service/{tab}",
-		poster,
-	},
+func httpLogger(fn func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		start := time.Now()
+		logger.Printf("Started %s %s", r.Method, r.URL.Path)
+		fn(w, r, p)
+		logger.Printf("Completed in %v", time.Since(start))
+	}
+}
+func routing() *httprouter.Router {
+	router := httprouter.New()
 
-	service.Route{
-		"Update",
-		"PUT",
-		"/test/service/{tab}/{id:[0-9]+}",
-		putter,
-	},
+	router.GET(pfad+":id", httpLogger(getByIDHandler))
+	router.GET(pfad, httpLogger(getAllHandler))
+	router.POST(pfad, httpLogger(poster))
+	router.DELETE(pfad+":id", httpLogger(deleter))
+	router.PUT(pfad+":id", httpLogger(putter))
 
-	service.Route{
-		"Delete",
-		"DELETE",
-		"/test/service/{tab}/{id:[0-9]+}",
-		deleter,
-	},
+	return router
 }

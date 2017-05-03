@@ -7,12 +7,12 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 )
 
-func getAllHandler(w http.ResponseWriter, r *http.Request) {
+func getAllHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	tab := mux.Vars(r)["tab"]
+	tab := ps.ByName("tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
@@ -62,11 +62,14 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getByIDHandler(w http.ResponseWriter, r *http.Request) {
+func getByIDHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
-	tab := vars["tab"]
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		service.SenderErr(w, err)
+		return
+	}
+	tab := ps.ByName("tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
@@ -74,7 +77,7 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		if inter, err := service.ReadRow(vars["tab"], id, fun1.ParamFun()); err != nil {
+		if inter, err := service.ReadRow(tab, id, fun1.ParamFun()); err != nil {
 			service.SenderErr(w, err)
 			return
 		} else {

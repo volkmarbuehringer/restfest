@@ -6,9 +6,11 @@ import (
 	"restfest/db"
 	"restfest/generrestspec"
 	"restfest/service"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-func posterLos(w http.ResponseWriter, r *http.Request) {
+func posterLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	var los = generrestspec.Los{L_iban: db.String("default")}
 

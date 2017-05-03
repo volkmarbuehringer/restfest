@@ -7,13 +7,17 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 )
 
-func deleter(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
-	tab := mux.Vars(r)["tab"]
+func deleter(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		service.SenderErr(w, err)
+		return
+	}
+	tab := ps.ByName("tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {

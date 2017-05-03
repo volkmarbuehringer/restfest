@@ -6,12 +6,12 @@ import (
 	"restfest/db"
 	"restfest/service"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 )
 
-func poster(w http.ResponseWriter, r *http.Request) {
+func poster(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	tab := mux.Vars(r)["tab"]
+	tab := ps.ByName("tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {

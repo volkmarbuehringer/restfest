@@ -8,12 +8,15 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 )
 
-func putterLos(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+func putterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		service.SenderErr(w, err)
+		return
+	}
 
 	tx, err := db.DBx.Begin()
 	if err != nil {
