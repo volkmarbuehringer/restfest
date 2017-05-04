@@ -12,6 +12,15 @@ import (
 	"gopkg.in/inconshreveable/log15.v2"
 )
 
+const basePro string = "restfest"
+
+type mapperStru struct {
+	Package   string
+	Directory string
+	Table     []*TabFlag
+	Timestamp time.Time
+}
+
 type TabFlag struct {
 	Table     string
 	Flag      int
@@ -26,7 +35,7 @@ type TabFlag struct {
 }
 
 var db *pgx.Conn
-var gendir string = "../" + "gener" + os.Args[1]
+var gendir string = "../" + os.Args[1] + "/gener"
 var tflag bool
 
 func generateMap(t *template.Template, arr []*TabFlag) error {
@@ -38,11 +47,7 @@ func generateMap(t *template.Template, arr []*TabFlag) error {
 
 	defer f1.Close()
 	if len(arr) > 0 {
-		if err := t.ExecuteTemplate(f1, "mapper.tmpl", struct {
-			Package   string
-			Table     []*TabFlag
-			Timestamp time.Time
-		}{os.Args[1], arr, time.Now()}); err != nil {
+		if err := t.ExecuteTemplate(f1, "mapper.tmpl", mapperStru{os.Args[1], basePro + "/" + os.Args[1] + "/gener", arr, time.Now()}); err != nil {
 			log15.Crit("template map", "map", err)
 			return err
 		}
@@ -60,11 +65,7 @@ func generateMapTyp(t *template.Template, arr []*TabFlag) error {
 
 	defer f.Close()
 	if len(arr) > 0 {
-		if err := t.ExecuteTemplate(f, "mappertyp.tmpl", struct {
-			Package   string
-			Table     []*TabFlag
-			Timestamp time.Time
-		}{os.Args[1], arr, time.Now()}); err != nil {
+		if err := t.ExecuteTemplate(f, "mappertyp.tmpl", mapperStru{os.Args[1], basePro + "/" + os.Args[1] + "/gener", arr, time.Now()}); err != nil {
 			log15.Crit("DBFehler", "map", err)
 			return err
 		}

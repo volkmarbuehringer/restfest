@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"restfest/db"
-	"restfest/generteststruct"
+	gener "restfest/restspec/gener"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 type weburlScan struct {
-	generteststruct.IterLos
+	gener.IterLos
 }
 
 func (t *weburlScan) Next() bool {
@@ -26,7 +26,7 @@ func (t *weburlScan) Next() bool {
 }
 
 func copyer() error {
-	params := new(generteststruct.LosParams)
+	params := new(gener.LosParams)
 	rows, err := dbx.Query(params.SQL(db.GenSelectAll1), 40000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)

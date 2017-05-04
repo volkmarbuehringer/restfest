@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	"restfest/generrestspec"
+	gener "restfest/restspec/gener"
 	"restfest/service"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,11 +12,11 @@ import (
 
 func posterLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
-	var los = generrestspec.Los{L_iban: db.String("default")}
+	var los = gener.Los{L_iban: db.String("default")}
 
 	stmt, err := service.PrepareSQL("losInsert", func() string {
 		return fmt.Sprintf(`insert into `+db.DBschema+`.los(%s)values(%s) returning %s`,
-			generrestspec.LosSQL.Inserts, generrestspec.LosSQL.BindsInsert, generrestspec.LosSQL.All)
+			gener.LosSQL.Inserts, gener.LosSQL.BindsInsert, gener.LosSQL.All)
 	})
 	if err != nil {
 		service.SenderErr(w, err)

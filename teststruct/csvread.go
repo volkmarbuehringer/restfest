@@ -4,13 +4,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"restfest/generteststruct"
+	gener "restfest/restspec/gener"
 )
 
 type copyCsv struct {
 	ptr  []string
 	rows *csv.Reader
-	generteststruct.IterLos
+	gener.IterLos
 	anz int
 }
 

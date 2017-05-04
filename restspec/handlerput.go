@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	"restfest/generrestspec"
+	gener "restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
@@ -24,10 +24,10 @@ func putterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	defer tx.Rollback()
-	var los generrestspec.Los
+	var los gener.Los
 
 	rows := tx.QueryRow(fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 for update",
-		generrestspec.LosSQL.All,
+		gener.LosSQL.All,
 	), id)
 
 	err = rows.Scan(los.Scanner()...)
@@ -48,7 +48,7 @@ func putterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Println(x)
 
 	sql := fmt.Sprintf(`update `+db.DBschema+`.los set %s where %s returning %s`,
-		generrestspec.LosSQL.BindsUpdate, generrestspec.LosSQL.PKUpdate, generrestspec.LosSQL.All)
+		gener.LosSQL.BindsUpdate, gener.LosSQL.PKUpdate, gener.LosSQL.All)
 	rows = tx.QueryRow(sql, x...)
 	err = rows.Scan(los.Scanner()...)
 

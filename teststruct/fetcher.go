@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"restfest/db"
-	"restfest/generteststruct"
+	gener "restfest/restspec/gener"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
@@ -19,7 +19,7 @@ func fetcher() error {
 	}
 	w := csv.NewWriter(f1)
 	w.Comma = ';'
-	params := new(generteststruct.LosParams)
+	params := new(gener.LosParams)
 	rows, err := dbx3.Query(params.SQL(db.GenSelectAll1), 30000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
@@ -27,7 +27,7 @@ func fetcher() error {
 	}
 	defer rows.Close()
 
-	var iter generteststruct.IterLos
+	var iter gener.IterLos
 
 	iter.NewCopy(rows)
 

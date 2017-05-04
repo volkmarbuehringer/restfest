@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	"restfest/generrestspec"
+	gener "restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
@@ -14,7 +14,7 @@ import (
 
 func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
-	var params = generrestspec.LosParams{
+	var params = gener.LosParams{
 		Length: 100, //default read 100 rows
 	}
 
@@ -27,7 +27,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 
 	if stmt, err = service.PrepareSQL("losAll", func() string {
 		return fmt.Sprintf("select %s from "+db.DBschema+".los where l_iban is null limit $1 offset $2",
-			generrestspec.LosSQL.All,
+			gener.LosSQL.All,
 		)
 	}); err != nil {
 		service.SenderErr(w, err)
@@ -40,7 +40,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	}
 	defer rows.Close()
 
-	var iter generrestspec.IterLos
+	var iter gener.IterLos
 	iter.NewCopy(rows) //streaming from database
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -80,7 +80,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 	if stmt, err := service.PrepareSQL("losID", func() string {
 		return fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 ",
-			generrestspec.LosSQL.All,
+			gener.LosSQL.All,
 		)
 	}); err != nil {
 		service.SenderErr(w, err)
@@ -89,7 +89,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 		row := db.DBx.QueryRow(stmt.Name, id)
 
-		los := new(generrestspec.Los)
+		los := new(gener.Los)
 
 		err = row.Scan(los.Scanner()...)
 		if err != nil {

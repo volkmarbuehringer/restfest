@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"restfest/db"
-	"restfest/generteststruct"
+	gener "restfest/restspec/gener"
 	"time"
 
 	"github.com/jackc/pgx"
@@ -21,14 +21,14 @@ var dbx3 *pgx.Conn
 var dbx4 *pgx.Conn
 
 func mapper() error {
-	params := new(generteststruct.LosParams)
+	params := new(gener.LosParams)
 	rows, err := dbx4.Query(params.SQL(db.GenSelectAll1), 5000000, 0)
 	if err != nil {
 		log15.Crit("DBFehler", "get", err)
 		return err
 	}
 	defer rows.Close()
-	var iter generteststruct.MapIterLos
+	var iter gener.MapIterLos
 	anz := iter.NewCopy(rows) //streaming from database
 
 	fmt.Println("len of map", anz)

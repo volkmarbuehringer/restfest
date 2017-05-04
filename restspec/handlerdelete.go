@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"restfest/db"
-	"restfest/generrestspec"
+	gener "restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
@@ -17,9 +17,9 @@ func deleterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		service.SenderErr(w, err)
 		return
 	}
-	var los = generrestspec.Los{}
+	var los = gener.Los{}
 	stmt, err := service.PrepareSQL("losDEL", func() string {
-		return "delete from los where id =$1 returning " + generrestspec.LosSQL.All
+		return "delete from los where id =$1 returning " + gener.LosSQL.All
 	})
 
 	if err != nil {

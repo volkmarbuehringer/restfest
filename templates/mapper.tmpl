@@ -5,12 +5,14 @@
 
 package main
 
+{{$directory := .Directory -}}
 
 import (
-"restfest/gener{{.Package}}"
+gener "{{.Directory}}"
 "restfest/db"
 
 )
+
 
 
 func init(){
@@ -21,20 +23,20 @@ db.FunMap=map[string]db.TFunMap{
 	{{if .Worker}}
 	{{$y := printf "%q" .Table -}}{{$y}}:{
 		EmptyFun:		func () db.PgxGener{
-		    return new(gener{{$x}}.{{title .Table}})
+		    return new(gener.{{title .Table}})
 		},
 		EmptyInsFun:  func () db.PgxGenerIns{
-		    return new(gener{{$x}}.{{title .Table}})
+		    return new(gener.{{title .Table}})
 		},
 				ParamFun: func () db.PgxGenerIns{
-		 rt := new(gener{{$x}}.{{title .Table}}Params)
+		 rt := new(gener.{{title .Table}}Params)
 			{{if .Flagger}}
 				rt.Length=100
 			{{end}}
 		    return rt
 		},
 	 Iterator:	func () db.Iterator {
-				return new( gener{{$x}}.Iter{{title .Table}} )
+				return new(gener.Iter{{title .Table}} )
 		},
 		Flag:		{{.Flag}}, },
 		{{- end }}
