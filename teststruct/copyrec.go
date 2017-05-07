@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/teststruct/gener"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )

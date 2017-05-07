@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func putterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+func putterLos(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return

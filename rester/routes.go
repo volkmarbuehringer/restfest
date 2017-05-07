@@ -6,29 +6,28 @@ import (
 	"os"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-const pfad string = "/test/service/:tab/"
+const pfad string = "/test/service/:tab"
 
 var logger = log.New(os.Stdout, "[req] ", 0)
 
-func httpLogger(fn func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func httpLogger(fn func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		logger.Printf("Started %s %s", r.Method, r.URL.Path)
-		fn(w, r, p)
-		logger.Printf("Completed in %v", time.Since(start))
+		fn(w, r)
+		logger.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
 	}
 }
-func routing() *httprouter.Router {
-	router := httprouter.New()
+func routing() *vestigo.Router {
+	router := vestigo.NewRouter()
 
-	router.GET(pfad+":id", httpLogger(getByIDHandler))
-	router.GET(pfad, httpLogger(getAllHandler))
-	router.POST(pfad, httpLogger(poster))
-	router.DELETE(pfad+":id", httpLogger(deleter))
-	router.PUT(pfad+":id", httpLogger(putter))
+	router.Get(pfad, httpLogger(getAllHandler))
+	router.Get(pfad+"/:id", httpLogger(getByIDHandler))
+	router.Post(pfad, httpLogger(poster))
+	router.Delete(pfad+"/:id", httpLogger(deleter))
+	router.Put(pfad+"/:id", httpLogger(putter))
 
 	return router
 }

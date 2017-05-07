@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
+	"github.com/husobee/vestigo"
 	"github.com/jackc/pgx"
-	"github.com/julienschmidt/httprouter"
 )
 
-func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 	var params = gener.LosParams{
 		Length: 100, //default read 100 rows
@@ -70,9 +70,9 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 
 }
 
-func getByIDHandlerLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return

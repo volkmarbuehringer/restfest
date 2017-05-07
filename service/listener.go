@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func Listen(routes *httprouter.Router) {
+func Listen(routes *vestigo.Router) {
 
 	srv := &http.Server{
 		ReadTimeout:  200 * time.Second,

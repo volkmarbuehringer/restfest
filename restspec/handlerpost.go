@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/restspec/gener"
 	"restfest/service"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func posterLos(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func posterLos(w http.ResponseWriter, r *http.Request) {
 
 	var los = gener.Los{L_iban: db.String("default")}
 

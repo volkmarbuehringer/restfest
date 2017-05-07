@@ -7,16 +7,16 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func putter(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	id, err := strconv.Atoi(ps.ByName("id"))
+func putter(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
-	tab := ps.ByName("tab")
+	tab := vestigo.Param(r, "tab")
 	if sqlFun, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		service.SenderErr(w, err)

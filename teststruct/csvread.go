@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	gener "restfest/restspec/gener"
+	"restfest/teststruct/gener"
 )
 
 type copyCsv struct {

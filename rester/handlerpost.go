@@ -6,12 +6,12 @@ import (
 	"restfest/db"
 	"restfest/service"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func poster(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func poster(w http.ResponseWriter, r *http.Request) {
 
-	tab := ps.ByName("tab")
+	tab := vestigo.Param(r, "tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {

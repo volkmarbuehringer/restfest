@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/teststruct/gener"
 	"time"
 
 	"github.com/jackc/pgx"

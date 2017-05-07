@@ -3,16 +3,16 @@ package main
 import (
 	"net/http"
 	"restfest/db"
-	gener "restfest/restspec/gener"
+	"restfest/restspec/gener"
 	"restfest/service"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func deleterLos(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func deleterLos(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return

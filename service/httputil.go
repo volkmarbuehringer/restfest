@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"strconv"
-	"strings"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
@@ -51,6 +50,7 @@ func FormReader(r *http.Request, name string, defaulter int) int {
 	return defaulter
 }
 
+/*
 func FormReaderS(r *http.Request, name string, defaulter string) string {
 	zu := r.FormValue(name)
 	zu = strings.Replace(zu, "\"", "", 2)
@@ -59,6 +59,7 @@ func FormReaderS(r *http.Request, name string, defaulter string) string {
 	}
 	return defaulter
 }
+*/
 
 func Leser1(w http.ResponseWriter, r *http.Request, todo db.PgxGenerIns) error {
 

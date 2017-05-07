@@ -7,17 +7,17 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func deleter(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func deleter(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
-	tab := ps.ByName("tab")
+	tab := vestigo.Param(r, "tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {

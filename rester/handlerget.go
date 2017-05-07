@@ -7,12 +7,12 @@ import (
 	"restfest/service"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/husobee/vestigo"
 )
 
-func getAllHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func getAllHandler(w http.ResponseWriter, r *http.Request) {
 
-	tab := ps.ByName("tab")
+	tab := vestigo.Param(r, "tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
@@ -28,7 +28,7 @@ func getAllHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 			return
 		}
 
-		rows, err := service.ReadRows(tab, params)
+		rows, err := ReadRows(tab, params)
 		if err != nil {
 			service.SenderErr(w, err)
 			return
@@ -62,14 +62,14 @@ func getAllHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 }
 
-func getByIDHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 
-	id, err := strconv.Atoi(ps.ByName("id"))
+	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
-	tab := ps.ByName("tab")
+	tab := vestigo.Param(r, "tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
@@ -77,7 +77,7 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 			return
 		}
 	} else {
-		if inter, err := service.ReadRow(tab, id, fun1.ParamFun()); err != nil {
+		if inter, err := ReadRow(tab, id, fun1.ParamFun()); err != nil {
 			service.SenderErr(w, err)
 			return
 		} else {
