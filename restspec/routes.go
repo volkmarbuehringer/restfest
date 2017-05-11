@@ -1,26 +1,13 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"net/http/pprof"
-	"os"
-	"time"
 
 	"github.com/husobee/vestigo"
 )
 
 const pfad string = "/test/service/los"
-
-var logger = log.New(os.Stdout, "[req] ", 0)
-
-func httpLogger(fn func(w http.ResponseWriter, r *http.Request)) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		fn(w, r)
-		logger.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
-	}
-}
 
 // Index shows the profile index.
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -48,11 +35,12 @@ func routing() *vestigo.Router {
 	vestigo.AllowTrace = true
 
 	router := vestigo.NewRouter()
-	router.Get(pfad+"/:id", httpLogger(getByIDHandlerLos))
-	router.Get(pfad, httpLogger(getAllHandlerLos))
-	router.Post(pfad, httpLogger(posterLos))
-	router.Delete(pfad+"/:id", httpLogger(deleterLos))
-	router.Put(pfad+"/:id", httpLogger(putterLos))
+
+	router.Get(pfad+"/:id", getByIDHandlerLos)
+	router.Get(pfad, getAllHandlerLos)
+	router.Post(pfad, posterLos)
+	router.Delete(pfad+"/:id", deleterLos)
+	router.Put(pfad+"/:id", putterLos)
 
 	router.Get("/debug/pprof/", Index)
 	router.Get("/debug/pprof/:pprof", Profile)
