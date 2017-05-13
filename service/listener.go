@@ -18,16 +18,11 @@ func AddContext(next http.Handler) http.Handler {
 		//log.Println(r.Method, "-", r.RequestURI)
 		//Add data to context
 		start := time.Now()
-		ctx, cancel := context.WithCancel(r.Context())
+		ctx, cancel := context.WithTimeout(r.Context(), 100*time.Millisecond)
 		defer cancel() // releases resources if slowOperation completes before timeout elapses
 		//	ctx := context.WithValue(r.Context(), "Username", "cookie.Value")
 
-		go func() {
-			time.Sleep(50 * time.Millisecond)
-			cancel()
-		}()
 		next.ServeHTTP(w, r.WithContext(ctx))
-
 		logger.Printf("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))
 	})
 }

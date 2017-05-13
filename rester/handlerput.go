@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"restfest/db"
 	"restfest/service"
@@ -41,7 +43,7 @@ func putter(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = service.Leser1(w, r, inter)
+		err = json.NewDecoder(io.LimitReader(r.Body, 1048576)).Decode(inter)
 		if err != nil {
 			service.SenderErr(w, err)
 			return

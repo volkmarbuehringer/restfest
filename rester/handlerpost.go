@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"restfest/db"
 	"restfest/service"
@@ -25,20 +27,20 @@ func poster(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var json db.PgxGenerIns
+		var data db.PgxGenerIns
 
 		if fun1.Flag == 3 {
-			json = fun1.ParamFun()
+			data = fun1.ParamFun()
 		} else {
-			json = fun1.EmptyInsFun()
+			data = fun1.EmptyInsFun()
 		}
-		err = service.Leser1(w, r, json)
+		err = json.NewDecoder(io.LimitReader(r.Body, 1048576)).Decode(data)
 
 		if err != nil {
 			service.SenderErr(w, err)
 			return
 		}
-		input := json.ROWInsert()
+		input := data.ROWInsert()
 
 		rows := db.DBx.QueryRow(stmt.Name, input...)
 

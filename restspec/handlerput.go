@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"restfest/db"
 	"restfest/restspec/gener"
@@ -36,16 +38,14 @@ func putterLos(w http.ResponseWriter, r *http.Request) {
 		service.SenderErr(w, err)
 		return
 	}
+	err = json.NewDecoder(io.LimitReader(r.Body, 1048)).Decode(&los)
 
-	err = service.Leser1(w, r, &los)
 	if err != nil {
 		service.SenderErr(w, err)
 		return
 	}
 
 	x := append(los.ROWInsert(), id)
-
-	fmt.Println(x)
 
 	sql := fmt.Sprintf(`update `+db.DBschema+`.los set %s where %s returning %s`,
 		gener.LosSQL.BindsUpdate, gener.LosSQL.PKUpdate, gener.LosSQL.All)

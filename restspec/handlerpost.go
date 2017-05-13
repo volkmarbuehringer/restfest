@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"restfest/db"
 	"restfest/restspec/gener"
@@ -20,8 +22,7 @@ func posterLos(w http.ResponseWriter, r *http.Request) {
 		service.SenderErr(w, err)
 		return
 	}
-
-	err = service.Leser1(w, r, &los)
+	err = json.NewDecoder(io.LimitReader(r.Body, 1048)).Decode(&los)
 
 	if err != nil {
 		service.SenderErr(w, err)

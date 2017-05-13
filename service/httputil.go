@@ -4,11 +4,7 @@ import (
 	"encoding/json"
 	"restfest/db"
 
-	"io"
-	"io/ioutil"
 	"net/http"
-
-	"strconv"
 
 	log15 "gopkg.in/inconshreveable/log15.v2"
 )
@@ -39,6 +35,7 @@ func SenderErr(w http.ResponseWriter, err error) {
 
 }
 
+/*
 func FormReader(r *http.Request, name string, defaulter int) int {
 	zu := r.FormValue(name)
 	if len(zu) > 0 {
@@ -49,29 +46,7 @@ func FormReader(r *http.Request, name string, defaulter int) int {
 	}
 	return defaulter
 }
-
-/*
-func FormReaderS(r *http.Request, name string, defaulter string) string {
-	zu := r.FormValue(name)
-	zu = strings.Replace(zu, "\"", "", 2)
-	if len(zu) > 0 {
-		return zu
-	}
-	return defaulter
-}
 */
-
-func Leser1(w http.ResponseWriter, r *http.Request, todo db.PgxGenerIns) error {
-
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil {
-		return err
-	}
-	if err = r.Body.Close(); err != nil {
-		return err
-	}
-	return json.Unmarshal(body, todo)
-}
 
 func Sender(w http.ResponseWriter, todos interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
