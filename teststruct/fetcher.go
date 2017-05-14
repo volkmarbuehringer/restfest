@@ -7,14 +7,14 @@ import (
 	"restfest/db"
 	"restfest/teststruct/gener"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
+	"github.com/sirupsen/logrus"
 )
 
 func fetcher() error {
 
 	f1, err := os.Create("flat.csv")
 	if err != nil {
-		log15.Crit("DBFehler", "create", err)
+		logrus.Errorf("DBFehler %v", err)
 		return err
 	}
 	w := csv.NewWriter(f1)
@@ -22,7 +22,7 @@ func fetcher() error {
 	params := new(gener.LosParams)
 	rows, err := dbx3.Query(params.SQL(db.GenSelectAll1), 30000000, 0)
 	if err != nil {
-		log15.Crit("DBFehler", "get", err)
+		logrus.Errorf("DBFehler %v", err)
 		return err
 	}
 	defer rows.Close()

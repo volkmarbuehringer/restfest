@@ -35,19 +35,6 @@ func SenderErr(w http.ResponseWriter, r *http.Request, err error) {
 
 }
 
-/*
-func FormReader(r *http.Request, name string, defaulter int) int {
-	zu := r.FormValue(name)
-	if len(zu) > 0 {
-		la, err := strconv.Atoi(zu)
-		if err == nil {
-			return la
-		}
-	}
-	return defaulter
-}
-*/
-
 func Sender(w http.ResponseWriter, todos interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

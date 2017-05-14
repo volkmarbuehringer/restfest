@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	flake "github.com/davidnarayan/go-flake"
 	"github.com/husobee/vestigo"
 	"github.com/sirupsen/logrus"
 )
@@ -39,16 +40,6 @@ func NewLogger(requestID string, appName string, userID int64) *IRequestScopedLo
 	return &IRequestScopedLogger{e, appName, requestID, userID}
 }
 
-/*
-func (l *IRequestScopedLogger) Printf(format string, args ...interface{}) {
-	l.WithFields(logrus.Fields{
-		"datetime":   time.Now(),
-		"request_id": l.requestID,
-		"app_name":   l.appName,
-		"user_id":    l.userID,
-	}).Infof(format, args...)
-}
-*/
 func NewContext(ctx context.Context, log *IRequestScopedLogger) context.Context {
 	return context.WithValue(ctx, "logger", log)
 }
@@ -66,11 +57,15 @@ func AddContext(next http.Handler) http.Handler {
 		//log.Println(r.Method, "-", r.RequestURI)
 		//Add data to context
 		start := time.Now()
+		f, err := flake.New()
 
+		if err != nil {
+			log.Fatal(err)
+		}
 		reqlog := NewLogger(
-			fmt.Sprintf("%x", 4711), // request id
-			"web",    // application name
-			int64(0), // current user id
+			fmt.Sprintf("%x", f), // request id
+			"rest",               // application name
+			int64(0),             // current user id
 		)
 
 		lctx := NewContext(r.Context(), reqlog)

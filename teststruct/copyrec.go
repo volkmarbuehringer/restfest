@@ -5,7 +5,7 @@ import (
 	"restfest/db"
 	"restfest/teststruct/gener"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
+	"github.com/sirupsen/logrus"
 )
 
 type weburlScan struct {
@@ -29,7 +29,7 @@ func copyer() error {
 	params := new(gener.LosParams)
 	rows, err := dbx.Query(params.SQL(db.GenSelectAll1), 40000000, 0)
 	if err != nil {
-		log15.Crit("DBFehler", "get", err)
+		logrus.Fatalf("DBFehler %s", err)
 		return err
 	}
 	defer rows.Close()

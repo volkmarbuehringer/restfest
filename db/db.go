@@ -21,7 +21,7 @@ func InitDB() {
 		log.Fatal("DB", "parse", err)
 		os.Exit(1)
 	}
-	connConfig.LogLevel = pgx.LogLevelWarn
+	connConfig.LogLevel = pgx.LogLevelDebug
 	logger := logrusadapter.NewLogger(log)
 	connConfig.Logger = logger
 
