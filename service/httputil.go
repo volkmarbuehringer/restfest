@@ -5,8 +5,6 @@ import (
 	"restfest/db"
 
 	"net/http"
-
-	log15 "gopkg.in/inconshreveable/log15.v2"
 )
 
 func PrepParam(params db.PgxGenerIns, w http.ResponseWriter, r *http.Request) error {
@@ -22,11 +20,13 @@ func PrepParam(params db.PgxGenerIns, w http.ResponseWriter, r *http.Request) er
 
 }
 
-func SenderErr(w http.ResponseWriter, err error) {
+func SenderErr(w http.ResponseWriter, r *http.Request, err error) {
 	type JSONErr struct {
 		Error string
 	}
-	log15.Error("DBFehler", "getall", err)
+	l := MustFromContext(r.Context())
+
+	l.Error(err)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusNotFound)
 	if err1 := json.NewEncoder(w).Encode(JSONErr{err.Error()}); err1 != nil {

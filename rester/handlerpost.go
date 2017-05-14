@@ -17,13 +17,13 @@ func poster(w http.ResponseWriter, r *http.Request) {
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 	} else {
 		stmt, err := service.Prepare(tab, service.GetSqlStmt(-1, fun1.Flag), fun1.EmptyFun())
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
@@ -37,7 +37,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		err = json.NewDecoder(io.LimitReader(r.Body, 1048576)).Decode(data)
 
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 		input := data.ROWInsert()
@@ -49,7 +49,7 @@ func poster(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 

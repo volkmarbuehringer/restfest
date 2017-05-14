@@ -20,7 +20,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 	err := service.PrepParam(&params, w, r)
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	var stmt *pgx.PreparedStatement
@@ -30,12 +30,12 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 			gener.LosSQL.All,
 		)
 	}); err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	rows, err := db.DBx.Query(stmt.Name, params.ROWInsert()...)
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	defer rows.Close()
@@ -55,7 +55,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 			}
 			err = iter.Los.Writer(w, trenner)
 			if err != nil {
-				service.SenderErr(w, err)
+				service.SenderErr(w, r, err)
 				return
 			}
 
@@ -63,7 +63,7 @@ func getAllHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 	}
 	if iter.Errc != nil {
-		service.SenderErr(w, iter.Errc)
+		service.SenderErr(w, r, iter.Errc)
 		return
 	}
 	w.Write([]byte("]"))
@@ -74,7 +74,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
@@ -83,7 +83,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 			gener.LosSQL.All,
 		)
 	}); err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	} else {
 
@@ -93,7 +93,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 
 		err = row.Scan(los.Scanner()...)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		} else {
 			los.L_iban = db.String("neuer wert")

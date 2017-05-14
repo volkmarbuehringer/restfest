@@ -19,13 +19,13 @@ func posterLos(w http.ResponseWriter, r *http.Request) {
 			gener.LosSQL.Inserts, gener.LosSQL.BindsInsert, gener.LosSQL.All)
 	})
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	err = json.NewDecoder(io.LimitReader(r.Body, 1048)).Decode(&los)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
@@ -34,7 +34,7 @@ func posterLos(w http.ResponseWriter, r *http.Request) {
 	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 

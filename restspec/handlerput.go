@@ -16,13 +16,13 @@ import (
 func putterLos(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
 	tx, err := db.DBx.Begin()
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	defer tx.Rollback()
@@ -35,13 +35,13 @@ func putterLos(w http.ResponseWriter, r *http.Request) {
 	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	err = json.NewDecoder(io.LimitReader(r.Body, 1048)).Decode(&los)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
@@ -53,13 +53,13 @@ func putterLos(w http.ResponseWriter, r *http.Request) {
 	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 

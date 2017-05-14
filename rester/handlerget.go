@@ -16,7 +16,7 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
@@ -24,13 +24,13 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 		params := fun1.ParamFun()
 		err := service.PrepParam(params, w, r)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
 		rows, err := ReadRows(tab, params)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
@@ -47,13 +47,13 @@ func getAllHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			err = iter.Value().Writer(w, trenner)
 			if err != nil {
-				service.SenderErr(w, err)
+				service.SenderErr(w, r, err)
 				return
 			}
 
 		}
 		if err = iter.Err(); err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
@@ -66,19 +66,19 @@ func getByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	tab := vestigo.Param(r, "tab")
 	if fun1, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 	} else {
 		if inter, err := ReadRow(tab, id, fun1.ParamFun()); err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		} else {
 			service.Sender(w, inter)

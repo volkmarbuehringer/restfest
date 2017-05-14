@@ -15,18 +15,18 @@ import (
 func putter(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	tab := vestigo.Param(r, "tab")
 	if sqlFun, ok := db.FunMap[tab]; !ok {
 		err := fmt.Errorf("Tabelle nicht gefunden: %s", tab)
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	} else {
 		tx, err := db.DBx.Begin()
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 		defer tx.Rollback()
@@ -39,13 +39,13 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
 		err = json.NewDecoder(io.LimitReader(r.Body, 1048576)).Decode(inter)
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
@@ -57,13 +57,13 @@ func putter(w http.ResponseWriter, r *http.Request) {
 		err = rows.Scan(inter.Scanner()...)
 
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 
 		err = tx.Commit()
 		if err != nil {
-			service.SenderErr(w, err)
+			service.SenderErr(w, r, err)
 			return
 		}
 

@@ -14,7 +14,7 @@ func deleterLos(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(vestigo.Param(r, "id"))
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 	var los = gener.Los{}
@@ -23,7 +23,7 @@ func deleterLos(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
@@ -32,7 +32,7 @@ func deleterLos(w http.ResponseWriter, r *http.Request) {
 	err = rows.Scan(los.Scanner()...)
 
 	if err != nil {
-		service.SenderErr(w, err)
+		service.SenderErr(w, r, err)
 		return
 	}
 
