@@ -8,8 +8,8 @@ import (
 	"restfest/teststruct/gener"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/jackc/pgx"
-	"github.com/sirupsen/logrus"
 )
 
 //go:generate go run ../gen.go teststruct 1

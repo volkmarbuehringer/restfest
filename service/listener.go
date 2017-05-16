@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	flake "github.com/davidnarayan/go-flake"
 	"github.com/husobee/vestigo"
-	"github.com/sirupsen/logrus"
 )
 
 /*

@@ -79,7 +79,7 @@ func getByIDHandlerLos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if stmt, err := service.PrepareSQL("losID", func() string {
-		return fmt.Sprintf("select %s from "+db.DBschema+".los where id = $1 ",
+		return fmt.Sprintf("select %s from "+db.DBschema+".los where l_id = $1 ",
 			gener.LosSQL.All,
 		)
 	}); err != nil {

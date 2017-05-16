@@ -7,7 +7,7 @@ import (
 	"restfest/db"
 	"restfest/teststruct/gener"
 
-	"github.com/sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 func fetcher() error {
