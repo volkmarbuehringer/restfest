@@ -11,7 +11,7 @@ import
 	"os"
 	"time"
 
-	log15 "gopkg.in/inconshreveable/log15.v2"
+	"github.com/Sirupsen/logrus"
 
 	"github.com/jackc/pgx"
 	httpstat "github.com/tcnksm/go-httpstat"
@@ -30,7 +30,7 @@ func main() {
 		DisableKeepAlives:  true,
 	}
 	client := &http.Client{Transport: tr,
-		Timeout: 10 * time.Second}
+		Timeout: 1 * time.Second}
 	c := make(chan int)
 	for i := 0; i < 20; i++ {
 		go getter(client, c)
@@ -109,14 +109,12 @@ func timer(name string) func() {
 func init() {
 	connConfig, err := pgx.ParseEnvLibpq()
 	if err != nil {
-		log15.Crit("DB", "parse", err)
-		os.Exit(1)
+		logrus.Fatal("DB parse", err)
 	}
 	connConfig.LogLevel = pgx.LogLevelWarn
 
 	if dbx, err = pgx.Connect(connConfig); err != nil {
-		log15.Crit("DB", "connect", err)
-		os.Exit(1)
+		logrus.Fatal("DB connect", err)
 	}
 
 }
