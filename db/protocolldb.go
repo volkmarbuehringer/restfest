@@ -79,14 +79,14 @@ func (fields *InterPgx) DecodeBinary(ci *pgtype.ConnInfo, src []byte) error {
 		if len(src[rp:]) < 8 {
 			return fmt.Errorf("Record incomplete %v", src)
 		}
-		fieldOid := pgtype.Oid(binary.BigEndian.Uint32(src[rp:]))
+		fieldOid := pgtype.OID(binary.BigEndian.Uint32(src[rp:]))
 		rp += 4
 
 		fieldLen := int(int32(binary.BigEndian.Uint32(src[rp:])))
 		rp += 4
 
 		var binaryDecoder pgtype.BinaryDecoder
-		if dt, ok := ci.DataTypeForOid(fieldOid); ok {
+		if dt, ok := ci.DataTypeForOID(fieldOid); ok {
 			if binaryDecoder, ok = dt.Value.(pgtype.BinaryDecoder); !ok {
 				return fmt.Errorf("unknown oid while decoding record: %v", fieldOid)
 			}

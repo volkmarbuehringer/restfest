@@ -24,16 +24,16 @@ db.ConnectorFunMap=map[string]db.MapperFun2{
 	 {{- range .Table }}{{if .TFlag  }}
 	  	 {{$a := (title .Table) | printf "%s.%s%s" $directory "Ar" -}}
    {{$z := (title .Table) | printf "%s.%s" $directory }}
-	 {{printf "%q" .Table -}}: func (con *pgx.Conn, oida pgtype.Oid,oid pgtype.Oid) error {
+	 {{printf "%q" .Table -}}: func (con *pgx.Conn, oida pgtype.OID,oid pgtype.OID) error {
 	 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 	 		Value: &{{$a}}{},
 	 		Name:  {{printf "%q" $a}},
-	 		Oid:  oida,
+	 		OID:  oida,
 	 	})
 	 	con.ConnInfo.RegisterDataType(pgtype.DataType{
 	 		Value: &{{$z}}{},
 	 		Name:  {{printf "%q" $z}},
-	 		Oid:  oid,
+	 		OID:  oid,
 	 	})
 	 	return nil
 	 } ,

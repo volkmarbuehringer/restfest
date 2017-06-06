@@ -40,7 +40,10 @@ func NewLogger(requestID string, appName string, userID int64) *IRequestScopedLo
 }
 
 func NewContext(ctx context.Context, log *IRequestScopedLogger) context.Context {
-	return context.WithValue(ctx, "logger", log)
+	ctx1 := context.WithValue(ctx, "logger", log)
+	ctxn, cancel := context.WithCancel(ctx1)
+	time.AfterFunc(1*time.Second, cancel)
+	return ctxn
 }
 
 func MustFromContext(ctx context.Context) *IRequestScopedLogger {
@@ -63,9 +66,17 @@ func AddContext(next http.Handler) http.Handler {
 		)
 
 		lctx := NewContext(r.Context(), reqlog)
-		r = r.WithContext(lctx)
-
 		next.ServeHTTP(w, r.WithContext(lctx))
+		/*
+			go func() { next.ServeHTTP(w, r.WithContext(lctx)) }()
+			select {
+
+			case <-lctx.Done():
+				fmt.Println("hier tiemeout")
+			default:
+				fmt.Println("ok")
+			}
+		*/
 		//next.ServeHTTP(w, r)
 
 		reqlog.Infof("Completed %s %s in %v", r.Method, r.URL.Path, time.Since(start))

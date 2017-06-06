@@ -59,8 +59,8 @@ var SQLPattern = []string{"select %s from " + DBschema + ".%s where %s=$1",
 }
 
 type oidmerker struct {
-	oida pgtype.Oid
-	oid  pgtype.Oid
+	oida pgtype.OID
+	oid  pgtype.OID
 }
 
 var dbschema = os.Getenv("PGSCHEMA")
@@ -85,7 +85,7 @@ func LoadTypMap(con *pgx.Conn) error {
 
 		defer rower.Close()
 		for rower.Next() {
-			var oida, oid pgtype.Oid
+			var oida, oid pgtype.OID
 			var name string
 			err := rower.Scan(&oid, &name, &oida)
 			if err != nil {
@@ -121,7 +121,7 @@ func SetTyp(con *pgx.Conn) error {
 	return nil
 }
 
-type MapperFun2 func(*pgx.Conn, pgtype.Oid, pgtype.Oid) error
+type MapperFun2 func(*pgx.Conn, pgtype.OID, pgtype.OID) error
 
 type TFunMap struct {
 	EmptyFun    func() PgxGener
