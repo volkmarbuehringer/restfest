@@ -12,7 +12,7 @@ func dbSequenzer(tab string) string {
 	return ""
 }
 
-const transform_sql string = `
+const transformSQL string = `
 case
 when data_type ='ARRAY' then
 case when ltrim(udt_name,'_') not in
@@ -60,7 +60,7 @@ else  upper(substr(coalesce( case when data_type in ('USER-DEFINED','ARRAY') the
 substr(coalesce( case when data_type in ('USER-DEFINED','ARRAY') then ltrim(udt_name,'_') end,data_type),2)
  end `
 
-var sqlfunctionparams string = `sELECT parameter_name,'*'||` + transform_sql + ` as coltrans
+var sqlfunctionparams string = `sELECT parameter_name,'*'||` + transformSQL + ` as coltrans
 FROM  information_schema.parameters where parameters.specific_name =$1
 and parameters.specific_schema='` + dbschema + `'
 and parameter_mode = 'IN' and parameter_name is not null
@@ -130,6 +130,7 @@ sELECT 3,routines.type_udt_name,routine_name,routine_name, specific_schema as ta
 	) x
 	inner join ` + dbschema + `.testselector ts on project = '` + os.Args[1] + `' and x.table_name like coalesce(ts.table_name,'%')
 	where x.table_name not like 'hst%' and x.table_name not like '%hst'
+	and x.table_name not like 'pg_stat%'
 	order by x.table_name
 	limit 400
 `
@@ -137,7 +138,7 @@ sELECT 3,routines.type_udt_name,routine_name,routine_name, specific_schema as ta
 var sqlallcols string = `
 select
 x.column_name,
-case when x.is_nullable = 'YES' and x.data_type not in ('USER-DEFINED','ARRAY')then '*' else '' end||` + transform_sql + `as coltrans,
+case when x.is_nullable = 'YES' and x.data_type not in ('USER-DEFINED','ARRAY')then '*' else '' end||` + transformSQL + `as coltrans,
 x.column_name
 from
 (

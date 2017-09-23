@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx"
-	"gopkg.in/inconshreveable/log15.v2"
+	log "github.com/sirupsen/logrus"
 )
 
 const basePro string = "restfest"
@@ -41,14 +41,14 @@ var tflag bool
 func generateMap(t *template.Template, arr []*TabFlag) error {
 	f1, err := os.Create("mapper.tmp")
 	if err != nil {
-		log15.Crit("map", "create", err)
+		log.Fatal("map", "create", err)
 		return err
 	}
 
 	defer f1.Close()
 	if len(arr) > 0 {
 		if err := t.ExecuteTemplate(f1, "mapper.tmpl", mapperStru{os.Args[1], basePro + "/" + os.Args[1] + "/gener", arr, time.Now()}); err != nil {
-			log15.Crit("template map", "map", err)
+			log.Fatal("template map", "map", err)
 			return err
 		}
 
@@ -59,14 +59,14 @@ func generateMap(t *template.Template, arr []*TabFlag) error {
 func generateMapTyp(t *template.Template, arr []*TabFlag) error {
 	f, err := os.Create("mappertyp.tmp")
 	if err != nil {
-		log15.Crit("DBFehler", "create", err)
+		log.Fatal("DBFehler", "create", err)
 		return err
 	}
 
 	defer f.Close()
 	if len(arr) > 0 {
 		if err := t.ExecuteTemplate(f, "mappertyp.tmpl", mapperStru{os.Args[1], basePro + "/" + os.Args[1] + "/gener", arr, time.Now()}); err != nil {
-			log15.Crit("DBFehler", "map", err)
+			log.Fatal("DBFehler", "map", err)
 			return err
 		}
 
@@ -94,7 +94,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 		row.Flagger = true
 	}
 	if rows, err := db.Query(sqlallcols, row.Table); err != nil {
-		log15.Crit("DBFehler", "query", err)
+		log.Fatal("DBFehler", "query", err)
 		return err
 	} else {
 		defer rows.Close()
@@ -112,7 +112,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 			prof := Prof{}
 			if err := rows.Scan(&prof.Column, &prof.ColumnTrans, &prof.ColumnT); err != nil {
-				log15.Crit("DBFehler", "scan1", err)
+				log.Fatal("DBFehler", "scan1", err)
 				return err
 			}
 			profA = append(profA, prof)
@@ -158,7 +158,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 		{
 
 			if rows, err := db.Query(sqlfunctionparams, row.Specific); err != nil {
-				log15.Crit("DBFehler", "query", err)
+				log.Fatal("DBFehler", "query", err)
 				return err
 			} else {
 				defer rows.Close()
@@ -167,7 +167,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 					prof := Prof{}
 					if err := rows.Scan(&prof.Column, &prof.ColumnTrans); err != nil {
-						log15.Crit("DBFehler", "scann2", err)
+						log.Fatal("DBFehler", "scann2", err)
 						return err
 					}
 					profB = append(profB, prof)
@@ -185,7 +185,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 
 			f, err := os.Create(gendir + "/" + row.Specific + ".go")
 			if err != nil {
-				log15.Crit("DBFehler", "gener", err)
+				log.Fatal("DBFehler", "gener", err)
 				return err
 			}
 
@@ -232,7 +232,7 @@ func generateStru(t *template.Template, row *TabFlag) error {
 			})
 
 			if err != nil {
-				log15.Crit("DBFehler", "temp", err)
+				log.Fatal("DBFehler", "temp", err)
 				return err
 			}
 			row.Worker = true
@@ -248,7 +248,7 @@ func dbGen() (arr []*TabFlag, err error) {
 
 	rows, err := db.Query(sqlalltabs)
 	if err != nil {
-		log15.Crit("DBFehler", "querymain", err)
+		log.Fatal("DBFehler", "querymain", err)
 		return nil, err
 	}
 
@@ -257,7 +257,7 @@ func dbGen() (arr []*TabFlag, err error) {
 	for rows.Next() {
 		var row TabFlag
 		if err = rows.Scan(&row.Flag, &row.Table, &row.PK, &row.Parameter, &row.TFlag, &row.Specific); err != nil {
-			log15.Crit("DBFehler", "scanstruct", err)
+			log.Fatal("DBFehler", "scanstruct", err)
 			return
 		}
 		if row.TFlag {
@@ -293,7 +293,7 @@ func Generator() error {
 	// Create a new template and parse the letter into it.
 	t, err1 := template.New("stru").Funcs(funcMap).ParseGlob("../templates/*")
 	if err1 != nil {
-		log15.Crit("DBFehler Temp.", "temp1", err1)
+		log.Fatal("DBFehler Temp.", "temp1", err1)
 		return err1
 	}
 
@@ -333,12 +333,12 @@ func Generator() error {
 func init() {
 	connConfig, err := pgx.ParseEnvLibpq()
 	if err != nil {
-		log15.Crit("DB", "parse", err)
+		log.Fatal("DB", "parse", err)
 		os.Exit(1)
 	}
 	connConfig.LogLevel = pgx.LogLevelWarn
 	if db, err = pgx.Connect(connConfig); err != nil {
-		log15.Crit("DB", "connect", err)
+		log.Fatal("DB", "connect", err)
 		os.Exit(1)
 	}
 }

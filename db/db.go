@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/log/logrusadapter"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var DBx *pgx.ConnPool
